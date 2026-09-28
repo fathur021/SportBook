@@ -2,7 +2,7 @@ import Image from "next/image";
 import { ArrowRight, BadgeCheck, EyeOff, MapPin, Zap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { CourtSearchForm } from "./court-search-form";
+import { CourtSearchForm } from "@/components/courts/court-search-form";
 
 const trustItems = [
   { icon: BadgeCheck, label: "Verified Venues" },

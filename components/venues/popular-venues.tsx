@@ -1,4 +1,4 @@
-import { VenueCard } from "@/components/venue-card";
+import { VenueCard } from "./venue-card";
 import { popularVenues } from "@/lib/venues";
 
 export function PopularVenues() {

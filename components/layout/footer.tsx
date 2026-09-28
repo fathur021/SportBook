@@ -10,7 +10,7 @@ import {
   ShieldCheckIcon,
 } from "lucide-react";
 
-import { FooterNewsletter } from "@/components/footer-newsletter";
+import { FooterNewsletter } from "./footer-newsletter";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
