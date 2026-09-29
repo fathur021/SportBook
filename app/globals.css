@@ -4,6 +4,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Lebar container halaman. Naikkan kalau konten terasa terlalu "ke tengah"
+   di monitor lebar — semua section memakai max-w-page lewat <Container />. */
+@theme {
+  --container-page: 112rem;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

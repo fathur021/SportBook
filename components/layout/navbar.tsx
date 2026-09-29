@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BellIcon } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Container } from "@/components/layout/container";
 import { cn } from "cn";
 
 const links = [
@@ -21,7 +22,7 @@ const authLinks = [
 export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-2 px-4 sm:px-6">
+      <Container className="flex h-14 items-center gap-2">
         <Link
           href="/"
           className={cn(buttonVariants({ variant: "ghost" }), "h-auto gap-2 px-2")}
@@ -87,7 +88,7 @@ export function Navbar() {
             </Link>
           ))}
         </div>
-      </div>
+      </Container>
     </header>
   );
 }

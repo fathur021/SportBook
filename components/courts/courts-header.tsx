@@ -2,11 +2,12 @@ import Link from "next/link";
 import { ChevronRight, X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Container } from "@/components/layout/container";
 
 export function CourtsHeader() {
   return (
     <section className="border-b">
-      <div className="mx-auto max-w-7xl px-4 py-5">
+      <Container className="py-5">
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -92,7 +93,7 @@ export function CourtsHeader() {
           </button>
         </div>
 
-      </div>
+      </Container>
     </section>
   );
 }

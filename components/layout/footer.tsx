@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { FooterNewsletter } from "./footer-newsletter";
+import { Container } from "@/components/layout/container";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -141,7 +142,7 @@ function FooterColumn({
 export function Footer() {
   return (
     <footer className="bg-[#0B132B] text-slate-400">
-      <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:py-12">
+      <Container className="py-10 lg:py-12">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 xl:gap-6">
           <div className="sm:col-span-2 lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5">
@@ -236,11 +237,11 @@ export function Footer() {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
 
       <Separator className="h-px w-full bg-[#1E293B]" />
 
-      <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
+      <Container className="py-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <p className="text-sm text-slate-500">
             &copy;  2026 SportBook Technologies Indonesia. All rights reserved.
@@ -291,7 +292,7 @@ export function Footer() {
             </Select>
           </div>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }

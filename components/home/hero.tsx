@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ArrowRight, BadgeCheck, EyeOff, MapPin, Zap } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Container } from "@/components/layout/container";
 import { CourtSearchForm } from "@/components/courts/court-search-form";
 
 const trustItems = [
@@ -12,7 +13,7 @@ const trustItems = [
 
 export function Hero() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
+    <Container className="py-10">
       <div className="flex flex-col items-center gap-8 md:flex-row">
         <div className="flex flex-[3] flex-col items-start gap-6">
           {/* Badge */}
@@ -89,6 +90,6 @@ export function Hero() {
       <div className="mt-10">
          <CourtSearchForm/>
       </div>
-    </div>
+    </Container>
   );
 }
