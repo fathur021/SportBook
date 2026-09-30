@@ -1,3 +1,8 @@
+// PERBAIKAN: import dipindah ke atas file. Sebelumnya ada di baris 74, setelah
+// deklarasi popularVenues. Tetap jalan karena import di-hoist, tapi tidak sesuai
+// konvensi repo (lihat app/(public)/explore/page.tsx).
+import { venueListings } from "@/lib/listings"
+
 export type FacilityKey =
   | "ac-lounge"
   | "showers"
@@ -70,3 +75,15 @@ export const popularVenues: Venue[] = [
     pricePerHour: 250000,
   },
 ];
+
+// PERBAIKAN: nama fungsi sebelumnya "getVenueByslug" (kecil 's' di "slug").
+// Sekaligus path import "./listings" diganti alias "@/lib/listings" agar
+// konsisten dengan explore/page.tsx dan venue-listing-card.tsx.
+//
+// Sisa isi fungsi tidak diubah.
+export function getVenueBySlug(slug: string) {
+  return (
+    venueListings.find((v) => v.slug === slug) ??
+    popularVenues.find((v) => v.slug === slug)
+  )
+}
