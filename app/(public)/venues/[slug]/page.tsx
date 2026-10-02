@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation"
 
-import { getVenueBySlug } from "@/lib/venues"
+import { getVenueDetail } from "@/lib/venue-detail"
+import { Container } from "@/components/layout/container"
+import { VenueHeader } from "@/components/venues/venue-header"
 
 // PERBAIKAN 1: literal route di PageProps mengikuti nama folder yang benar.
 // Sebelumnya '/venus/[slug]' karena folder masih bernama "venus" (kurang satu
@@ -16,16 +18,18 @@ import { getVenueBySlug } from "@/lib/venues"
 // .next/types/routes.d.ts, jadi tidak perlu di-import.
 const page = async (props: PageProps<"/venues/[slug]">) => {
   const { slug } = await props.params
-  const venue = getVenueBySlug(slug)
+  const venue = getVenueDetail(slug)
 
   if (!venue) notFound()
 
-  // Pakai <div>, bukan <main>, karena app/(public)/layout.tsx sudah menyediakan
-  // elemen <main> pembungkus. Pakai <main> lagi di sini akan jadi HTML invalid.
+  // Pakai <Container> supaya lebarnya sama dengan halaman lain. Sebelumnya
+  // max-w-5xl (1024px) membuat konten ini terlihat "ke tengah" di monitor
+  // lebar, sedangkan --container-page di app/globals.css itu 112rem.
+  // <Container> juga sudah menyediakan <main> lewat app/(public)/layout.tsx.
   return (
-    <div className="py-10">
-      <h1 className="text-3xl font-bold tracking-tight">{venue.name}</h1>
-    </div>
+    <Container className="py-6">
+      <VenueHeader venue={venue} />
+    </Container>
   )
 }
 
