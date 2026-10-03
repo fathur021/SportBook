@@ -2,7 +2,9 @@ import { notFound } from "next/navigation"
 
 import { getVenueDetail } from "@/lib/venue-detail"
 import { Container } from "@/components/layout/container"
+import { VenueGallery } from "@/components/venues/venue-gallery"
 import { VenueHeader } from "@/components/venues/venue-header"
+import { VenueAbout } from "@/components/venues/venue-about"
 
 // PERBAIKAN 1: literal route di PageProps mengikuti nama folder yang benar.
 // Sebelumnya '/venus/[slug]' karena folder masih bernama "venus" (kurang satu
@@ -27,8 +29,20 @@ const page = async (props: PageProps<"/venues/[slug]">) => {
   // lebar, sedangkan --container-page di app/globals.css itu 112rem.
   // <Container> juga sudah menyediakan <main> lewat app/(public)/layout.tsx.
   return (
-    <Container className="py-6">
+    <Container className="flex flex-col gap-6 py-6">
       <VenueHeader venue={venue} />
+      <VenueGallery
+        images={venue.images}
+        totalPhotos={venue.totalPhotos}
+        venueName={venue.name}
+      />
+      {/* <VenueAbout /> */}
+      <VenueAbout
+        name={venue.name}
+        description={venue.description}
+        
+        stats={venue.stats}
+      />
     </Container>
   )
 }

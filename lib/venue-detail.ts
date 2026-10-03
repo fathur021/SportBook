@@ -5,6 +5,8 @@ export type GalleryImage = {
   caption?: string; // subjudul di bawah title
 };
 
+export type VenueStat = { value: string; label: string };
+
 export type CourtOption = {
   id: string;
   name: string; // "Court 1 - Panoramic Glass"
@@ -25,18 +27,12 @@ export type VenueDetail = {
   images: GalleryImage[];
   description: string;
   specs: string[];
+  stats: VenueStat[];
   facilities: string[]; // label siap tampil, misal "Hot Shower" atau "AC Lounge"
   pricePerHour: number; // angka mentah, format saat ditampilkan
 };
 
-// TODO: ganti src di bawah dengan foto asli begitu sudah ditaruh di
-// public/venues/ — sekarang masih pakai placeholder /hero.webp
-//
-// CAKUPAN: semua slug yang di-link ke /venues/[slug] harus ada di sini,
-// yaitu 12 slug dari lib/listings.ts (tombol "View Courts" di explore) dan
-// 4 slug dari lib/venues.ts (tombol "Book Now" di homepage). Kalau ada slug
-// baru di salah satu file itu, tambahkan juga di sini — kalau tidak, halaman
-// detailnya akan 404 karena getVenueDetail() cuma mencari di array ini.
+
 export const venueDetails: VenueDetail[] = [
   // ---------------------------------------------------------------------
   // 4 slug dari popularVenues (lib/venues.ts) — tombol "Book Now" di homepage
@@ -69,6 +65,12 @@ export const venueDetails: VenueDetail[] = [
       "Mondo Supercourt XN Turf",
       "Indoor AC Available",
     ],
+    stats: [
+      { value: "3+1", label: "Courts Total" },
+      { value: "800 Lux", label: "LED Match Lights" },
+      { value: "12 mm", label: "Tempered Glass" },
+      { value: "17 hrs", label: "Daily Schedule" },
+    ],
     facilities: ["AC Lounge", "Hot Shower", "Pro Shop"],
     pricePerHour: 180000,
   },
@@ -100,6 +102,12 @@ export const venueDetails: VenueDetail[] = [
       "Gerflor Taraflex Vinyl 7.5mm",
       "Full Air Circulation Exhaust",
     ],
+    stats: [
+      { value: "3", label: "Pitches Total" },
+      { value: "7.5 mm", label: "Taraflex Vinyl" },
+      { value: "Full", label: "Air Circulation" },
+      { value: "17 hrs", label: "Daily Schedule" },
+    ],
     facilities: ["Free Parking", "Scoreboard", "Canteen"],
     pricePerHour: 150000,
   },
@@ -125,7 +133,17 @@ export const venueDetails: VenueDetail[] = [
     ],
     description:
       "SmashZone Badminton Hub outlawed 8 lapangan badminton dengan lantai standar BWF dan lampu anti-silau, plus layanan stringing racket on-site.",
-    specs: ["8 Championship Courts", "BWF Standard Flooring", "Anti-Glare Lighting"],
+    specs: [
+      "8 Championship Courts",
+      "BWF Standard Flooring",
+      "Anti-Glare Lighting",
+    ],
+    stats: [
+      { value: "8", label: "Courts Total" },
+      { value: "BWF", label: "Standard Flooring" },
+      { value: "Anti-Glare", label: "Lighting System" },
+      { value: "16 hrs", label: "Daily Schedule" },
+    ],
     facilities: ["Racket Stringing", "Digital Lockers"],
     pricePerHour: 65000,
   },
@@ -151,7 +169,17 @@ export const venueDetails: VenueDetail[] = [
     ],
     description:
       "Apex Basketball Center punya 2 lapangan full-size dengan lantai maple 28x15 meter sesuai standar FIBA, dilengkapi sound system dan tribun penonton.",
-    specs: ["2 Full-Size Courts", "FIBA 28x15 Maple Floor", "Pro LED Scoreboard"],
+    specs: [
+      "2 Full-Size Courts",
+      "FIBA 28x15 Maple Floor",
+      "Pro LED Scoreboard",
+    ],
+    stats: [
+      { value: "2", label: "Full-Size Courts" },
+      { value: "28x15 m", label: "Maple Floor" },
+      { value: "Pro LED", label: "Scoreboard" },
+      { value: "15 hrs", label: "Daily Schedule" },
+    ],
     facilities: ["Ball Rental", "Sound System"],
     pricePerHour: 250000,
   },
@@ -187,7 +215,18 @@ export const venueDetails: VenueDetail[] = [
       "Mondo Supercourt XN Turf",
       "Indoor AC Available",
     ],
-    facilities: ["Hot Shower", "Specialty Cafe", "Free Valet", "Wilson Pro Rental"],
+    stats: [
+      { value: "4", label: "Panoramic Courts" },
+      { value: "Mondo XN", label: "Supercourt Turf" },
+      { value: "Indoor", label: "AC Available" },
+      { value: "17 hrs", label: "Daily Schedule" },
+    ],
+    facilities: [
+      "Hot Shower",
+      "Specialty Cafe",
+      "Free Valet",
+      "Wilson Pro Rental",
+    ],
     pricePerHour: 260000,
   },
   {
@@ -217,6 +256,12 @@ export const venueDetails: VenueDetail[] = [
       "3 Standard 5v5 Pitches",
       "Gerflor Taraflex Vinyl 7.5mm",
       "Full Air Circulation Exhaust",
+    ],
+    stats: [
+      { value: "3", label: "Pitches Total" },
+      { value: "7.5 mm", label: "Taraflex Vinyl" },
+      { value: "12", label: "Shower Stalls" },
+      { value: "17 hrs", label: "Daily Schedule" },
     ],
     facilities: [
       "Digital Lockers",
@@ -249,7 +294,18 @@ export const venueDetails: VenueDetail[] = [
     description:
       "Padel Arena PIK punya 6 lapangan padel beratap dengan lampu LED floodlight dan panoramic glass backdrop, cocok untuk latihan rutin maupun tournament pada sesi malam.",
     specs: ["6 Covered Courts", "LED Floodlights", "Panoramic Glass Backdrop"],
-    facilities: ["Free Valet", "Cafe & Juice Bar", "Racket Rental", "Changing Room"],
+    stats: [
+      { value: "6", label: "Covered Courts" },
+      { value: "LED", label: "Floodlights" },
+      { value: "Panoramic", label: "Glass Backdrop" },
+      { value: "16 hrs", label: "Daily Schedule" },
+    ],
+    facilities: [
+      "Free Valet",
+      "Cafe & Juice Bar",
+      "Racket Rental",
+      "Changing Room",
+    ],
     pricePerHour: 285000,
   },
   {
@@ -274,8 +330,23 @@ export const venueDetails: VenueDetail[] = [
     ],
     description:
       "Smash Badminton Hub Kemang punya 8 lapangan dengan Tiger Turf Pro Series dan opsi lantai kayu untuk klub. Fasilitasnya meliputi pro shop, kantin, dan free parking 60 slot.",
-    specs: ["8 Air-Cooled Courts", "Tiger Turf Pro Series", "Wooden Floor Option"],
-    facilities: ["Pro Shop", "Free Parking (60 slots)", "Canteen", "Hot Shower"],
+    specs: [
+      "8 Air-Cooled Courts",
+      "Tiger Turf Pro Series",
+      "Wooden Floor Option",
+    ],
+    stats: [
+      { value: "8", label: "Air-Cooled Courts" },
+      { value: "Tiger Turf", label: "Pro Series" },
+      { value: "60", label: "Parking Slots" },
+      { value: "17 hrs", label: "Daily Schedule" },
+    ],
+    facilities: [
+      "Pro Shop",
+      "Free Parking (60 slots)",
+      "Canteen",
+      "Hot Shower",
+    ],
     pricePerHour: 95000,
   },
   {
@@ -300,7 +371,17 @@ export const venueDetails: VenueDetail[] = [
     ],
     description:
       "Hoop Nusantara Basket Center menyediakan 2 lapangan full-size 28x15 meter dengan lantai maple standar FIBA, dilengkapi streaming station untuk komunikasi dan digital lockers.",
-    specs: ["2 Full-Size Courts", "FIBA 28x15 Maple Floor", "Pro LED Scoreboard"],
+    specs: [
+      "2 Full-Size Courts",
+      "FIBA 28x15 Maple Floor",
+      "Pro LED Scoreboard",
+    ],
+    stats: [
+      { value: "2", label: "Full-Size Courts" },
+      { value: "28x15 m", label: "Maple Floor" },
+      { value: "Pro LED", label: "Scoreboard" },
+      { value: "15 hrs", label: "Daily Schedule" },
+    ],
     facilities: ["Streaming Station", "Digital Lockers", "Cafe", "Free Valet"],
     pricePerHour: 320000,
   },
@@ -327,7 +408,18 @@ export const venueDetails: VenueDetail[] = [
     description:
       "Smash Court Tennis Cipedak punya 3 lapangan clay dengan acrylic topcoat bersertifikat ITF dan night lighting, plus ball boy service di sesi sore.",
     specs: ["3 Clay Courts", "ITF Certified Acrylic Topcoat", "Night Lighting"],
-    facilities: ["Ball Boy Service", "Bench Seating", "Drinks Kiosk", "Racket Rental"],
+    stats: [
+      { value: "3", label: "Clay Courts" },
+      { value: "ITF", label: "Certified Topcoat" },
+      { value: "Night", label: "Lighting" },
+      { value: "16 hrs", label: "Daily Schedule" },
+    ],
+    facilities: [
+      "Ball Boy Service",
+      "Bench Seating",
+      "Drinks Kiosk",
+      "Racket Rental",
+    ],
     pricePerHour: 180000,
   },
   {
@@ -357,7 +449,18 @@ export const venueDetails: VenueDetail[] = [
       "FIVB Air Pressure Flooring",
       "Telescopic Referee Stand",
     ],
-    facilities: ["Hydration Bar", "Digital Lockers", "Hot Shower", "Team Photo Booth"],
+    stats: [
+      { value: "2", label: "Indoor Courts" },
+      { value: "FIVB", label: "Air Pressure Floor" },
+      { value: "Telescopic", label: "Referee Stand" },
+      { value: "15 hrs", label: "Daily Schedule" },
+    ],
+    facilities: [
+      "Hydration Bar",
+      "Digital Lockers",
+      "Hot Shower",
+      "Team Photo Booth",
+    ],
     pricePerHour: 210000,
   },
   {
@@ -382,7 +485,18 @@ export const venueDetails: VenueDetail[] = [
     description:
       "Smash TT Lounge Sudirman punya 12 meja tenis meja standar ITTF dengan acoustic partition antar zona, serta coaching dari player profesional.",
     specs: ["12 Tables", "ITTF 25mm Tabletop", "Acoustic Partition"],
-    facilities: ["Coaching Available", "Free Parking", "Air Conditioned", "Beverage Menu"],
+    stats: [
+      { value: "12", label: "Tables Total" },
+      { value: "25 mm", label: "ITTF Tabletop" },
+      { value: "Acoustic", label: "Partition" },
+      { value: "13 hrs", label: "Daily Schedule" },
+    ],
+    facilities: [
+      "Coaching Available",
+      "Free Parking",
+      "Air Conditioned",
+      "Beverage Menu",
+    ],
     pricePerHour: 65000,
   },
   {
@@ -407,7 +521,17 @@ export const venueDetails: VenueDetail[] = [
     ],
     description:
       "Squash Junction SCBD menyediakan 2 squash court pro glass dengan pro kill point flooring dan kinetic wall system, dilengkapi shoe rental dan health bar.",
-    specs: ["2 Pro Glass Courts", "Pro Kill Point Flooring", "Kinetic Wall System"],
+    specs: [
+      "2 Pro Glass Courts",
+      "Pro Kill Point Flooring",
+      "Kinetic Wall System",
+    ],
+    stats: [
+      { value: "2", label: "Pro Glass Courts" },
+      { value: "Kill Point", label: "Flooring" },
+      { value: "Kinetic", label: "Wall System" },
+      { value: "16 hrs", label: "Daily Schedule" },
+    ],
     facilities: ["Shoe Rental", "Spa & Shower", "Smart Locker", "Health Bar"],
     pricePerHour: 145000,
   },
@@ -438,6 +562,12 @@ export const venueDetails: VenueDetail[] = [
       "FIFA Quality Synthetic Turf",
       "Full Air Circulation",
     ],
+    stats: [
+      { value: "4", label: "Pitches Total" },
+      { value: "FIFA", label: "Quality Turf" },
+      { value: "Full", label: "Air Circulation" },
+      { value: "16 hrs", label: "Daily Schedule" },
+    ],
     facilities: ["Digital Scoreboard", "Free Valet", "Canteen", "Team Locker"],
     pricePerHour: 165000,
   },
@@ -464,7 +594,18 @@ export const venueDetails: VenueDetail[] = [
     description:
       "Smash Padel House Tebet menyediakan 5 lapangan padel dengan retractable roof dan Mondo Supercourt turf, plus cafe lounge dan rental raket.",
     specs: ["5 Courts", "Mondo Supercourt Turf", "Retractable Roof"],
-    facilities: ["Cafe & Lounge", "Hot Shower", "Racket Rental", "Free Parking"],
+    stats: [
+      { value: "5", label: "Courts Total" },
+      { value: "Mondo", label: "Supercourt Turf" },
+      { value: "Retract.", label: "Roof System" },
+      { value: "16.5 hrs", label: "Daily Schedule" },
+    ],
+    facilities: [
+      "Cafe & Lounge",
+      "Hot Shower",
+      "Racket Rental",
+      "Free Parking",
+    ],
     pricePerHour: 235000,
   },
   {
@@ -489,7 +630,17 @@ export const venueDetails: VenueDetail[] = [
     ],
     description:
       "Futsal Court Cilandak punya 2 pitch indoor dengan permukaan Gerflor Taraflex Vinyl 7.5mm dan recirculating AC, serta area parkir 40 slot.",
-    specs: ["2 Indoor Pitches", "Gerflor Taraflex Vinyl 7.5mm", "Recirculating AC"],
+    specs: [
+      "2 Indoor Pitches",
+      "Gerflor Taraflex Vinyl 7.5mm",
+      "Recirculating AC",
+    ],
+    stats: [
+      { value: "2", label: "Indoor Pitches" },
+      { value: "7.5 mm", label: "Taraflex Vinyl" },
+      { value: "40", label: "Parking Slots" },
+      { value: "15 hrs", label: "Daily Schedule" },
+    ],
     facilities: [
       "Hydration Lounge",
       "Digital Lockers",
