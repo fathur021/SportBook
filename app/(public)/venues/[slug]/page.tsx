@@ -5,6 +5,7 @@ import { Container } from "@/components/layout/container"
 import { VenueGallery } from "@/components/venues/venue-gallery"
 import { VenueHeader } from "@/components/venues/venue-header"
 import { VenueAbout } from "@/components/venues/venue-about"
+import { VenueBookingWidget } from "@/components/venues/venue-booking-widget";
 
 // PERBAIKAN 1: literal route di PageProps mengikuti nama folder yang benar.
 // Sebelumnya '/venus/[slug]' karena folder masih bernama "venus" (kurang satu
@@ -36,13 +37,24 @@ const page = async (props: PageProps<"/venues/[slug]">) => {
         totalPhotos={venue.totalPhotos}
         venueName={venue.name}
       />
-      {/* <VenueAbout /> */}
-      <VenueAbout
-        name={venue.name}
-        description={venue.description}
-        
-        stats={venue.stats}
-      />
+      {/* About di kiri, booking widget jadi sidebar di kanan */}
+      <div className="grid items-start gap-6 lg:grid-cols-[1fr_20rem]">
+        <VenueAbout
+          name={venue.name}
+          description={venue.description}
+          stats={venue.stats}
+        />
+        <VenueBookingWidget
+          rating={venue.rating}
+          reviewCount={venue.reviewCount}
+          basePricePerHour={venue.pricePerHour}
+          disciplines={venue.disciplines}
+          sessionDurations={venue.sessionDurations}
+          popularSlots={venue.popularSlots}
+          facilityFeeNote={venue.facilityFeeNote}
+          conciergeName={venue.conciergeName}
+        />
+      </div>
     </Container>
   )
 }

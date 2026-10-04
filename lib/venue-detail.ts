@@ -5,6 +5,12 @@ export type GalleryImage = {
   caption?: string; // subjudul di bawah title
 };
 
+export type SportDiscipline = {
+  slug: string;
+  label: string;
+  courts: { id: string; label: string }[];
+};
+export type TimeSlotPrice = { time: string; spotsLeft?: number };
 export type VenueStat = { value: string; label: string };
 
 export type CourtOption = {
@@ -30,8 +36,12 @@ export type VenueDetail = {
   stats: VenueStat[];
   facilities: string[]; // label siap tampil, misal "Hot Shower" atau "AC Lounge"
   pricePerHour: number; // angka mentah, format saat ditampilkan
+  disciplines: SportDiscipline[];
+  sessionDurations: string[];
+  popularSlots: TimeSlotPrice[];
+  facilityFeeNote: string;
+  conciergeName: string;
 };
-
 
 export const venueDetails: VenueDetail[] = [
   // ---------------------------------------------------------------------
@@ -73,6 +83,30 @@ export const venueDetails: VenueDetail[] = [
     ],
     facilities: ["AC Lounge", "Hot Shower", "Pro Shop"],
     pricePerHour: 180000,
+    disciplines: [
+      {
+        slug: "padel",
+        label: "Padel (3 Courts)",
+        courts: [
+          { id: "court-1", label: "Court 1 - Championship Glass" },
+          { id: "court-2", label: "Court 2 - Panoramic Glass" },
+          { id: "court-3", label: "Court 3 - Standard Padel (Value Court)" },
+        ],
+      },
+      {
+        slug: "futsal",
+        label: "Futsal (1 Court)",
+        courts: [{ id: "futsal-1", label: "Futsal Court - Taraflex" }],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "18:30" },
+      { time: "20:00", spotsLeft: 3 },
+      { time: "21:30" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Gelora concierge",
   },
   {
     slug: "champion-futsal-arena",
@@ -110,6 +144,25 @@ export const venueDetails: VenueDetail[] = [
     ],
     facilities: ["Free Parking", "Scoreboard", "Canteen"],
     pricePerHour: 150000,
+    disciplines: [
+      {
+        slug: "futsal",
+        label: "Futsal (3 Pitches)",
+        courts: [
+          { id: "pitch-a", label: "Pitch A - Standard 5v5" },
+          { id: "pitch-b", label: "Pitch B - Standard 5v5" },
+          { id: "pitch-c", label: "Pitch C - Standard 5v5" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "18:00" },
+      { time: "19:00", spotsLeft: 2 },
+      { time: "21:00" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Champion concierge",
   },
   {
     slug: "smashzone-badminton-hub",
@@ -146,6 +199,25 @@ export const venueDetails: VenueDetail[] = [
     ],
     facilities: ["Racket Stringing", "Digital Lockers"],
     pricePerHour: 65000,
+    disciplines: [
+      {
+        slug: "badminton",
+        label: "Badminton (8 Courts)",
+        courts: [
+          { id: "court-1", label: "Court 1 - Tournament Grade" },
+          { id: "court-5", label: "Court 5 - Tournament Grade" },
+          { id: "court-8", label: "Court 8 - Standard" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "17:00" },
+      { time: "18:00", spotsLeft: 4 },
+      { time: "19:00" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "SmashZone concierge",
   },
   {
     slug: "apex-basketball-center",
@@ -182,6 +254,24 @@ export const venueDetails: VenueDetail[] = [
     ],
     facilities: ["Ball Rental", "Sound System"],
     pricePerHour: 250000,
+    disciplines: [
+      {
+        slug: "basketball",
+        label: "Basketball (2 Courts)",
+        courts: [
+          { id: "court-1", label: "Court 1 - Full-Size" },
+          { id: "court-2", label: "Court 2 - Full-Size" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "19:00" },
+      { time: "20:00", spotsLeft: 1 },
+      { time: "21:00" },
+    ],
+    facilityFeeNote: "Rp 25.000",
+    conciergeName: "Apex concierge",
   },
 
   // ---------------------------------------------------------------------
@@ -228,6 +318,26 @@ export const venueDetails: VenueDetail[] = [
       "Wilson Pro Rental",
     ],
     pricePerHour: 260000,
+    disciplines: [
+      {
+        slug: "padel",
+        label: "Padel (4 Courts)",
+        courts: [
+          { id: "court-1", label: "Court 1 - Panoramic Glass" },
+          { id: "court-2", label: "Court 2 - Panoramic Glass" },
+          { id: "court-3", label: "Court 3 - Panoramic Glass" },
+          { id: "court-4", label: "Court 4 - Value Court" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "18:00" },
+      { time: "19:00", spotsLeft: 2 },
+      { time: "20:30" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Smash Padel concierge",
   },
   {
     slug: "gelora-arena-hang-lekir",
@@ -270,6 +380,25 @@ export const venueDetails: VenueDetail[] = [
       "VAR Video Recording",
     ],
     pricePerHour: 175000,
+    disciplines: [
+      {
+        slug: "futsal",
+        label: "Futsal (3 Pitches)",
+        courts: [
+          { id: "pitch-a", label: "Pitch A - Standard 5v5" },
+          { id: "pitch-b", label: "Pitch B - Standard 5v5" },
+          { id: "pitch-c", label: "Pitch C - Standard 5v5" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "18:00" },
+      { time: "19:00", spotsLeft: 3 },
+      { time: "20:00" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Gelora Arena concierge",
   },
   {
     slug: "padel-arena-pik",
@@ -307,6 +436,25 @@ export const venueDetails: VenueDetail[] = [
       "Changing Room",
     ],
     pricePerHour: 285000,
+    disciplines: [
+      {
+        slug: "padel",
+        label: "Padel (6 Courts)",
+        courts: [
+          { id: "court-1", label: "Court 1 - Covered" },
+          { id: "court-4", label: "Court 4 - Covered" },
+          { id: "court-6", label: "Court 6 - Covered" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "17:30" },
+      { time: "19:00", spotsLeft: 2 },
+      { time: "20:30" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Padel Arena concierge",
   },
   {
     slug: "smash-badminton-hub-kemang",
@@ -348,6 +496,25 @@ export const venueDetails: VenueDetail[] = [
       "Hot Shower",
     ],
     pricePerHour: 95000,
+    disciplines: [
+      {
+        slug: "badminton",
+        label: "Badminton (8 Courts)",
+        courts: [
+          { id: "court-3", label: "Court 3 - Wooden Floor" },
+          { id: "court-6", label: "Court 6 - Air-Cooled" },
+          { id: "court-7", label: "Court 7 - Air-Cooled" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "17:00" },
+      { time: "18:30", spotsLeft: 3 },
+      { time: "20:00" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Smash Badminton concierge",
   },
   {
     slug: "hoop-nusantara-basket-center",
@@ -384,6 +551,24 @@ export const venueDetails: VenueDetail[] = [
     ],
     facilities: ["Streaming Station", "Digital Lockers", "Cafe", "Free Valet"],
     pricePerHour: 320000,
+    disciplines: [
+      {
+        slug: "basketball",
+        label: "Basketball (2 Courts)",
+        courts: [
+          { id: "court-a", label: "Court A - Full-Size" },
+          { id: "court-b", label: "Court B - Full-Size" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "19:00" },
+      { time: "20:00", spotsLeft: 2 },
+      { time: "21:00" },
+    ],
+    facilityFeeNote: "Rp 30.000",
+    conciergeName: "Hoop Nusantara concierge",
   },
   {
     slug: "smash-court-tennis-cipedak",
@@ -421,6 +606,25 @@ export const venueDetails: VenueDetail[] = [
       "Racket Rental",
     ],
     pricePerHour: 180000,
+    disciplines: [
+      {
+        slug: "tennis",
+        label: "Tennis (3 Courts)",
+        courts: [
+          { id: "court-1", label: "Court 1 - Clay" },
+          { id: "court-2", label: "Court 2 - Clay" },
+          { id: "court-3", label: "Court 3 - Clay" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "16:00" },
+      { time: "17:30", spotsLeft: 1 },
+      { time: "19:00" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Smash Court concierge",
   },
   {
     slug: "volley-arena-scbd",
@@ -462,6 +666,24 @@ export const venueDetails: VenueDetail[] = [
       "Team Photo Booth",
     ],
     pricePerHour: 210000,
+    disciplines: [
+      {
+        slug: "volleyball",
+        label: "Volleyball (2 Courts)",
+        courts: [
+          { id: "court-1", label: "Court 1 - Indoor" },
+          { id: "court-2", label: "Court 2 - Indoor" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "18:00" },
+      { time: "19:00", spotsLeft: 2 },
+      { time: "20:00" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Volley Arena concierge",
   },
   {
     slug: "smash-tt-lounge-sudirman",
@@ -498,6 +720,24 @@ export const venueDetails: VenueDetail[] = [
       "Beverage Menu",
     ],
     pricePerHour: 65000,
+    disciplines: [
+      {
+        slug: "table-tennis",
+        label: "Table Tennis (12 Tables)",
+        courts: [
+          { id: "table-3", label: "Table 3 - ITTF Spec" },
+          { id: "table-7", label: "Table 7 - ITTF Spec" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "16:00" },
+      { time: "17:00", spotsLeft: 4 },
+      { time: "18:00" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Smash TT concierge",
   },
   {
     slug: "squash-junction-scbd",
@@ -534,6 +774,24 @@ export const venueDetails: VenueDetail[] = [
     ],
     facilities: ["Shoe Rental", "Spa & Shower", "Smart Locker", "Health Bar"],
     pricePerHour: 145000,
+    disciplines: [
+      {
+        slug: "squash",
+        label: "Squash (2 Courts)",
+        courts: [
+          { id: "court-1", label: "Court 1 - Glass Box" },
+          { id: "court-2", label: "Court 2 - Glass Box" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "17:00" },
+      { time: "18:00", spotsLeft: 1 },
+      { time: "19:00" },
+    ],
+    facilityFeeNote: "Rp 20.000",
+    conciergeName: "Squash Junction concierge",
   },
   {
     slug: "futsal-kingdom-kelapa-gading",
@@ -570,6 +828,24 @@ export const venueDetails: VenueDetail[] = [
     ],
     facilities: ["Digital Scoreboard", "Free Valet", "Canteen", "Team Locker"],
     pricePerHour: 165000,
+    disciplines: [
+      {
+        slug: "futsal",
+        label: "Futsal (4 Pitches)",
+        courts: [
+          { id: "pitch-1", label: "Pitch 1 - Standard 5v5" },
+          { id: "pitch-3", label: "Pitch 3 - Standard 5v5" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "18:00" },
+      { time: "19:00", spotsLeft: 3 },
+      { time: "20:00" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Futsal Kingdom concierge",
   },
   {
     slug: "smash-padel-house-tebet",
@@ -607,6 +883,24 @@ export const venueDetails: VenueDetail[] = [
       "Free Parking",
     ],
     pricePerHour: 235000,
+    disciplines: [
+      {
+        slug: "padel",
+        label: "Padel (5 Courts)",
+        courts: [
+          { id: "court-1", label: "Court 1 - Retractable Roof" },
+          { id: "court-3", label: "Court 3 - Standard" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "18:00" },
+      { time: "19:30", spotsLeft: 2 },
+      { time: "21:00" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Smash Padel House concierge",
   },
   {
     slug: "futsal-court-cilandak",
@@ -648,6 +942,24 @@ export const venueDetails: VenueDetail[] = [
       "Hot Shower",
     ],
     pricePerHour: 140000,
+    disciplines: [
+      {
+        slug: "futsal",
+        label: "Futsal (2 Pitches)",
+        courts: [
+          { id: "pitch-a", label: "Pitch A - Indoor" },
+          { id: "pitch-b", label: "Pitch B - Indoor" },
+        ],
+      },
+    ],
+    sessionDurations: ["1 Hour", "1.5 Hours", "2 Hours"],
+    popularSlots: [
+      { time: "18:00" },
+      { time: "19:00", spotsLeft: 1 },
+      { time: "20:00" },
+    ],
+    facilityFeeNote: "FREE",
+    conciergeName: "Futsal Court concierge",
   },
 ];
 

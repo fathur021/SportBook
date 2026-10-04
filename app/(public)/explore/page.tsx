@@ -1,23 +1,23 @@
-import { CourtFilter } from '@/components/courts/court-filters'
-import { CourtsHeader } from '@/components/courts/courts-header'
-import { Container } from '@/components/layout/container'
-import { VenueListings } from '@/components/venues/venue-listings'
-import { VenuePagination } from '@/components/venues/venue-pagination'
+import { CourtFilter } from "@/components/courts/court-filters";
+import { CourtsHeader } from "@/components/courts/courts-header";
+import { Container } from "@/components/layout/container";
+import { VenueListings } from "@/components/venues/venue-listings";
+import { VenuePagination } from "@/components/venues/venue-pagination";
 
-import { venueListings } from '@/lib/listings'
-import { paginate, parsePage } from '@/lib/pagination'
+import { venueListings } from "@/lib/listings";
+import { paginate, parsePage } from "@/lib/pagination";
 
-const PER_PAGE = 6
+const PER_PAGE = 6;
 
-const page = async function Page(props: PageProps<'/explore'>) {
+const page = async function Page(props: PageProps<"/explore">) {
   // Di Next 16 searchParams itu Promise, bukan objek biasa
-  const { page } = await props.searchParams
+  const { page } = await props.searchParams;
 
   const { items, total, totalPages, currentPage, hasPrev, hasNext } = paginate(
     venueListings,
     parsePage(page),
-    PER_PAGE
-  )
+    PER_PAGE,
+  );
 
   return (
     <div>
@@ -28,9 +28,7 @@ const page = async function Page(props: PageProps<'/explore'>) {
 
           <div>
             <p className="mb-4 text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">
-                {total}
-              </span>{' '}
+              <span className="font-semibold text-foreground">{total}</span>{" "}
               venues match your filters
             </p>
 
@@ -46,7 +44,7 @@ const page = async function Page(props: PageProps<'/explore'>) {
         </div>
       </Container>
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;
