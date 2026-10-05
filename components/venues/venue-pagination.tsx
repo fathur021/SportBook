@@ -7,19 +7,37 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { buildPageHref } from "@/lib/pagination";
+import type { SearchParams } from "@/lib/filter-venues";
 
 type Props = {
   currentPage: number;
   totalPages: number;
   hasPrev: boolean;
   hasNext: boolean;
+  searchParams: SearchParams;
 };
 
 // Sengaja Server Component: PaginationLink merender <a href>, jadi navigasi
 // diserahkan ke browser tanpa JS pagination sama sekali.
-export function VenuePagination({currentPage,totalPages,hasPrev,hasNext,}: Props) {
+export function VenuePagination({
+  currentPage,
+  totalPages,
+  hasPrev,
+  hasNext,
+  searchParams,
+}: Props) {
   if (totalPages <= 1) return null;
+
+  // Pertahankan semua filter di URL, hanya ganti nilai `page`
+  const hrefFor = (page: number) => {
+    const q = new URLSearchParams();
+    for (const [key, value] of Object.entries(searchParams)) {
+      if (key === "page" || value === undefined) continue;
+      q.set(key, Array.isArray(value) ? value[0] : value);
+    }
+    q.set("page", String(page));
+    return `?${q.toString()}`;
+  };
 
   return (
     <Pagination className="mt-6 border-t pt-6">
@@ -28,7 +46,7 @@ export function VenuePagination({currentPage,totalPages,hasPrev,hasNext,}: Props
           <PaginationPrevious
             // href dibuang saat mati supaya <a> tidak bisa di-Tab atau di-Enter
             // lewat keyboard (pointer-events-none hanya menahan mouse)
-            {...(hasPrev ? { href: buildPageHref(currentPage - 1) } : {})}
+            {...(hasPrev ? { href: hrefFor(currentPage - 1) } : {})}
             aria-disabled={!hasPrev}
             className={!hasPrev ? "pointer-events-none opacity-40" : undefined}
           />
@@ -41,19 +59,16 @@ export function VenuePagination({currentPage,totalPages,hasPrev,hasNext,}: Props
             </PaginationItem>
           ) : (
             <PaginationItem key={p}>
-              <PaginationLink
-                href={buildPageHref(p)}
-                isActive={p === currentPage}
-              >
+              <PaginationLink href={hrefFor(p)} isActive={p === currentPage}>
                 {p}
               </PaginationLink>
             </PaginationItem>
-          )
+          ),
         )}
 
         <PaginationItem>
           <PaginationNext
-            {...(hasNext ? { href: buildPageHref(currentPage + 1) } : {})}
+            {...(hasNext ? { href: hrefFor(currentPage + 1) } : {})}
             aria-disabled={!hasNext}
             className={!hasNext ? "pointer-events-none opacity-40" : undefined}
           />

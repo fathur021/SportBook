@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cityOptions, sportOptions, timeOptions } from "@/lib/search-option";
+import { cityOptions, sportOptions, timeOptions } from "@/lib/filters";
 
 type FieldProps = {
   id: string;
@@ -61,7 +61,7 @@ export function CourtSearchForm() {
     e.preventDefault();
     const params = new URLSearchParams({ sport, city, time });
     if (date) params.set("date", format(date, "yyyy-MM-dd"));
-    router.push(`/courts?${params.toString()}`);
+    router.push(`/explore?${params.toString()}`);
   }
 
   return (

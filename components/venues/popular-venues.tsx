@@ -1,6 +1,6 @@
 import { VenueCard } from "./venue-card";
 import { Container } from "@/components/layout/container";
-import { popularVenues } from "@/lib/venues";
+import { popularVenues } from "@/lib/listings";
 
 export function PopularVenues() {
   return (

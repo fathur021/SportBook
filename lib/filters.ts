@@ -1,8 +1,20 @@
+// ---------------------------------------------------------------------------
+// Semua opsi filter & search digabung di satu file.
+//
+// • sportFilterOptions, timeSlotOptions, dll → CourtFilter sidebar
+// • sportOptions, cityOptions, timeOptions   → CourtSearchForm dropdown
+// • MAX_PRICE, MIN_PRICE                     → Slider harga
+// ---------------------------------------------------------------------------
+
+// ----- Tipe ----- //
+
 export type FilterOption = {
   slug: string;
   label: string;
   count: number;
 };
+
+// ----- Filter sidebar (explore page) ----- //
 
 export const sportFilterOptions: FilterOption[] = [
   { slug: "padel", label: "Padel Tennis", count: 14 },
@@ -42,3 +54,26 @@ export const amenityOptions: FilterOption[] = [
 // Batas bawah dan atas untuk slider harga
 export const MIN_PRICE = 50000;
 export const MAX_PRICE = 350000;
+
+// ----- Search form dropdown options (hero / header) ----- //
+
+export const sportOptions = [
+  { value: "padel", label: "Padel (Panoramic Glass)" },
+  { value: "futsal", label: "Futsal" },
+  { value: "badminton", label: "Badminton" },
+  { value: "tennis", label: "Tennis" },
+  { value: "basketball", label: "Basketball" },
+  { value: "volleyball", label: "Volleyball" },
+];
+
+export const cityOptions = [
+  { value: "south-jakarta", label: "South Jakarta, DKI" },
+  { value: "central-jakarta", label: "Central Jakarta, DKI" },
+  { value: "bandung", label: "Bandung, Jawa Barat" },
+];
+
+export const timeOptions = [
+  { value: "morning", label: "Morning (06:00 - 11:00)" },
+  { value: "afternoon", label: "Afternoon (12:00 - 17:00)" },
+  { value: "evening", label: "Evening (18:00 - 23:00)" },
+];

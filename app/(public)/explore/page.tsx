@@ -1,9 +1,12 @@
+import { Suspense } from "react";
+
 import { CourtFilter } from "@/components/courts/court-filters";
 import { CourtsHeader } from "@/components/courts/courts-header";
 import { Container } from "@/components/layout/container";
 import { VenueListings } from "@/components/venues/venue-listings";
 import { VenuePagination } from "@/components/venues/venue-pagination";
 
+import { filterVenues } from "@/lib/filter-venues";
 import { venueListings } from "@/lib/listings";
 import { paginate, parsePage } from "@/lib/pagination";
 
@@ -11,20 +14,28 @@ const PER_PAGE = 6;
 
 const page = async function Page(props: PageProps<"/explore">) {
   // Di Next 16 searchParams itu Promise, bukan objek biasa
-  const { page } = await props.searchParams;
+  const sp = await props.searchParams;
 
+  // 1. filter dulu dari semua data
+  const filtered = filterVenues(venueListings, sp);
+
+  // 2. baru dipaginasi dari hasil filter
   const { items, total, totalPages, currentPage, hasPrev, hasNext } = paginate(
-    venueListings,
-    parsePage(page),
+    filtered,
+    parsePage(sp.page),
     PER_PAGE,
   );
 
   return (
     <div>
-      <CourtsHeader />
+      <Suspense>
+        <CourtsHeader />
+      </Suspense>
       <Container className="py-6">
         <div className="grid items-start gap-6 lg:grid-cols-[18rem_1fr]">
-          <CourtFilter />
+          <Suspense>
+            <CourtFilter resultCount={total} />
+          </Suspense>
 
           <div>
             <p className="mb-4 text-xs text-muted-foreground">
@@ -39,6 +50,7 @@ const page = async function Page(props: PageProps<"/explore">) {
               totalPages={totalPages}
               hasPrev={hasPrev}
               hasNext={hasNext}
+              searchParams={sp}
             />
           </div>
         </div>

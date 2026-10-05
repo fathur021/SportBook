@@ -1,3 +1,13 @@
+// ---------------------------------------------------------------------------
+// Satu sumber data untuk semua venue di app.
+//
+// • venueListings   → explore page (card list + filter)
+// • popularVenues   → homepage "Popular Venues Near You"
+// • getVenueBySlug  → lookup venue berdasarkan slug
+// ---------------------------------------------------------------------------
+
+// ----- Tipe utama untuk explore page (listing card) ----- //
+
 export type VenueListing = {
   slug: string;
   name: string;
@@ -15,6 +25,35 @@ export type VenueListing = {
   pricePerHour: number;
 };
 
+// ----- Tipe untuk homepage popular venues (card dengan icon) ----- //
+
+export type FacilityKey =
+  | "ac-lounge"
+  | "showers"
+  | "pro-shop"
+  | "free-parking"
+  | "scoreboard"
+  | "canteen"
+  | "racket-stringing"
+  | "lockers"
+  | "ball-rental"
+  | "sound-system";
+
+export type Venue = {
+  slug: string;
+  name: string;
+  location: string;
+  image: string;
+  tag: string; // label di pojok kiri atas gambar
+  rating: number;
+  reviewCount: number;
+  facilities: FacilityKey[];
+  pricePerHour: number; // simpan angka mentah, format saat ditampilkan
+};
+
+// ---------------------------------------------------------------------------
+// Data venue untuk explore page
+// ---------------------------------------------------------------------------
 // TODO: ganti image di bawah dengan /venues/<slug>.webp begitu foto aslinya
 // ditaruh di public/venues/ — sekarang masih pakai placeholder /hero.webp
 export const venueListings: VenueListing[] = [
@@ -199,3 +238,63 @@ export const venueListings: VenueListing[] = [
     pricePerHour: 140000,
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Data venue popular untuk homepage — tipe Venue (dengan FacilityKey + icon)
+// ---------------------------------------------------------------------------
+export const popularVenues: Venue[] = [
+  {
+    slug: "gelora-padel-club",
+    name: "Gelora Padel Club",
+    location: "Kebayoran Baru, Jakarta",
+    image: "/hero.webp",
+    tag: "Padel • Tennis",
+    rating: 4.9,
+    reviewCount: 184,
+    facilities: ["ac-lounge", "showers", "pro-shop"],
+    pricePerHour: 180000,
+  },
+  {
+    slug: "champion-futsal-arena",
+    name: "Champion Futsal Arena",
+    location: "Kuningan, Jakarta",
+    image: "/hero.webp",
+    tag: "Futsal Interlock",
+    rating: 4.8,
+    reviewCount: 310,
+    facilities: ["free-parking", "scoreboard", "canteen"],
+    pricePerHour: 150000,
+  },
+  {
+    slug: "smashzone-badminton-hub",
+    name: "SmashZone Badminton Hub",
+    location: "BSD City, Tangerang",
+    image: "/hero.webp",
+    tag: "Badminton • 8 Courts",
+    rating: 4.9,
+    reviewCount: 95,
+    facilities: ["racket-stringing", "lockers"],
+    pricePerHour: 65000,
+  },
+  {
+    slug: "apex-basketball-center",
+    name: "Apex Basketball Center",
+    location: "Senayan, Jakarta",
+    image: "/hero.webp",
+    tag: "Basketball Hardwood",
+    rating: 4.7,
+    reviewCount: 142,
+    facilities: ["ball-rental", "sound-system"],
+    pricePerHour: 250000,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Helper: cari venue berdasarkan slug di kedua koleksi
+// ---------------------------------------------------------------------------
+export function getVenueBySlug(slug: string) {
+  return (
+    venueListings.find((v) => v.slug === slug) ??
+    popularVenues.find((v) => v.slug === slug)
+  );
+}

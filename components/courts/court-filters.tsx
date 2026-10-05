@@ -1,3 +1,7 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
@@ -10,12 +14,82 @@ import {
   timeSlotOptions,
 } from "@/lib/filters";
 import { formatRupiah } from "@/lib/format-rupiah";
-import { Calendar, Check, Zap } from "lucide-react";
+import { Calendar, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-export function CourtFilter() {
+
+const MIN_PRICE = 50000;
+
+// "a,b,c" -> ["a","b","c"]
+const parseList = (value: string | null) =>
+  value?.split(",").filter(Boolean) ?? [];
+
+type CourtFilterProps = {
+  resultCount?: number;
+};
+
+export function CourtFilter({ resultCount }: CourtFilterProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const dateInputRef = useRef<HTMLInputElement>(null);
+
+  // ---------- state awal dibaca dari URL ----------
+  const [instant, setInstant] = useState(params.get("instant") === "1");
+  const [sports, setSports] = useState<string[]>(parseList(params.get("sport")));
+  const [date, setDate] = useState(params.get("date") ?? "today"); // today | tomorrow | YYYY-MM-DD
+  const [times, setTimes] = useState<string[]>(parseList(params.get("time")));
+  const [price, setPrice] = useState<number[]>([
+    Number(params.get("min") ?? MIN_PRICE),
+    Number(params.get("max") ?? MAX_PRICE),
+  ]);
+  const [floors, setFloors] = useState<string[]>(parseList(params.get("floor")));
+  const [amenities, setAmenities] = useState<string[]>(
+    parseList(params.get("amenity")),
+  );
+
+  const handlePriceChange = (value: number | readonly number[]) => {
+    if (typeof value === "number") {
+      setPrice([MIN_PRICE, value]);
+      return;
+    }
+
+    setPrice([
+      Number(value[0] ?? MIN_PRICE),
+      Number(value[1] ?? value[0] ?? MAX_PRICE),
+    ]);
+  };
+
+  // tambah / hapus item dari array
+  const toggle = (
+    list: string[],
+    setList: (value: string[]) => void,
+    value: string,
+  ) =>
+    setList(
+      list.includes(value) ? list.filter((x) => x !== value) : [...list, value],
+    );
+
+  const isCustomDate = date !== "today" && date !== "tomorrow";
+
+  // ---------- tulis state ke URL ----------
+  const applyFilters = () => {
+    const q = new URLSearchParams();
+
+    if (instant) q.set("instant", "1");
+    if (sports.length) q.set("sport", sports.join(","));
+    q.set("date", date);
+    if (times.length) q.set("time", times.join(","));
+    q.set("min", String(price[0]));
+    q.set("max", String(price[1]));
+    if (floors.length) q.set("floor", floors.join(","));
+    if (amenities.length) q.set("amenity", amenities.join(","));
+
+    router.push(`${pathname}?${q.toString()}`);
+  };
+
   return (
     <aside className="flex w-full flex-col gap-6 rounded-2xl border bg-white p-5 lg:sticky lg:top-20">
-      {/* Instal book inly */}
+      {/* Instant book only */}
       <div className="flex items-center justify-between rounded-xl bg-emerald-50 p-3">
         <div className="flex items-start gap-2">
           <Zap className="mt-0.5 size-4 text-emerald-700" />
@@ -26,57 +100,95 @@ export function CourtFilter() {
             </p>
           </div>
         </div>
-        <Switch defaultChecked />
+        <Switch checked={instant} onCheckedChange={setInstant} />
       </div>
 
-      {/* Sport catogory */}
+      {/* Sport category */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold">Sport Categoty</h3>
-          <span className="text-xs text-muted-foreground">6 Available</span>
+          <h3 className="text-sm font-semibold">Sport Category</h3>
+          <span className="text-xs text-muted-foreground">
+            {sportFilterOptions.length} Available
+          </span>
+        </div>
+        <div className="flex flex-col gap-2.5">
+          {sportFilterOptions.map((sport) => (
+            <label
+              key={sport.slug}
+              className="flex cursor-pointer items-center justify-between text-sm"
+            >
+              <span className="flex items-center gap-2">
+                <Checkbox
+                  checked={sports.includes(sport.slug)}
+                  onCheckedChange={() => toggle(sports, setSports, sport.slug)}
+                />
+                {sport.label}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {sport.count}
+              </span>
+            </label>
+          ))}
         </div>
       </div>
-      <div className="flex flex-col gap-2.5">
-        {sportFilterOptions.map((sport, i) => (
-          <label
-            key={sport.slug}
-            className="flex cursor-pointer items-center justify-between text-sm"
-          >
-            <span className="flex items-center gap-2">
-              <Checkbox defaultChecked={i < 3} />
-              {sport.label}
-            </span>
-            <span className="text-xs text-muted-foreground">{sport.count}</span>
-          </label>
-        ))}
-      </div>
 
-      {/* Play Date */}
+      {/* Play date */}
       <div className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold">Play Date</h3>
-        <div>
+        <div className="flex gap-2">
           <Button
             type="button"
-            className="h-9 bg-emerald-700 text-xs hover:bg-emerald-800"
+            variant={date === "today" ? "default" : "outline"}
+            className={cn(
+              "h-9 text-xs",
+              date === "today" && "bg-emerald-700 hover:bg-emerald-800",
+            )}
+            onClick={() => setDate("today")}
           >
             Today
           </Button>
-          <Button type="button" variant="outline" className="h-9 text-xs">
+          <Button
+            type="button"
+            variant={date === "tomorrow" ? "default" : "outline"}
+            className={cn(
+              "h-9 text-xs",
+              date === "tomorrow" && "bg-emerald-700 hover:bg-emerald-800",
+            )}
+            onClick={() => setDate("tomorrow")}
+          >
             Tomorrow
           </Button>
-          <Button type="button" variant="outline" className="h-9 text-xs">
+          <Button
+            type="button"
+            variant={isCustomDate ? "default" : "outline"}
+            className={cn(
+              "h-9 text-xs",
+              isCustomDate && "bg-emerald-700 hover:bg-emerald-800",
+            )}
+            onClick={() => dateInputRef.current?.showPicker()}
+          >
             <Calendar />
-            Pic
+            {isCustomDate ? date : "Pick"}
           </Button>
+          {/* input tanggal tersembunyi, dibuka lewat tombol Pick */}
+          <input
+            ref={dateInputRef}
+            type="date"
+            className="sr-only"
+            tabIndex={-1}
+            aria-hidden
+            value={isCustomDate ? date : ""}
+            onChange={(e) => e.target.value && setDate(e.target.value)}
+          />
         </div>
       </div>
 
-      {/* Preferred Time Slot */}
+      {/* Preferred time slot */}
       <div className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold">Preferred Time Slot</h3>
         <div className="flex flex-col gap-2">
           {timeSlotOptions.map((slot) => {
-            const isSelected = slot.value === "evening";
+            const isSelected = times.includes(slot.value);
             return (
               <label
                 key={slot.value}
@@ -86,7 +198,10 @@ export function CourtFilter() {
                 )}
               >
                 <span className="flex items-center gap-2">
-                  <Checkbox defaultChecked={isSelected} />
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => toggle(times, setTimes, slot.value)}
+                  />
                   {slot.label}
                 </span>
                 <span className="text-xs text-muted-foreground">
@@ -98,7 +213,7 @@ export function CourtFilter() {
         </div>
       </div>
 
-      {/* Hourly Rate */}
+      {/* Hourly rate */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">Hourly Rate (IDR)</h3>
@@ -108,9 +223,10 @@ export function CourtFilter() {
         </div>
 
         <Slider
-          defaultValue={[50000, 350000]}
-          min={50000}
-          max={350000}
+          value={price}
+          onValueChange={handlePriceChange}
+          min={MIN_PRICE}
+          max={MAX_PRICE}
           step={10000}
           className="[&_[data-slot=slider-range]]:bg-emerald-700"
         />
@@ -118,24 +234,27 @@ export function CourtFilter() {
         <div className="flex gap-3">
           <div className="flex-1 rounded-lg bg-slate-50 p-2">
             <p className="text-[10px] text-muted-foreground">MIN</p>
-            <p className="text-sm font-semibold">{formatRupiah(50000)}</p>
+            <p className="text-sm font-semibold">{formatRupiah(price[0])}</p>
           </div>
           <div className="flex-1 rounded-lg bg-slate-50 p-2">
             <p className="text-[10px] text-muted-foreground">MAX</p>
-            <p className="text-sm font-semibold">{formatRupiah(350000)}</p>
+            <p className="text-sm font-semibold">{formatRupiah(price[1])}</p>
           </div>
         </div>
       </div>
 
-      {/* Court Flooring Surface */}
+      {/* Court flooring surface */}
       <div className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold">Court Flooring Surface</h3>
         <div className="flex flex-wrap gap-2">
           {flooringOptions.map((option) => {
-            const isSelected = option === "Synthetic Turf";
+            const isSelected = floors.includes(option);
             return (
-              <span
+              <button
+                type="button"
                 key={option}
+                aria-pressed={isSelected}
+                onClick={() => toggle(floors, setFloors, option)}
                 className={cn(
                   "rounded-md border px-2.5 py-1.5 text-xs font-medium",
                   isSelected
@@ -144,30 +263,39 @@ export function CourtFilter() {
                 )}
               >
                 {option}
-              </span>
+              </button>
             );
           })}
         </div>
       </div>
 
-      {/* Amenities & Facilities */}
+      {/* Amenities & facilities */}
       <div className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold">Amenities &amp; Facilities</h3>
         <div className="flex flex-col gap-2.5">
-          {amenityOptions.map((item, i) => (
+          {amenityOptions.map((item) => (
             <label
               key={item.slug}
               className="flex cursor-pointer items-center gap-2 text-sm"
             >
-              <Checkbox defaultChecked={i < 2} />
+              <Checkbox
+                checked={amenities.includes(item.slug)}
+                onCheckedChange={() =>
+                  toggle(amenities, setAmenities, item.slug)
+                }
+              />
               {item.label}
             </label>
           ))}
         </div>
       </div>
 
-      <Button className="h-11 bg-emerald-700 hover:bg-emerald-800">
-        Apply Filters (42)
+      <Button
+        type="button"
+        onClick={applyFilters}
+        className="h-11 bg-emerald-700 hover:bg-emerald-800"
+      >
+        Apply Filters{resultCount !== undefined && ` (${resultCount})`}
       </Button>
     </aside>
   );

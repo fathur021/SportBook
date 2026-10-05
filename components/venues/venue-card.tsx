@@ -19,7 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { FacilityKey, Venue } from "@/lib/venues";
+import type { FacilityKey, Venue } from "@/lib/listings";
 
 const facilityMap: Record<FacilityKey, { label: string; icon: LucideIcon }> = {
   "ac-lounge": { label: "AC Lounge", icon: AirVent },

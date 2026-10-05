@@ -35,7 +35,7 @@ export function Navbar() {
             priority
             className="h-10 w-auto object-contain lg:h-12"
           />
-          <span className="bg-linear-to-r from-[#059669] to-[#047857] bg-clip-text text-lg font-semibold text-transparent drop-shadow-[0_1px_2px_rgba(4,120,87,0.35)] lg:text-xl">
+          <span className="bg-linear-to-r from-[#059669] to-[#047857] bg-clip-text text-[22px] font-semibold leading-none text-transparent drop-shadow-[0_1px_2px_rgba(4,120,87,0.35)]">
             Sportbook
           </span>
         </Link>
@@ -47,7 +47,7 @@ export function Navbar() {
               href={item.href}
               className={cn(
                 buttonVariants({ variant: "ghost", size: "sm" }),
-                "px-2 text-sm"
+                "px-2 text-base font-medium"
               )}
             >
               {item.title}
@@ -62,7 +62,7 @@ export function Navbar() {
               href={item.href}
               className={cn(
                 buttonVariants({ variant: "ghost", size: "sm" }),
-                "hidden px-2.5 text-sm lg:inline-flex"
+                "hidden px-2.5 text-base font-medium lg:inline-flex"
               )}
             >
               {item.title}
@@ -81,7 +81,7 @@ export function Navbar() {
               href={item.href}
               className={cn(
                 buttonVariants({ variant: item.variant }),
-                "px-2.5 lg:px-3"
+                "px-2.5 text-sm font-semibold lg:px-3"
               )}
             >
               {item.title}
