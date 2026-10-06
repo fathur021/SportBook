@@ -1,3 +1,13 @@
+// ---------------------------------------------------------------------------
+// Komponen Sidebar Filter Lapangan & Venue (CourtFilter)
+//
+// Komponen ini mengontrol seluruh parameter penyaringan lapangan di sisi kiri halaman:
+// 1. Membaca query string URL saat pertama kali dimuat (sinkronisasi state dengan URL).
+// 2. Mengelola input filter pengguna (Kategori Olahraga, Tanggal Main, Slot Jam,
+//    Rentang Harga, Jenis Lantai, Fasilitas, dan Instant Book).
+// 3. Mengirimkan parameter yang diperbarui ke URL saat tombol "Apply Filters" diklik.
+// ---------------------------------------------------------------------------
+
 "use client";
 
 import { useRef, useState } from "react";
@@ -17,49 +27,94 @@ import { formatRupiah } from "@/lib/format-rupiah";
 import { Calendar, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// ---------------------------------------------------------------------------
+// Batas Bawah Harga (Default Minimum Price)
+// ---------------------------------------------------------------------------
 const MIN_PRICE = 50000;
 
-// "a,b,c" -> ["a","b","c"]
+// ---------------------------------------------------------------------------
+// Helper: Memecah string dipisah koma dari URL query param menjadi array
+// Contoh: "futsal,badminton" -> ["futsal", "badminton"]
+// Jika bernilai null atau kosong, mengembalikan array kosong []
+// ---------------------------------------------------------------------------
 const parseList = (value: string | null) =>
   value?.split(",").filter(Boolean) ?? [];
 
+// ---------------------------------------------------------------------------
+// Tipe Props untuk komponen CourtFilter
+// ---------------------------------------------------------------------------
 type CourtFilterProps = {
-  resultCount?: number;
+  resultCount?: number; // Total jumlah venue/lapangan yang sesuai kriteria pencarian
 };
 
+// ---------------------------------------------------------------------------
+// Komponen Utama CourtFilter
+// ---------------------------------------------------------------------------
 export function CourtFilter({ resultCount }: CourtFilterProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const params = useSearchParams();
+  // Hook Next.js untuk membaca dan memperbarui query URL
+  const router = useRouter();          // Untuk navigasi / update URL saat filter diterapkan
+  const pathname = usePathname();      // Mengambil path URL saat ini (misal: "/explore")
+  const params = useSearchParams();    // Membaca parameter query URL aktif
+
+  // Referensi DOM ke elemen input tanggal native (type="date") yang tersembunyi
+  // Dipicu saat tombol kalender "Pick" ditekan agar memunculkan date picker native browser
   const dateInputRef = useRef<HTMLInputElement>(null);
 
-  // ---------- state awal dibaca dari URL ----------
+  // -------------------------------------------------------------------------
+  // State Lokal: Inisialisasi awal nilai filter dibaca langsung dari URL browser
+  // -------------------------------------------------------------------------
+
+  // 1. Filter Instant Book: bernilai true jika query URL memiliki "?instant=1"
   const [instant, setInstant] = useState(params.get("instant") === "1");
-  const [sports, setSports] = useState<string[]>(parseList(params.get("sport")));
-  const [date, setDate] = useState(params.get("date") ?? "today"); // today | tomorrow | YYYY-MM-DD
+
+  // 2. Filter Kategori Olahraga: array slug olahraga (misal: ["padel", "futsal"])
+  const [sports, setSports] = useState<string[]>(
+    parseList(params.get("sport")),
+  );
+
+  // 3. Filter Tanggal Main: default "today" jika tidak diset di URL, atau "tomorrow" / "YYYY-MM-DD"
+  const [date, setDate] = useState(params.get("date") ?? "today");
+
+  // 4. Filter Slot Waktu Main: array pilihan waktu (misal: ["morning", "evening"])
   const [times, setTimes] = useState<string[]>(parseList(params.get("time")));
+
+  // 5. Filter Rentang Harga Sewa: array [min, max] dalam Rupiah
   const [price, setPrice] = useState<number[]>([
     Number(params.get("min") ?? MIN_PRICE),
     Number(params.get("max") ?? MAX_PRICE),
   ]);
-  const [floors, setFloors] = useState<string[]>(parseList(params.get("floor")));
+
+  // 6. Filter Jenis Permukaan Lantai: array jenis lantai (misal: ["Vinyl", "Parquet"])
+  const [floors, setFloors] = useState<string[]>(
+    parseList(params.get("floor")),
+  );
+
+  // 7. Filter Fasilitas / Amenities: array slug fasilitas (misal: ["shower", "locker"])
   const [amenities, setAmenities] = useState<string[]>(
     parseList(params.get("amenity")),
   );
 
+  // -------------------------------------------------------------------------
+  // Handler: Update State Rentang Harga dari Komponen Slider
+  // -------------------------------------------------------------------------
   const handlePriceChange = (value: number | readonly number[]) => {
+    // Jika slider hanya mengembalikan 1 nilai angka
     if (typeof value === "number") {
       setPrice([MIN_PRICE, value]);
       return;
     }
 
+    // Jika slider mengembalikan tuple rentang [min, max]
     setPrice([
       Number(value[0] ?? MIN_PRICE),
       Number(value[1] ?? value[0] ?? MAX_PRICE),
     ]);
   };
 
-  // tambah / hapus item dari array
+  // -------------------------------------------------------------------------
+  // Helper: Toggle Nilai Multi-select (Checkbox / Button Tag)
+  // Menambahkan item jika belum ada, atau menghapusnya jika sudah terpilih
+  // -------------------------------------------------------------------------
   const toggle = (
     list: string[],
     setList: (value: string[]) => void,
@@ -69,10 +124,14 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
       list.includes(value) ? list.filter((x) => x !== value) : [...list, value],
     );
 
+  // Cek apakah tanggal yang dipilih adalah tanggal spesifik dari kalender (bukan "today" / "tomorrow")
   const isCustomDate = date !== "today" && date !== "tomorrow";
 
-  // ---------- tulis state ke URL ----------
+  // -------------------------------------------------------------------------
+  // Handler: Terapkan Filter & Tulis Seluruh State ke URL Browser
+  // -------------------------------------------------------------------------
   const applyFilters = () => {
+    // Buat objek URLSearchParams baru untuk menampung seluruh parameter filter yang aktif
     const q = new URLSearchParams();
 
     if (instant) q.set("instant", "1");
@@ -84,12 +143,17 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
     if (floors.length) q.set("floor", floors.join(","));
     if (amenities.length) q.set("amenity", amenities.join(","));
 
+    // Navigasi ke URL baru dengan query params yang sudah diperbarui tanpa reload halaman
     router.push(`${pathname}?${q.toString()}`);
   };
 
   return (
+    // Panel Sidebar Filter: Posisi sticky di layar desktop (lg) agar tetap terlihat saat scroll daftar venue
     <aside className="flex w-full flex-col gap-6 rounded-2xl border bg-white p-5 lg:sticky lg:top-20">
-      {/* Instant book only */}
+      
+      {/* ------------------------------------------------------------------- */}
+      {/* 1. Filter Instant Book Only (Switch Toggle)                         */}
+      {/* ------------------------------------------------------------------- */}
       <div className="flex items-center justify-between rounded-xl bg-emerald-50 p-3">
         <div className="flex items-start gap-2">
           <Zap className="mt-0.5 size-4 text-emerald-700" />
@@ -100,10 +164,13 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
             </p>
           </div>
         </div>
+        {/* Toggle switch untuk mengaktifkan / menonaktifkan instant booking */}
         <Switch checked={instant} onCheckedChange={setInstant} />
       </div>
 
-      {/* Sport category */}
+      {/* ------------------------------------------------------------------- */}
+      {/* 2. Filter Kategori Olahraga (Checkboxes)                             */}
+      {/* ------------------------------------------------------------------- */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">Sport Category</h3>
@@ -112,6 +179,7 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
           </span>
         </div>
         <div className="flex flex-col gap-2.5">
+          {/* Render daftar pilihan olahraga beserta badge jumlah lapangan yang tersedia */}
           {sportFilterOptions.map((sport) => (
             <label
               key={sport.slug}
@@ -132,10 +200,13 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
         </div>
       </div>
 
-      {/* Play date */}
+      {/* ------------------------------------------------------------------- */}
+      {/* 3. Filter Tanggal Main (Hari Ini, Besok, atau Kalender)              */}
+      {/* ------------------------------------------------------------------- */}
       <div className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold">Play Date</h3>
         <div className="flex gap-2">
+          {/* Tombol cepat: Hari ini */}
           <Button
             type="button"
             variant={date === "today" ? "default" : "outline"}
@@ -147,6 +218,8 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
           >
             Today
           </Button>
+
+          {/* Tombol cepat: Besok */}
           <Button
             type="button"
             variant={date === "tomorrow" ? "default" : "outline"}
@@ -158,6 +231,8 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
           >
             Tomorrow
           </Button>
+
+          {/* Tombol pemilih tanggal kustom: memanggil showPicker() dari input tanggal */}
           <Button
             type="button"
             variant={isCustomDate ? "default" : "outline"}
@@ -170,7 +245,8 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
             <Calendar />
             {isCustomDate ? date : "Pick"}
           </Button>
-          {/* input tanggal tersembunyi, dibuka lewat tombol Pick */}
+
+          {/* Input tanggal native browser yang disembunyikan (sr-only), dibuka via tombol Pick */}
           <input
             ref={dateInputRef}
             type="date"
@@ -183,10 +259,13 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
         </div>
       </div>
 
-      {/* Preferred time slot */}
+      {/* ------------------------------------------------------------------- */}
+      {/* 4. Filter Preferensi Slot Waktu Main (Time Slots)                    */}
+      {/* ------------------------------------------------------------------- */}
       <div className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold">Preferred Time Slot</h3>
         <div className="flex flex-col gap-2">
+          {/* Render kartu pilihan waktu (Morning, Afternoon, Evening) dengan rentang jam */}
           {timeSlotOptions.map((slot) => {
             const isSelected = times.includes(slot.value);
             return (
@@ -213,7 +292,9 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
         </div>
       </div>
 
-      {/* Hourly rate */}
+      {/* ------------------------------------------------------------------- */}
+      {/* 5. Filter Rentang Tarif Sewa per Jam (IDR Slider)                    */}
+      {/* ------------------------------------------------------------------- */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold">Hourly Rate (IDR)</h3>
@@ -222,6 +303,7 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
           </span>
         </div>
 
+        {/* Slider rentang harga min & max dengan kelipatan 10.000 */}
         <Slider
           value={price}
           onValueChange={handlePriceChange}
@@ -231,6 +313,7 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
           className="[&_[data-slot=slider-range]]:bg-emerald-700"
         />
 
+        {/* Tampilan badge nominal batas minimum dan maksimum terpilih */}
         <div className="flex gap-3">
           <div className="flex-1 rounded-lg bg-slate-50 p-2">
             <p className="text-[10px] text-muted-foreground">MIN</p>
@@ -243,10 +326,13 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
         </div>
       </div>
 
-      {/* Court flooring surface */}
+      {/* ------------------------------------------------------------------- */}
+      {/* 6. Filter Jenis Permukaan Lapangan (Flooring Options Tag)            */}
+      {/* ------------------------------------------------------------------- */}
       <div className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold">Court Flooring Surface</h3>
         <div className="flex flex-wrap gap-2">
+          {/* Tombol pill/tag interaktif untuk memilih jenis permukaan lantai */}
           {flooringOptions.map((option) => {
             const isSelected = floors.includes(option);
             return (
@@ -269,10 +355,13 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
         </div>
       </div>
 
-      {/* Amenities & facilities */}
+      {/* ------------------------------------------------------------------- */}
+      {/* 7. Filter Fasilitas & Sarana Venue (Amenities Checkboxes)            */}
+      {/* ------------------------------------------------------------------- */}
       <div className="flex flex-col gap-3">
         <h3 className="text-sm font-semibold">Amenities &amp; Facilities</h3>
         <div className="flex flex-col gap-2.5">
+          {/* Render daftar checkbox fasilitas (Shower, Locker, Parking, dll) */}
           {amenityOptions.map((item) => (
             <label
               key={item.slug}
@@ -290,6 +379,9 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
         </div>
       </div>
 
+      {/* ------------------------------------------------------------------- */}
+      {/* 8. Tombol Terapkan Filter (Apply Filters Button)                      */}
+      {/* ------------------------------------------------------------------- */}
       <Button
         type="button"
         onClick={applyFilters}

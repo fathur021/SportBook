@@ -5,10 +5,45 @@ export type GalleryImage = {
   caption?: string; // subjudul di bawah title
 };
 
+// =========================================================================
+// Tipe Data untuk Fasilitas & Amenities (Kartu 9 Kotak)
+// =========================================================================
+export type VenueAmenity = {
+  id: string;          // ID unik untuk properti key di React (misal: "courts", "lounge")
+  title: string;       // Judul tebal kartu (misal: "3 Panoramic Courts")
+  description: string; // Teks deskripsi di bawah judul (misal: "WPT spec Mondo turf...")
+  // Union Type: Pilihan icon dibatasi hanya nama-nama yang sudah didukung di renderAmenityIcon
+  icon: "court" | "ac" | "shower" | "rental" | "shop" | "cafe" | "parking" | "futsal" | "video";
+};
+
+// =========================================================================
+// Tipe Data untuk Jam Operasional Mingguan (Weekly Operating Hours)
+// =========================================================================
+export type OperatingSchedule = {
+  days: string;            // Contoh: "Mon - Thu", "Friday", "Saturday", "Sunday"
+  hours: string;           // Contoh: "06:00 - 23:00"
+  note: string;            // Contoh: "Peak: 17:00 - 22:00", "Tournament Days"
+  isHighlighted?: boolean; // true jika kartu diberi warna khusus (misal warna hijau di hari Sabtu)
+};
+
 export type SportDiscipline = {
   slug: string;
   label: string;
-  courts: { id: string; label: string }[];
+  courts: {
+    id: string;
+    label: string;
+    imageIndex?: number;   // urutan foto di venue.images (default 0)
+    image?: string;        // opsional, kalau punya foto sendiri
+    badge?: string;        // "Featured Arena"
+    specs?: string[];      // ["Panoramic Glass", "Supercourt Mondo Turf"]
+    features?: string[];   // chip fasilitas
+    maxPlayers?: number;
+    pricePerHour?: number;
+    isOperational?: boolean;
+
+  }[];
+
+
 };
 export type TimeSlotPrice = { time: string; spotsLeft?: number };
 export type VenueStat = { value: string; label: string };
@@ -19,6 +54,20 @@ export type CourtOption = {
   pricePerHour: number;
   slots: { time: string; booked?: boolean }[];
 };
+
+export type courtInfo = {
+  id: string;
+  label: string;
+  imageIndex?: number;
+  image?: string;
+  badge: string;
+  specs?: string[];
+  features?: string[];
+  maxPlayers?: number;
+  pricePerHour: number;
+  isOperational?: boolean;
+}
+
 
 export type VenueDetail = {
   slug: string;
@@ -41,6 +90,9 @@ export type VenueDetail = {
   popularSlots: TimeSlotPrice[];
   facilityFeeNote: string;
   conciergeName: string;
+  amenities?: VenueAmenity[];
+  operatingHoursBadge?: string;             // Badge pojok kanan atas, misal "Always Open On Public Holidays"
+  operatingSchedules?: OperatingSchedule[]; // Array jadwal 4 blok hari
 };
 
 export const venueDetails: VenueDetail[] = [
@@ -82,13 +134,109 @@ export const venueDetails: VenueDetail[] = [
       { value: "17 hrs", label: "Daily Schedule" },
     ],
     facilities: ["AC Lounge", "Hot Shower", "Pro Shop"],
+    // Data 9 fasilitas & amenities lengkap (persis seperti referensi gambar)
+    amenities: [
+      {
+        id: "courts",
+        title: "3 Panoramic Courts",
+        description: "WPT spec Mondo turf & pillarless glass",
+        icon: "court", // Dirender oleh RacketIcon
+      },
+      {
+        id: "lounge",
+        title: "AC Players Lounge",
+        description: "High-speed Wi-Fi, work desks & smart TV",
+        icon: "ac", // Dirender oleh Snowflake (Lucide)
+      },
+      {
+        id: "showers",
+        title: "Hot Water Showers",
+        description: "Towels & luxury bath amenities included",
+        icon: "shower", // Dirender oleh ShowerHead (Lucide)
+      },
+      {
+        id: "rental",
+        title: "Gear & Racket Rental",
+        description: "Bullpadel & Babolat demo rackets",
+        icon: "rental", // Dirender oleh Whistle (Lucide)
+      },
+      {
+        id: "shop",
+        title: "Pro Shop",
+        description: "Apparel, balls, overgrips & accessories",
+        icon: "shop", // Dirender oleh Store (Lucide)
+      },
+      {
+        id: "cafe",
+        title: "Cafe & Refreshments",
+        description: "Electrolytes, artisan coffee & protein snacks",
+        icon: "cafe", // Dirender oleh Coffee (Lucide)
+      },
+      {
+        id: "parking",
+        title: "50+ Car Parking",
+        description: "Secure basement parking with valet support",
+        icon: "parking", // Dirender sebagai huruf 'P' tebal hijau
+      },
+      {
+        id: "futsal",
+        title: "Taraflex Futsal",
+        description: "Multi-sport court with regulation goals",
+        icon: "futsal", // Dirender oleh SoccerBallIcon
+      },
+      {
+        id: "replay",
+        title: "Auto Match Replay",
+        description: "Free downloadable HD court action replays",
+        icon: "video", // Dirender oleh Video (Lucide)
+      },
+    ],
+    // Data Jam Operasional Mingguan (Weekly Operating Hours)
+    operatingHoursBadge: "Always Open On Public Holidays",
+    operatingSchedules: [
+      {
+        days: "Mon - Thu",
+        hours: "06:00 - 23:00",
+        note: "Peak: 17:00 - 22:00",
+      },
+      {
+        days: "Friday",
+        hours: "06:00 - 23:00",
+        note: "Social Padel Night",
+      },
+      {
+        days: "Saturday",
+        hours: "06:00 - 23:00",
+        note: "Tournament Days",
+        isHighlighted: true, // Kartu Sabtu diberi warna latar hijau muda (highlight)
+      },
+      {
+        days: "Sunday",
+        hours: "06:00 - 23:00",
+        note: "Morning Social Mini-League",
+      },
+    ],
     pricePerHour: 180000,
     disciplines: [
       {
         slug: "padel",
         label: "Padel (3 Courts)",
         courts: [
-          { id: "court-1", label: "Court 1 - Championship Glass" },
+          {
+            id: "court-1",
+            label: "Court 1 - Championship Glass",
+            imageIndex: 0,
+            badge: "Featured Arena",
+            specs: ["Panoramic Glass", "Supercourt Mondo Turf"],
+            features: [
+              "Shockpad Underlay",
+              "Official WPT Dimensions",
+              "Match Cam Replay",
+            ],
+            maxPlayers: 4,
+            pricePerHour: 220000,
+            isOperational: true,
+          },
           { id: "court-2", label: "Court 2 - Panoramic Glass" },
           { id: "court-3", label: "Court 3 - Standard Padel (Value Court)" },
         ],

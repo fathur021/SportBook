@@ -1,49 +1,62 @@
-import { notFound } from "next/navigation"
+// Mengimpor notFound untuk mengarahkan ke halaman 404 jika slug venue tidak ditemukan
+import { notFound } from "next/navigation";
 
-import { getVenueDetail } from "@/lib/venue-detail"
-import { Container } from "@/components/layout/container"
-import { VenueGallery } from "@/components/venues/venue-gallery"
-import { VenueHeader } from "@/components/venues/venue-header"
-import { VenueAbout } from "@/components/venues/venue-about"
+// Mengimpor fungsi pencari data detail venue berdasarkan slug
+import { getVenueDetail } from "@/lib/venue-detail";
+
+// Mengimpor komponen-komponen UI penyusun halaman venue detail
+import { Container } from "@/components/layout/container";
+import { VenueGallery } from "@/components/venues/venue-gallery";
+import { VenueHeader } from "@/components/venues/venue-header";
+import { VenueAbout } from "@/components/venues/venue-about";
 import { VenueBookingWidget } from "@/components/venues/venue-booking-widget";
+// Mengimpor komponen Facilities & Amenities yang baru saja dibuat
+import { VenueAmenities } from "@/components/venues/venue-amenities";
+import { VenueOperatingHours } from "@/components/venues/venue-operating-hours";
 
-// PERBAIKAN 1: literal route di PageProps mengikuti nama folder yang benar.
-// Sebelumnya '/venus/[slug]' karena folder masih bernama "venus" (kurang satu
-// huruf 'e'). Semua link di app menulis /venues/${slug} — lihat
-// components/venues/venue-card.tsx dan venue-listing-card.tsx — jadi route
-// /venus/[slug] tidak akan pernah bisa diakses.
-//
-// PERBAIKAN 2: indentasi diubah dari 4 spasi ke 2 spasi sesuai repo.
-// PERBAIKAN 3: nama fungsi "getVenueByslug" -> "getVenueBySlug".
-//
-// Catatan: params WAJIB di-await. Di Next 16 params itu Promise, bukan objek
-// biasa. PageProps sendiri adalah global helper hasil generate Next.js di
-// .next/types/routes.d.ts, jadi tidak perlu di-import.
+// Halaman utama detail venue (Server Component async karena membaca params dari URL)
 const page = async (props: PageProps<"/venues/[slug]">) => {
-  const { slug } = await props.params
-  const venue = getVenueDetail(slug)
+  // 1. Membaca slug dari URL browser (misal: /venues/gelora-padel-club -> slug = "gelora-padel-club")
+  const { slug } = await props.params;
 
-  if (!venue) notFound()
+  // 2. Mengambil data detail venue yang cocok dari lib/venue-detail.ts
+  const venue = getVenueDetail(slug);
 
-  // Pakai <Container> supaya lebarnya sama dengan halaman lain. Sebelumnya
-  // max-w-5xl (1024px) membuat konten ini terlihat "ke tengah" di monitor
-  // lebar, sedangkan --container-page di app/globals.css itu 112rem.
-  // <Container> juga sudah menyediakan <main> lewat app/(public)/layout.tsx.
+  // 3. Jika slug tidak ditemukan di data, otomatis tampilkan halaman 404
+  if (!venue) notFound();
+
   return (
+    // Container utama agar lebar halaman konsisten dengan halaman lain di website
     <Container className="flex flex-col gap-6 py-6">
+      {/* 1. Header venue: Nama, alamat, rating, dan breadcrumb */}
       <VenueHeader venue={venue} />
+
+      {/* 2. Galeri foto-foto venue */}
       <VenueGallery
         images={venue.images}
         totalPhotos={venue.totalPhotos}
         venueName={venue.name}
       />
-      {/* About di kiri, booking widget jadi sidebar di kanan */}
+
+      {/* 3. Layout Grid 2 Kolom: Kolom kiri konten utama (1fr), Kolom kanan sidebar booking widget (20rem) */}
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_20rem]">
-        <VenueAbout
-          name={venue.name}
-          description={venue.description}
-          stats={venue.stats}
-        />
+        
+        {/* Kolom Kiri: Dibungkus dengan flex-col gap-6 agar About dan Amenities tersusun vertikal ke bawah */}
+        <div className="flex flex-col gap-6">
+          {/* Section Facility Standards & Informasi Tentang Venue */}
+          <VenueAbout
+            name={venue.name}
+            description={venue.description}
+            stats={venue.stats}
+          />
+
+          {/* Section Facilities & Amenities: Mengirimkan data venue.amenities sebagai props */}
+          <VenueAmenities amenities={venue.amenities} />
+          <VenueOperatingHours badge={venue.operatingHoursBadge} 
+          schedules={venue.operatingSchedules}/>
+        </div>
+
+        {/* Kolom Kanan: Widget pemilihan jadwal dan tombol booking lapangan */}
         <VenueBookingWidget
           rating={venue.rating}
           reviewCount={venue.reviewCount}
@@ -56,7 +69,7 @@ const page = async (props: PageProps<"/venues/[slug]">) => {
         />
       </div>
     </Container>
-  )
-}
+  );
+};
 
-export default page
+export default page;
