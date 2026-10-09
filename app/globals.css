@@ -7,7 +7,7 @@
 /* Lebar container halaman. Naikkan kalau konten terasa terlalu "ke tengah"
    di monitor lebar — semua section memakai max-w-page lewat <Container />. */
 @theme {
-  --container-page: 112rem;
+  --container-page: 80rem;
 }
 
 @theme inline {

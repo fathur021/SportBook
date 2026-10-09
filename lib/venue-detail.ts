@@ -9,20 +9,29 @@ export type GalleryImage = {
 // Tipe Data untuk Fasilitas & Amenities (Kartu 9 Kotak)
 // =========================================================================
 export type VenueAmenity = {
-  id: string;          // ID unik untuk properti key di React (misal: "courts", "lounge")
-  title: string;       // Judul tebal kartu (misal: "3 Panoramic Courts")
+  id: string; // ID unik untuk properti key di React (misal: "courts", "lounge")
+  title: string; // Judul tebal kartu (misal: "3 Panoramic Courts")
   description: string; // Teks deskripsi di bawah judul (misal: "WPT spec Mondo turf...")
   // Union Type: Pilihan icon dibatasi hanya nama-nama yang sudah didukung di renderAmenityIcon
-  icon: "court" | "ac" | "shower" | "rental" | "shop" | "cafe" | "parking" | "futsal" | "video";
+  icon:
+    | "court"
+    | "ac"
+    | "shower"
+    | "rental"
+    | "shop"
+    | "cafe"
+    | "parking"
+    | "futsal"
+    | "video";
 };
 
 // =========================================================================
 // Tipe Data untuk Jam Operasional Mingguan (Weekly Operating Hours)
 // =========================================================================
 export type OperatingSchedule = {
-  days: string;            // Contoh: "Mon - Thu", "Friday", "Saturday", "Sunday"
-  hours: string;           // Contoh: "06:00 - 23:00"
-  note: string;            // Contoh: "Peak: 17:00 - 22:00", "Tournament Days"
+  days: string; // Contoh: "Mon - Thu", "Friday", "Saturday", "Sunday"
+  hours: string; // Contoh: "06:00 - 23:00"
+  note: string; // Contoh: "Peak: 17:00 - 22:00", "Tournament Days"
   isHighlighted?: boolean; // true jika kartu diberi warna khusus (misal warna hijau di hari Sabtu)
 };
 
@@ -32,18 +41,15 @@ export type SportDiscipline = {
   courts: {
     id: string;
     label: string;
-    imageIndex?: number;   // urutan foto di venue.images (default 0)
-    image?: string;        // opsional, kalau punya foto sendiri
-    badge?: string;        // "Featured Arena"
-    specs?: string[];      // ["Panoramic Glass", "Supercourt Mondo Turf"]
-    features?: string[];   // chip fasilitas
+    imageIndex?: number; // urutan foto di venue.images (default 0)
+    image?: string; // opsional, kalau punya foto sendiri
+    badge?: string; // "Featured Arena"
+    specs?: string[]; // ["Panoramic Glass", "Supercourt Mondo Turf"]
+    features?: string[]; // chip fasilitas
     maxPlayers?: number;
     pricePerHour?: number;
     isOperational?: boolean;
-
   }[];
-
-
 };
 export type TimeSlotPrice = { time: string; spotsLeft?: number };
 export type VenueStat = { value: string; label: string };
@@ -66,8 +72,7 @@ export type courtInfo = {
   maxPlayers?: number;
   pricePerHour: number;
   isOperational?: boolean;
-}
-
+};
 
 export type VenueDetail = {
   slug: string;
@@ -91,7 +96,7 @@ export type VenueDetail = {
   facilityFeeNote: string;
   conciergeName: string;
   amenities?: VenueAmenity[];
-  operatingHoursBadge?: string;             // Badge pojok kanan atas, misal "Always Open On Public Holidays"
+  operatingHoursBadge?: string; // Badge pojok kanan atas, misal "Always Open On Public Holidays"
   operatingSchedules?: OperatingSchedule[]; // Array jadwal 4 blok hari
 };
 
@@ -324,20 +329,72 @@ export const venueDetails: VenueDetail[] = [
     ],
     facilities: ["Free Parking", "Scoreboard", "Canteen", "Hydration Lounge"],
     amenities: [
-      { id: "pitches", title: "3 Standard 5v5 Pitches", description: "Gerflor Taraflex Vinyl 7.5mm surface", icon: "futsal" },
-      { id: "video", title: "VAR Video Recording", description: "Full match footage downloadable in HD", icon: "video" },
-      { id: "ac", title: "Full Air Circulation", description: "Exhaust system keeps every pitch cool", icon: "ac" },
-      { id: "shower", title: "Hot Water Showers", description: "Hot showers & changing rooms after match", icon: "shower" },
-      { id: "cafe", title: "Canteen & Hydration", description: "Meals, isotonic drinks & protein snacks", icon: "cafe" },
-      { id: "parking", title: "Free Car Parking", description: "On-site parking for players & guests", icon: "parking" },
-      { id: "shop", title: "Digital Lockers", description: "Keyless storage for bags and boots", icon: "shop" },
+      {
+        id: "pitches",
+        title: "3 Standard 5v5 Pitches",
+        description: "Gerflor Taraflex Vinyl 7.5mm surface",
+        icon: "futsal",
+      },
+      {
+        id: "video",
+        title: "VAR Video Recording",
+        description: "Full match footage downloadable in HD",
+        icon: "video",
+      },
+      {
+        id: "ac",
+        title: "Full Air Circulation",
+        description: "Exhaust system keeps every pitch cool",
+        icon: "ac",
+      },
+      {
+        id: "shower",
+        title: "Hot Water Showers",
+        description: "Hot showers & changing rooms after match",
+        icon: "shower",
+      },
+      {
+        id: "cafe",
+        title: "Canteen & Hydration",
+        description: "Meals, isotonic drinks & protein snacks",
+        icon: "cafe",
+      },
+      {
+        id: "parking",
+        title: "Free Car Parking",
+        description: "On-site parking for players & guests",
+        icon: "parking",
+      },
+      {
+        id: "shop",
+        title: "Digital Lockers",
+        description: "Keyless storage for bags and boots",
+        icon: "shop",
+      },
     ],
     operatingHoursBadge: "Open Until Midnight Daily",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "07:00 - 24:00", note: "Peak: 18:00 - 22:00" },
-      { days: "Friday", hours: "07:00 - 24:00", note: "Corporate League Night" },
-      { days: "Saturday", hours: "07:00 - 24:00", note: "Tournament Days", isHighlighted: true },
-      { days: "Sunday", hours: "07:00 - 24:00", note: "Kids Futsal Clinic 09:00" },
+      {
+        days: "Mon - Thu",
+        hours: "07:00 - 24:00",
+        note: "Peak: 18:00 - 22:00",
+      },
+      {
+        days: "Friday",
+        hours: "07:00 - 24:00",
+        note: "Corporate League Night",
+      },
+      {
+        days: "Saturday",
+        hours: "07:00 - 24:00",
+        note: "Tournament Days",
+        isHighlighted: true,
+      },
+      {
+        days: "Sunday",
+        hours: "07:00 - 24:00",
+        note: "Kids Futsal Clinic 09:00",
+      },
     ],
     pricePerHour: 150000,
     disciplines: [
@@ -422,20 +479,64 @@ export const venueDetails: VenueDetail[] = [
       { value: "Anti-Glare", label: "Lighting System" },
       { value: "16 hrs", label: "Daily Schedule" },
     ],
-    facilities: ["Racket Stringing", "Digital Lockers", "Free Parking", "Canteen"],
+    facilities: [
+      "Racket Stringing",
+      "Digital Lockers",
+      "Free Parking",
+      "Canteen",
+    ],
     amenities: [
-      { id: "courts", title: "8 Championship Courts", description: "BWF flooring with anti-glare lighting", icon: "court" },
-      { id: "rental", title: "Racket Stringing Desk", description: "Restring & re-grip while you wait", icon: "rental" },
-      { id: "shop", title: "Pro Shop & Lockers", description: "Shuttles, grips & keyless bag storage", icon: "shop" },
-      { id: "cafe", title: "Canteen", description: "Meals, drinks & recovery snacks", icon: "cafe" },
-      { id: "shower", title: "Hot Shower", description: "Hot water & clean changing rooms", icon: "shower" },
-      { id: "parking", title: "Free Parking", description: "Dedicated slots for players & guests", icon: "parking" },
+      {
+        id: "courts",
+        title: "8 Championship Courts",
+        description: "BWF flooring with anti-glare lighting",
+        icon: "court",
+      },
+      {
+        id: "rental",
+        title: "Racket Stringing Desk",
+        description: "Restring & re-grip while you wait",
+        icon: "rental",
+      },
+      {
+        id: "shop",
+        title: "Pro Shop & Lockers",
+        description: "Shuttles, grips & keyless bag storage",
+        icon: "shop",
+      },
+      {
+        id: "cafe",
+        title: "Canteen",
+        description: "Meals, drinks & recovery snacks",
+        icon: "cafe",
+      },
+      {
+        id: "shower",
+        title: "Hot Shower",
+        description: "Hot water & clean changing rooms",
+        icon: "shower",
+      },
+      {
+        id: "parking",
+        title: "Free Parking",
+        description: "Dedicated slots for players & guests",
+        icon: "parking",
+      },
     ],
     operatingHoursBadge: "Anti-Glare Lighting All Day",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "06:00 - 22:00", note: "Peak: 17:00 - 21:00" },
+      {
+        days: "Mon - Thu",
+        hours: "06:00 - 22:00",
+        note: "Peak: 17:00 - 21:00",
+      },
       { days: "Friday", hours: "06:00 - 22:00", note: "Social Doubles Night" },
-      { days: "Saturday", hours: "06:00 - 22:00", note: "Weekend Tournament Slots", isHighlighted: true },
+      {
+        days: "Saturday",
+        hours: "06:00 - 22:00",
+        note: "Weekend Tournament Slots",
+        isHighlighted: true,
+      },
       { days: "Sunday", hours: "06:00 - 22:00", note: "Junior Coaching 08:00" },
     ],
     pricePerHour: 65000,
@@ -521,21 +622,73 @@ export const venueDetails: VenueDetail[] = [
       { value: "Pro LED", label: "Scoreboard" },
       { value: "15 hrs", label: "Daily Schedule" },
     ],
-    facilities: ["Ball Rental", "Sound System", "Player Lounge", "Digital Lockers"],
+    facilities: [
+      "Ball Rental",
+      "Sound System",
+      "Player Lounge",
+      "Digital Lockers",
+    ],
     amenities: [
-      { id: "courts", title: "2 Full-Size Courts", description: "FIBA 28x15m maple hardwood floor", icon: "court" },
-      { id: "rental", title: "Ball Rental Counter", description: "Game balls & pumps at the front desk", icon: "rental" },
-      { id: "video", title: "Pro LED Scoreboard", description: "Game clock, shot clock & replay screen", icon: "video" },
-      { id: "ac", title: "Air-Conditioned Lounge", description: "Player lounge with smart TV & Wi-Fi", icon: "ac" },
-      { id: "cafe", title: "Cafe & Hydration", description: "Coffee, isotonic drinks & light bites", icon: "cafe" },
-      { id: "shop", title: "Digital Lockers", description: "Keyless storage for bags & shoes", icon: "shop" },
+      {
+        id: "courts",
+        title: "2 Full-Size Courts",
+        description: "FIBA 28x15m maple hardwood floor",
+        icon: "court",
+      },
+      {
+        id: "rental",
+        title: "Ball Rental Counter",
+        description: "Game balls & pumps at the front desk",
+        icon: "rental",
+      },
+      {
+        id: "video",
+        title: "Pro LED Scoreboard",
+        description: "Game clock, shot clock & replay screen",
+        icon: "video",
+      },
+      {
+        id: "ac",
+        title: "Air-Conditioned Lounge",
+        description: "Player lounge with smart TV & Wi-Fi",
+        icon: "ac",
+      },
+      {
+        id: "cafe",
+        title: "Cafe & Hydration",
+        description: "Coffee, isotonic drinks & light bites",
+        icon: "cafe",
+      },
+      {
+        id: "shop",
+        title: "Digital Lockers",
+        description: "Keyless storage for bags & shoes",
+        icon: "shop",
+      },
     ],
     operatingHoursBadge: "FIBA Certified Maple Floor",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "08:00 - 23:00", note: "Peak: 18:00 - 22:00" },
-      { days: "Friday", hours: "08:00 - 23:00", note: "Night League From 19:00" },
-      { days: "Saturday", hours: "08:00 - 23:00", note: "Tournament Days", isHighlighted: true },
-      { days: "Sunday", hours: "08:00 - 23:00", note: "Open Run 08:00 - 12:00" },
+      {
+        days: "Mon - Thu",
+        hours: "08:00 - 23:00",
+        note: "Peak: 18:00 - 22:00",
+      },
+      {
+        days: "Friday",
+        hours: "08:00 - 23:00",
+        note: "Night League From 19:00",
+      },
+      {
+        days: "Saturday",
+        hours: "08:00 - 23:00",
+        note: "Tournament Days",
+        isHighlighted: true,
+      },
+      {
+        days: "Sunday",
+        hours: "08:00 - 23:00",
+        note: "Open Run 08:00 - 12:00",
+      },
     ],
     pricePerHour: 250000,
     disciplines: [
@@ -621,18 +774,57 @@ export const venueDetails: VenueDetail[] = [
       "Wilson Pro Rental",
     ],
     amenities: [
-      { id: "courts", title: "4 Panoramic Courts", description: "Mondo Supercourt XN turf, pillarless glass", icon: "court" },
-      { id: "ac", title: "Indoor AC Courts", description: "Air-conditioned comfort on every court", icon: "ac" },
-      { id: "rental", title: "Wilson Pro Rental", description: "Demo rackets, balls & overgrips", icon: "rental" },
-      { id: "cafe", title: "Specialty Cafe", description: "Artisan coffee & healthy plates", icon: "cafe" },
-      { id: "shower", title: "Hot Shower Rooms", description: "Towels & bath amenities included", icon: "shower" },
-      { id: "parking", title: "Free Valet Parking", description: "Valet drop-off right at the entrance", icon: "parking" },
+      {
+        id: "courts",
+        title: "4 Panoramic Courts",
+        description: "Mondo Supercourt XN turf, pillarless glass",
+        icon: "court",
+      },
+      {
+        id: "ac",
+        title: "Indoor AC Courts",
+        description: "Air-conditioned comfort on every court",
+        icon: "ac",
+      },
+      {
+        id: "rental",
+        title: "Wilson Pro Rental",
+        description: "Demo rackets, balls & overgrips",
+        icon: "rental",
+      },
+      {
+        id: "cafe",
+        title: "Specialty Cafe",
+        description: "Artisan coffee & healthy plates",
+        icon: "cafe",
+      },
+      {
+        id: "shower",
+        title: "Hot Shower Rooms",
+        description: "Towels & bath amenities included",
+        icon: "shower",
+      },
+      {
+        id: "parking",
+        title: "Free Valet Parking",
+        description: "Valet drop-off right at the entrance",
+        icon: "parking",
+      },
     ],
     operatingHoursBadge: "Valet Parking On Site",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "06:30 - 23:30", note: "Peak: 17:00 - 22:00" },
+      {
+        days: "Mon - Thu",
+        hours: "06:30 - 23:30",
+        note: "Peak: 17:00 - 22:00",
+      },
       { days: "Friday", hours: "06:30 - 23:30", note: "Social Padel Night" },
-      { days: "Saturday", hours: "06:30 - 23:30", note: "Tournament Days", isHighlighted: true },
+      {
+        days: "Saturday",
+        hours: "06:30 - 23:30",
+        note: "Tournament Days",
+        isHighlighted: true,
+      },
       { days: "Sunday", hours: "06:30 - 23:30", note: "Morning Ladder 07:00" },
     ],
     pricePerHour: 260000,
@@ -698,19 +890,66 @@ export const venueDetails: VenueDetail[] = [
       "VAR Video Recording",
     ],
     amenities: [
-      { id: "pitches", title: "3 Standard 5v5 Pitches", description: "Gerflor Taraflex Vinyl 7.5mm surface", icon: "futsal" },
-      { id: "video", title: "VAR Video Recording", description: "Full match footage downloadable in HD", icon: "video" },
-      { id: "ac", title: "Full Air Circulation", description: "Exhaust system keeps every pitch cool", icon: "ac" },
-      { id: "shower", title: "12 Hot Shower Stalls", description: "Plenty of stalls, no queue after match", icon: "shower" },
-      { id: "cafe", title: "Hydration Lounge", description: "Isotonic drinks, coffee & light meals", icon: "cafe" },
-      { id: "shop", title: "Digital Lockers", description: "Keyless storage for bags & boots", icon: "shop" },
+      {
+        id: "pitches",
+        title: "3 Standard 5v5 Pitches",
+        description: "Gerflor Taraflex Vinyl 7.5mm surface",
+        icon: "futsal",
+      },
+      {
+        id: "video",
+        title: "VAR Video Recording",
+        description: "Full match footage downloadable in HD",
+        icon: "video",
+      },
+      {
+        id: "ac",
+        title: "Full Air Circulation",
+        description: "Exhaust system keeps every pitch cool",
+        icon: "ac",
+      },
+      {
+        id: "shower",
+        title: "12 Hot Shower Stalls",
+        description: "Plenty of stalls, no queue after match",
+        icon: "shower",
+      },
+      {
+        id: "cafe",
+        title: "Hydration Lounge",
+        description: "Isotonic drinks, coffee & light meals",
+        icon: "cafe",
+      },
+      {
+        id: "shop",
+        title: "Digital Lockers",
+        description: "Keyless storage for bags & boots",
+        icon: "shop",
+      },
     ],
     operatingHoursBadge: "FIFA Certified Pitch",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "07:00 - 24:00", note: "Peak: 18:00 - 22:00" },
-      { days: "Friday", hours: "07:00 - 24:00", note: "Corporate League Night" },
-      { days: "Saturday", hours: "07:00 - 24:00", note: "Tournament Days", isHighlighted: true },
-      { days: "Sunday", hours: "07:00 - 24:00", note: "Kids Futsal Clinic 09:00" },
+      {
+        days: "Mon - Thu",
+        hours: "07:00 - 24:00",
+        note: "Peak: 18:00 - 22:00",
+      },
+      {
+        days: "Friday",
+        hours: "07:00 - 24:00",
+        note: "Corporate League Night",
+      },
+      {
+        days: "Saturday",
+        hours: "07:00 - 24:00",
+        note: "Tournament Days",
+        isHighlighted: true,
+      },
+      {
+        days: "Sunday",
+        hours: "07:00 - 24:00",
+        note: "Kids Futsal Clinic 09:00",
+      },
     ],
     pricePerHour: 175000,
     disciplines: [
@@ -769,18 +1008,57 @@ export const venueDetails: VenueDetail[] = [
       "Changing Room",
     ],
     amenities: [
-      { id: "courts", title: "6 Covered Courts", description: "LED floodlights & panoramic glass backdrop", icon: "court" },
-      { id: "rental", title: "Racket Rental", description: "Quality rackets, balls & overgrips", icon: "rental" },
-      { id: "cafe", title: "Cafe & Juice Bar", description: "Fresh juices, coffee & light meals", icon: "cafe" },
-      { id: "shower", title: "Changing Room & Showers", description: "Private cubicles with hot water", icon: "shower" },
-      { id: "parking", title: "Free Valet Parking", description: "Valet drop-off at the club entrance", icon: "parking" },
-      { id: "shop", title: "Gear Counter", description: "Grips, balls & stringing on site", icon: "shop" },
+      {
+        id: "courts",
+        title: "6 Covered Courts",
+        description: "LED floodlights & panoramic glass backdrop",
+        icon: "court",
+      },
+      {
+        id: "rental",
+        title: "Racket Rental",
+        description: "Quality rackets, balls & overgrips",
+        icon: "rental",
+      },
+      {
+        id: "cafe",
+        title: "Cafe & Juice Bar",
+        description: "Fresh juices, coffee & light meals",
+        icon: "cafe",
+      },
+      {
+        id: "shower",
+        title: "Changing Room & Showers",
+        description: "Private cubicles with hot water",
+        icon: "shower",
+      },
+      {
+        id: "parking",
+        title: "Free Valet Parking",
+        description: "Valet drop-off at the club entrance",
+        icon: "parking",
+      },
+      {
+        id: "shop",
+        title: "Gear Counter",
+        description: "Grips, balls & stringing on site",
+        icon: "shop",
+      },
     ],
     operatingHoursBadge: "Covered Courts, Rain or Shine",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "06:00 - 22:00", note: "Peak: 17:00 - 21:00" },
+      {
+        days: "Mon - Thu",
+        hours: "06:00 - 22:00",
+        note: "Peak: 17:00 - 21:00",
+      },
       { days: "Friday", hours: "06:00 - 22:00", note: "Sunset Session 17:30" },
-      { days: "Saturday", hours: "06:00 - 22:00", note: "Tournament Days", isHighlighted: true },
+      {
+        days: "Saturday",
+        hours: "06:00 - 22:00",
+        note: "Tournament Days",
+        isHighlighted: true,
+      },
       { days: "Sunday", hours: "06:00 - 22:00", note: "Morning Doubles 07:00" },
     ],
     pricePerHour: 285000,
@@ -844,18 +1122,57 @@ export const venueDetails: VenueDetail[] = [
       "Hot Shower",
     ],
     amenities: [
-      { id: "courts", title: "8 Air-Cooled Courts", description: "Tiger Turf Pro Series flooring", icon: "court" },
-      { id: "ac", title: "Air-Cooled Hall", description: "Cool temperature across all courts", icon: "ac" },
-      { id: "shop", title: "Pro Shop", description: "Shuttles, grips & stringing service", icon: "shop" },
-      { id: "cafe", title: "Canteen", description: "Meals, drinks & recovery snacks", icon: "cafe" },
-      { id: "shower", title: "Hot Shower", description: "Hot water & clean changing rooms", icon: "shower" },
-      { id: "parking", title: "Free Parking (60 slots)", description: "Spacious parking for players", icon: "parking" },
+      {
+        id: "courts",
+        title: "8 Air-Cooled Courts",
+        description: "Tiger Turf Pro Series flooring",
+        icon: "court",
+      },
+      {
+        id: "ac",
+        title: "Air-Cooled Hall",
+        description: "Cool temperature across all courts",
+        icon: "ac",
+      },
+      {
+        id: "shop",
+        title: "Pro Shop",
+        description: "Shuttles, grips & stringing service",
+        icon: "shop",
+      },
+      {
+        id: "cafe",
+        title: "Canteen",
+        description: "Meals, drinks & recovery snacks",
+        icon: "cafe",
+      },
+      {
+        id: "shower",
+        title: "Hot Shower",
+        description: "Hot water & clean changing rooms",
+        icon: "shower",
+      },
+      {
+        id: "parking",
+        title: "Free Parking (60 slots)",
+        description: "Spacious parking for players",
+        icon: "parking",
+      },
     ],
     operatingHoursBadge: "60 Free Parking Slots",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "06:00 - 23:00", note: "Peak: 17:00 - 21:00" },
+      {
+        days: "Mon - Thu",
+        hours: "06:00 - 23:00",
+        note: "Peak: 17:00 - 21:00",
+      },
       { days: "Friday", hours: "06:00 - 23:00", note: "Social Doubles Night" },
-      { days: "Saturday", hours: "06:00 - 23:00", note: "Weekend Tournament Slots", isHighlighted: true },
+      {
+        days: "Saturday",
+        hours: "06:00 - 23:00",
+        note: "Weekend Tournament Slots",
+        isHighlighted: true,
+      },
       { days: "Sunday", hours: "06:00 - 23:00", note: "Junior Coaching 08:00" },
     ],
     pricePerHour: 95000,
@@ -914,19 +1231,66 @@ export const venueDetails: VenueDetail[] = [
     ],
     facilities: ["Streaming Station", "Digital Lockers", "Cafe", "Free Valet"],
     amenities: [
-      { id: "courts", title: "2 Full-Size Courts", description: "FIBA 28x15m maple hardwood floor", icon: "court" },
-      { id: "video", title: "Streaming Station", description: "Live broadcast & HD replay downloads", icon: "video" },
-      { id: "shop", title: "Digital Lockers", description: "Keyless storage for bags & shoes", icon: "shop" },
-      { id: "cafe", title: "Player Cafe", description: "Coffee, isotonic drinks & light bites", icon: "cafe" },
-      { id: "parking", title: "Free Valet Parking", description: "Valet drop-off at the arena entrance", icon: "parking" },
-      { id: "ac", title: "Indoor Climate Court", description: "Air-conditioned comfort courtside", icon: "ac" },
+      {
+        id: "courts",
+        title: "2 Full-Size Courts",
+        description: "FIBA 28x15m maple hardwood floor",
+        icon: "court",
+      },
+      {
+        id: "video",
+        title: "Streaming Station",
+        description: "Live broadcast & HD replay downloads",
+        icon: "video",
+      },
+      {
+        id: "shop",
+        title: "Digital Lockers",
+        description: "Keyless storage for bags & shoes",
+        icon: "shop",
+      },
+      {
+        id: "cafe",
+        title: "Player Cafe",
+        description: "Coffee, isotonic drinks & light bites",
+        icon: "cafe",
+      },
+      {
+        id: "parking",
+        title: "Free Valet Parking",
+        description: "Valet drop-off at the arena entrance",
+        icon: "parking",
+      },
+      {
+        id: "ac",
+        title: "Indoor Climate Court",
+        description: "Air-conditioned comfort courtside",
+        icon: "ac",
+      },
     ],
     operatingHoursBadge: "Live Streaming On Every Court",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "08:00 - 23:00", note: "Peak: 18:00 - 22:00" },
-      { days: "Friday", hours: "08:00 - 23:00", note: "Night League From 19:00" },
-      { days: "Saturday", hours: "08:00 - 23:00", note: "Tournament Days", isHighlighted: true },
-      { days: "Sunday", hours: "08:00 - 23:00", note: "Open Run 08:00 - 12:00" },
+      {
+        days: "Mon - Thu",
+        hours: "08:00 - 23:00",
+        note: "Peak: 18:00 - 22:00",
+      },
+      {
+        days: "Friday",
+        hours: "08:00 - 23:00",
+        note: "Night League From 19:00",
+      },
+      {
+        days: "Saturday",
+        hours: "08:00 - 23:00",
+        note: "Tournament Days",
+        isHighlighted: true,
+      },
+      {
+        days: "Sunday",
+        hours: "08:00 - 23:00",
+        note: "Open Run 08:00 - 12:00",
+      },
     ],
     pricePerHour: 320000,
     disciplines: [
@@ -984,19 +1348,62 @@ export const venueDetails: VenueDetail[] = [
       "Racket Rental",
     ],
     amenities: [
-      { id: "courts", title: "3 Clay Courts", description: "ITF certified acrylic topcoat surface", icon: "court" },
-      { id: "rental", title: "Racket & Ball Rental", description: "Demo rackets, balls & stringing", icon: "rental" },
-      { id: "cafe", title: "Drinks Kiosk", description: "Cold drinks, coffee & quick snacks", icon: "cafe" },
-      { id: "shower", title: "Changing Room & Showers", description: "Hot water showers after long rallies", icon: "shower" },
-      { id: "parking", title: "Free Parking", description: "On-site parking for players", icon: "parking" },
-      { id: "shop", title: "Ball Boy Service", description: "Ball retrieval during afternoon sessions", icon: "shop" },
+      {
+        id: "courts",
+        title: "3 Clay Courts",
+        description: "ITF certified acrylic topcoat surface",
+        icon: "court",
+      },
+      {
+        id: "rental",
+        title: "Racket & Ball Rental",
+        description: "Demo rackets, balls & stringing",
+        icon: "rental",
+      },
+      {
+        id: "cafe",
+        title: "Drinks Kiosk",
+        description: "Cold drinks, coffee & quick snacks",
+        icon: "cafe",
+      },
+      {
+        id: "shower",
+        title: "Changing Room & Showers",
+        description: "Hot water showers after long rallies",
+        icon: "shower",
+      },
+      {
+        id: "parking",
+        title: "Free Parking",
+        description: "On-site parking for players",
+        icon: "parking",
+      },
+      {
+        id: "shop",
+        title: "Ball Boy Service",
+        description: "Ball retrieval during afternoon sessions",
+        icon: "shop",
+      },
     ],
     operatingHoursBadge: "Night Lighting Till 22:00",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "06:00 - 22:00", note: "Peak: 16:00 - 20:00" },
+      {
+        days: "Mon - Thu",
+        hours: "06:00 - 22:00",
+        note: "Peak: 16:00 - 20:00",
+      },
       { days: "Friday", hours: "06:00 - 22:00", note: "Evening Rally Session" },
-      { days: "Saturday", hours: "06:00 - 22:00", note: "Club Tournament Days", isHighlighted: true },
-      { days: "Sunday", hours: "06:00 - 22:00", note: "Morning Coaching 07:00" },
+      {
+        days: "Saturday",
+        hours: "06:00 - 22:00",
+        note: "Club Tournament Days",
+        isHighlighted: true,
+      },
+      {
+        days: "Sunday",
+        hours: "06:00 - 22:00",
+        note: "Morning Coaching 07:00",
+      },
     ],
     pricePerHour: 180000,
     disciplines: [
@@ -1059,19 +1466,66 @@ export const venueDetails: VenueDetail[] = [
       "Team Photo Booth",
     ],
     amenities: [
-      { id: "courts", title: "2 Indoor Courts", description: "FIVB air pressure flooring", icon: "court" },
-      { id: "cafe", title: "Hydration Bar", description: "Isotonic drinks, protein & snacks", icon: "cafe" },
-      { id: "shop", title: "Digital Lockers", description: "Keyless storage for team gear", icon: "shop" },
-      { id: "shower", title: "Hot Shower", description: "Hot water & clean changing rooms", icon: "shower" },
-      { id: "video", title: "Team Photo Booth", description: "Instant team photos & highlight clips", icon: "video" },
-      { id: "rental", title: "Referee & Gear Service", description: "Match balls, whistles & bibs", icon: "rental" },
+      {
+        id: "courts",
+        title: "2 Indoor Courts",
+        description: "FIVB air pressure flooring",
+        icon: "court",
+      },
+      {
+        id: "cafe",
+        title: "Hydration Bar",
+        description: "Isotonic drinks, protein & snacks",
+        icon: "cafe",
+      },
+      {
+        id: "shop",
+        title: "Digital Lockers",
+        description: "Keyless storage for team gear",
+        icon: "shop",
+      },
+      {
+        id: "shower",
+        title: "Hot Shower",
+        description: "Hot water & clean changing rooms",
+        icon: "shower",
+      },
+      {
+        id: "video",
+        title: "Team Photo Booth",
+        description: "Instant team photos & highlight clips",
+        icon: "video",
+      },
+      {
+        id: "rental",
+        title: "Referee & Gear Service",
+        description: "Match balls, whistles & bibs",
+        icon: "rental",
+      },
     ],
     operatingHoursBadge: "FIVB Indoor Certified",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "07:00 - 22:00", note: "Peak: 18:00 - 21:00" },
-      { days: "Friday", hours: "07:00 - 22:00", note: "Corporate Volley Night" },
-      { days: "Saturday", hours: "07:00 - 22:00", note: "Weekend Tournament Slots", isHighlighted: true },
-      { days: "Sunday", hours: "07:00 - 22:00", note: "Open Play 08:00 - 12:00" },
+      {
+        days: "Mon - Thu",
+        hours: "07:00 - 22:00",
+        note: "Peak: 18:00 - 21:00",
+      },
+      {
+        days: "Friday",
+        hours: "07:00 - 22:00",
+        note: "Corporate Volley Night",
+      },
+      {
+        days: "Saturday",
+        hours: "07:00 - 22:00",
+        note: "Weekend Tournament Slots",
+        isHighlighted: true,
+      },
+      {
+        days: "Sunday",
+        hours: "07:00 - 22:00",
+        note: "Open Play 08:00 - 12:00",
+      },
     ],
     pricePerHour: 210000,
     disciplines: [
@@ -1128,18 +1582,57 @@ export const venueDetails: VenueDetail[] = [
       "Beverage Menu",
     ],
     amenities: [
-      { id: "courts", title: "12 ITTF Tables", description: "25mm tabletop with acoustic zones", icon: "court" },
-      { id: "rental", title: "Coaching Corner", description: "Sessions with professional players", icon: "rental" },
-      { id: "ac", title: "Air Conditioned Lounge", description: "Cool play across all table zones", icon: "ac" },
-      { id: "cafe", title: "Beverage Menu", description: "Coffee, tea & cold drinks all day", icon: "cafe" },
-      { id: "parking", title: "Free Parking", description: "On-site parking for players", icon: "parking" },
-      { id: "shop", title: "Gear Desk", description: "Bats, rubbers & balls for sale", icon: "shop" },
+      {
+        id: "courts",
+        title: "12 ITTF Tables",
+        description: "25mm tabletop with acoustic zones",
+        icon: "court",
+      },
+      {
+        id: "rental",
+        title: "Coaching Corner",
+        description: "Sessions with professional players",
+        icon: "rental",
+      },
+      {
+        id: "ac",
+        title: "Air Conditioned Lounge",
+        description: "Cool play across all table zones",
+        icon: "ac",
+      },
+      {
+        id: "cafe",
+        title: "Beverage Menu",
+        description: "Coffee, tea & cold drinks all day",
+        icon: "cafe",
+      },
+      {
+        id: "parking",
+        title: "Free Parking",
+        description: "On-site parking for players",
+        icon: "parking",
+      },
+      {
+        id: "shop",
+        title: "Gear Desk",
+        description: "Bats, rubbers & balls for sale",
+        icon: "shop",
+      },
     ],
     operatingHoursBadge: "Coaching Available Daily",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "10:00 - 23:00", note: "Peak: 17:00 - 22:00" },
+      {
+        days: "Mon - Thu",
+        hours: "10:00 - 23:00",
+        note: "Peak: 17:00 - 22:00",
+      },
       { days: "Friday", hours: "10:00 - 23:00", note: "After-Work Leagues" },
-      { days: "Saturday", hours: "10:00 - 23:00", note: "Weekend Tournament", isHighlighted: true },
+      {
+        days: "Saturday",
+        hours: "10:00 - 23:00",
+        note: "Weekend Tournament",
+        isHighlighted: true,
+      },
       { days: "Sunday", hours: "10:00 - 23:00", note: "Family Session 10:00" },
     ],
     pricePerHour: 65000,
@@ -1197,18 +1690,61 @@ export const venueDetails: VenueDetail[] = [
     ],
     facilities: ["Shoe Rental", "Spa & Shower", "Smart Locker", "Health Bar"],
     amenities: [
-      { id: "courts", title: "2 Pro Glass Courts", description: "Kill point flooring & kinetic wall", icon: "court" },
-      { id: "rental", title: "Shoe Rental", description: "Court shoes in all sizes at reception", icon: "rental" },
-      { id: "shower", title: "Spa & Shower", description: "Spa facilities with hot water showers", icon: "shower" },
-      { id: "shop", title: "Smart Lockers", description: "Keyless storage with phone alerts", icon: "shop" },
-      { id: "cafe", title: "Health Bar", description: "Cold-pressed juice & protein bowls", icon: "cafe" },
-      { id: "ac", title: "Climate Controlled Court", description: "Air-conditioned glass box courts", icon: "ac" },
+      {
+        id: "courts",
+        title: "2 Pro Glass Courts",
+        description: "Kill point flooring & kinetic wall",
+        icon: "court",
+      },
+      {
+        id: "rental",
+        title: "Shoe Rental",
+        description: "Court shoes in all sizes at reception",
+        icon: "rental",
+      },
+      {
+        id: "shower",
+        title: "Spa & Shower",
+        description: "Spa facilities with hot water showers",
+        icon: "shower",
+      },
+      {
+        id: "shop",
+        title: "Smart Lockers",
+        description: "Keyless storage with phone alerts",
+        icon: "shop",
+      },
+      {
+        id: "cafe",
+        title: "Health Bar",
+        description: "Cold-pressed juice & protein bowls",
+        icon: "cafe",
+      },
+      {
+        id: "ac",
+        title: "Climate Controlled Court",
+        description: "Air-conditioned glass box courts",
+        icon: "ac",
+      },
     ],
     operatingHoursBadge: "Pro Glass Box Courts",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "06:00 - 22:00", note: "Peak: 17:00 - 21:00" },
-      { days: "Friday", hours: "06:00 - 22:00", note: "After-Work Squash 18:00" },
-      { days: "Saturday", hours: "06:00 - 22:00", note: "Club Championship", isHighlighted: true },
+      {
+        days: "Mon - Thu",
+        hours: "06:00 - 22:00",
+        note: "Peak: 17:00 - 21:00",
+      },
+      {
+        days: "Friday",
+        hours: "06:00 - 22:00",
+        note: "After-Work Squash 18:00",
+      },
+      {
+        days: "Saturday",
+        hours: "06:00 - 22:00",
+        note: "Club Championship",
+        isHighlighted: true,
+      },
       { days: "Sunday", hours: "06:00 - 22:00", note: "Beginner Clinic 08:00" },
     ],
     pricePerHour: 145000,
@@ -1266,19 +1802,66 @@ export const venueDetails: VenueDetail[] = [
     ],
     facilities: ["Digital Scoreboard", "Free Valet", "Canteen", "Team Locker"],
     amenities: [
-      { id: "pitches", title: "4 Standard 5v5 Pitches", description: "FIFA quality synthetic turf", icon: "futsal" },
-      { id: "video", title: "Digital Scoreboard", description: "Live score & timer on every pitch", icon: "video" },
-      { id: "ac", title: "Full Air Circulation", description: "Fresh air flow across all pitches", icon: "ac" },
-      { id: "cafe", title: "Canteen", description: "Meals, isotonic drinks & snacks", icon: "cafe" },
-      { id: "shop", title: "Team Lockers", description: "Dedicated locker space per team", icon: "shop" },
-      { id: "parking", title: "Free Valet Parking", description: "Valet drop-off at the entrance", icon: "parking" },
+      {
+        id: "pitches",
+        title: "4 Standard 5v5 Pitches",
+        description: "FIFA quality synthetic turf",
+        icon: "futsal",
+      },
+      {
+        id: "video",
+        title: "Digital Scoreboard",
+        description: "Live score & timer on every pitch",
+        icon: "video",
+      },
+      {
+        id: "ac",
+        title: "Full Air Circulation",
+        description: "Fresh air flow across all pitches",
+        icon: "ac",
+      },
+      {
+        id: "cafe",
+        title: "Canteen",
+        description: "Meals, isotonic drinks & snacks",
+        icon: "cafe",
+      },
+      {
+        id: "shop",
+        title: "Team Lockers",
+        description: "Dedicated locker space per team",
+        icon: "shop",
+      },
+      {
+        id: "parking",
+        title: "Free Valet Parking",
+        description: "Valet drop-off at the entrance",
+        icon: "parking",
+      },
     ],
     operatingHoursBadge: "FIFA Quality Turf",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "07:00 - 23:00", note: "Peak: 18:00 - 22:00" },
-      { days: "Friday", hours: "07:00 - 23:00", note: "Corporate League Night" },
-      { days: "Saturday", hours: "07:00 - 23:00", note: "Weekend Tournament", isHighlighted: true },
-      { days: "Sunday", hours: "07:00 - 23:00", note: "Kids Futsal Clinic 09:00" },
+      {
+        days: "Mon - Thu",
+        hours: "07:00 - 23:00",
+        note: "Peak: 18:00 - 22:00",
+      },
+      {
+        days: "Friday",
+        hours: "07:00 - 23:00",
+        note: "Corporate League Night",
+      },
+      {
+        days: "Saturday",
+        hours: "07:00 - 23:00",
+        note: "Weekend Tournament",
+        isHighlighted: true,
+      },
+      {
+        days: "Sunday",
+        hours: "07:00 - 23:00",
+        note: "Kids Futsal Clinic 09:00",
+      },
     ],
     pricePerHour: 165000,
     disciplines: [
@@ -1336,18 +1919,57 @@ export const venueDetails: VenueDetail[] = [
       "Free Parking",
     ],
     amenities: [
-      { id: "courts", title: "5 Retractable Roof Courts", description: "Mondo Supercourt turf under smart roof", icon: "court" },
-      { id: "rental", title: "Racket Rental", description: "Demo rackets, balls & overgrips", icon: "rental" },
-      { id: "cafe", title: "Cafe & Lounge", description: "Coffee, cold drinks & comfortable seating", icon: "cafe" },
-      { id: "shower", title: "Hot Shower", description: "Hot water & clean changing rooms", icon: "shower" },
-      { id: "parking", title: "Free Parking", description: "On-site parking for players", icon: "parking" },
-      { id: "ac", title: "All-Weather Play", description: "Roof opens on clear days, covered when wet", icon: "ac" },
+      {
+        id: "courts",
+        title: "5 Retractable Roof Courts",
+        description: "Mondo Supercourt turf under smart roof",
+        icon: "court",
+      },
+      {
+        id: "rental",
+        title: "Racket Rental",
+        description: "Demo rackets, balls & overgrips",
+        icon: "rental",
+      },
+      {
+        id: "cafe",
+        title: "Cafe & Lounge",
+        description: "Coffee, cold drinks & comfortable seating",
+        icon: "cafe",
+      },
+      {
+        id: "shower",
+        title: "Hot Shower",
+        description: "Hot water & clean changing rooms",
+        icon: "shower",
+      },
+      {
+        id: "parking",
+        title: "Free Parking",
+        description: "On-site parking for players",
+        icon: "parking",
+      },
+      {
+        id: "ac",
+        title: "All-Weather Play",
+        description: "Roof opens on clear days, covered when wet",
+        icon: "ac",
+      },
     ],
     operatingHoursBadge: "Retractable Roof Courts",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "06:30 - 23:00", note: "Peak: 17:00 - 22:00" },
+      {
+        days: "Mon - Thu",
+        hours: "06:30 - 23:00",
+        note: "Peak: 17:00 - 22:00",
+      },
       { days: "Friday", hours: "06:30 - 23:00", note: "Social Padel Night" },
-      { days: "Saturday", hours: "06:30 - 23:00", note: "Tournament Days", isHighlighted: true },
+      {
+        days: "Saturday",
+        hours: "06:30 - 23:00",
+        note: "Tournament Days",
+        isHighlighted: true,
+      },
       { days: "Sunday", hours: "06:30 - 23:00", note: "Morning Ladder 07:00" },
     ],
     pricePerHour: 235000,
@@ -1410,19 +2032,66 @@ export const venueDetails: VenueDetail[] = [
       "Hot Shower",
     ],
     amenities: [
-      { id: "pitches", title: "2 Indoor Pitches", description: "Gerflor Taraflex Vinyl 7.5mm surface", icon: "futsal" },
-      { id: "ac", title: "Recirculating AC", description: "Cool air circulating across both pitches", icon: "ac" },
-      { id: "cafe", title: "Hydration Lounge", description: "Isotonic drinks, coffee & light meals", icon: "cafe" },
-      { id: "shop", title: "Digital Lockers", description: "Keyless storage for bags & boots", icon: "shop" },
-      { id: "shower", title: "Hot Shower", description: "Hot water & clean changing rooms", icon: "shower" },
-      { id: "parking", title: "Parking (40 slots)", description: "Free parking right next to the pitch", icon: "parking" },
+      {
+        id: "pitches",
+        title: "2 Indoor Pitches",
+        description: "Gerflor Taraflex Vinyl 7.5mm surface",
+        icon: "futsal",
+      },
+      {
+        id: "ac",
+        title: "Recirculating AC",
+        description: "Cool air circulating across both pitches",
+        icon: "ac",
+      },
+      {
+        id: "cafe",
+        title: "Hydration Lounge",
+        description: "Isotonic drinks, coffee & light meals",
+        icon: "cafe",
+      },
+      {
+        id: "shop",
+        title: "Digital Lockers",
+        description: "Keyless storage for bags & boots",
+        icon: "shop",
+      },
+      {
+        id: "shower",
+        title: "Hot Shower",
+        description: "Hot water & clean changing rooms",
+        icon: "shower",
+      },
+      {
+        id: "parking",
+        title: "Parking (40 slots)",
+        description: "Free parking right next to the pitch",
+        icon: "parking",
+      },
     ],
     operatingHoursBadge: "Recirculating AC Indoor",
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "07:00 - 22:00", note: "Peak: 18:00 - 21:00" },
-      { days: "Friday", hours: "07:00 - 22:00", note: "Corporate League Night" },
-      { days: "Saturday", hours: "07:00 - 22:00", note: "Weekend Tournament", isHighlighted: true },
-      { days: "Sunday", hours: "07:00 - 22:00", note: "Open Play 08:00 - 12:00" },
+      {
+        days: "Mon - Thu",
+        hours: "07:00 - 22:00",
+        note: "Peak: 18:00 - 21:00",
+      },
+      {
+        days: "Friday",
+        hours: "07:00 - 22:00",
+        note: "Corporate League Night",
+      },
+      {
+        days: "Saturday",
+        hours: "07:00 - 22:00",
+        note: "Weekend Tournament",
+        isHighlighted: true,
+      },
+      {
+        days: "Sunday",
+        hours: "07:00 - 22:00",
+        note: "Open Play 08:00 - 12:00",
+      },
     ],
     pricePerHour: 140000,
     disciplines: [
