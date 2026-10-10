@@ -10,7 +10,12 @@ export function VenueHeader({ venue }: { venue: VenueDetail }) {
   //                    menerima kiriman dari page.tsx
   return (
     <div className="flex flex-col gap-3 py-4">
-      <VenueBreadcrumb items={venue.breadcrumb} />
+      <VenueBreadcrumb
+        items={venue.breadcrumb.map((label, i) => ({
+          label,
+          href: i === 0 ? "/venues" : undefined,
+        }))}
+      />
       {/* venue.breadcrumb di sini diteruskan lagi ke komponen anak */}
 
       <div className="flex flex-wrap items-start justify-between gap-4">
