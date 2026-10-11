@@ -61,19 +61,6 @@ export type CourtOption = {
   slots: { time: string; booked?: boolean }[];
 };
 
-export type courtInfo = {
-  id: string;
-  label: string;
-  imageIndex?: number;
-  image?: string;
-  badge: string;
-  specs?: string[];
-  features?: string[];
-  maxPlayers?: number;
-  pricePerHour: number;
-  isOperational?: boolean;
-};
-
 export type VenueDetail = {
   slug: string;
   name: string;

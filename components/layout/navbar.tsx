@@ -4,7 +4,7 @@ import { BellIcon } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Container } from "@/components/layout/container";
-import { cn } from "cn";
+import { cn } from "@/lib/utils";
 
 const links = [
   { title: "Home", href: "/" },

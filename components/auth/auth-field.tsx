@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Label } from "@/components/ui/label";
-import { cn } from "cn";
+import { cn } from "@/lib/utils";
 
 export const authInputClass =
   "h-11 rounded-lg bg-slate-50 px-3.5 shadow-none transition hover:bg-slate-100 focus-visible:border-emerald-600 focus-visible:ring-3 focus-visible:ring-emerald-600/20 dark:bg-input/20 dark:hover:bg-input/30";

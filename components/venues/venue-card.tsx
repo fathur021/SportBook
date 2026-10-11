@@ -19,6 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatRupiah } from "@/lib/format-rupiah";
 import type { FacilityKey, Venue } from "@/lib/listings";
 
 const facilityMap: Record<FacilityKey, { label: string; icon: LucideIcon }> = {
@@ -33,12 +34,6 @@ const facilityMap: Record<FacilityKey, { label: string; icon: LucideIcon }> = {
   "ball-rental": { label: "Ball Rental", icon: Package },
   "sound-system": { label: "Sound System", icon: Speaker },
 };
-
-const rupiah = new Intl.NumberFormat("id-ID", {
-  style: "currency",
-  currency: "IDR",
-  maximumFractionDigits: 0,
-});
 
 export function VenueCard({ venue }: { venue: Venue }) {
   return (
@@ -95,7 +90,7 @@ export function VenueCard({ venue }: { venue: Venue }) {
           <div>
             <p className="text-[10px] text-muted-foreground">Starts from</p>
             <p className="text-base font-bold">
-              {rupiah.format(venue.pricePerHour)}
+              {formatRupiah(venue.pricePerHour)}
               <span className="text-xs font-normal text-muted-foreground">
                 /hr
               </span>

@@ -16,7 +16,7 @@ import { VenueBookingWidget } from "@/components/venues/venue-booking-widget";
 // Mengimpor komponen Facilities & Amenities yang baru saja dibuat
 import { VenueAmenities } from "@/components/venues/venue-amenities";
 import { VenueOperatingHours } from "@/components/venues/venue-operating-hours";
-import { AvailabelCourt } from "@/components/courts/available-court";
+import { AvailableCourt } from "@/components/courts/available-court";
 
 // Halaman utama detail venue (Server Component async karena membaca params dari URL)
 const page = async (props: PageProps<"/venues/[slug]">) => {
@@ -59,7 +59,7 @@ const page = async (props: PageProps<"/venues/[slug]">) => {
             badge={venue.operatingHoursBadge}
             schedules={venue.operatingSchedules}
           />
-          <AvailabelCourt
+          <AvailableCourt
             disciplines={venue.disciplines}
             basePricePerHour={venue.pricePerHour}
             images={venue.images}

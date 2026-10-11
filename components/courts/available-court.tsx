@@ -1,24 +1,25 @@
+// Daftar lapangan per disiplin olahraga beserta spesifikasi & harga.
+
 import Image from "next/image";
+import { BadgeCheck, CircleAlert, ImageIcon, Users } from "lucide-react";
 
 import { formatRupiah } from "@/lib/format-rupiah";
 import type { GalleryImage, SportDiscipline } from "@/lib/venue-detail";
-import { cn } from "cn";
-import { BadgeCheck, CircleAlert, ImageIcon, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-interface VenueCourtsProps {
+interface AvailableCourtProps {
   disciplines: SportDiscipline[];
   basePricePerHour: number;
   images: GalleryImage[]; // galeri venue, dipakai untuk foto court via imageIndex
 }
 
-export function AvailabelCourt({
+export function AvailableCourt({
   disciplines,
   basePricePerHour,
   images,
-}: VenueCourtsProps) {
+}: AvailableCourtProps) {
   return (
     <section className="space-y-6 rounded-xl border border-slate-200/80 bg-white p-6 shadow-xs">
-      {/* Header */}
       <div className="space-y-1">
         <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
           Direct booking selection
@@ -42,8 +43,6 @@ export function AvailabelCourt({
               {discipline.courts.map((court) => {
                 const price = court.pricePerHour ?? basePricePerHour;
                 const isClosed = court.isOperational === false;
-                // Foto court: foto sendiri kalau ada (court.image),
-                // kalau tidak pakai galeri venue lewat imageIndex (default 0)
                 const courtImage =
                   court.image ??
                   images[court.imageIndex ?? 0]?.src ??
@@ -54,10 +53,9 @@ export function AvailabelCourt({
                     key={court.id}
                     className={cn(
                       "flex flex-col gap-4 rounded-xl border border-slate-100 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:flex-row sm:items-stretch sm:justify-between sm:p-5",
-                      isClosed && "opacity-70"
+                      isClosed && "opacity-70",
                     )}
                   >
-                    {/* Photo court (kiri) */}
                     <div className="relative h-44 w-full shrink-0 overflow-hidden rounded-lg bg-slate-100 sm:h-auto sm:w-40">
                       {courtImage ? (
                         <Image
@@ -68,14 +66,12 @@ export function AvailabelCourt({
                           className="object-cover"
                         />
                       ) : (
-                        // Fallback kalau venue belum punya foto/court image
                         <div className="flex h-full w-full items-center justify-center">
                           <ImageIcon className="size-6 text-slate-300" />
                         </div>
                       )}
                     </div>
 
-                    {/* Left: name, badge, specs, features */}
                     <div className="min-w-0 flex-1 space-y-3">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-base font-bold text-slate-900">
@@ -91,7 +87,10 @@ export function AvailabelCourt({
                       {court.specs && court.specs.length > 0 && (
                         <p className="flex flex-wrap items-center gap-x-2 text-xs text-slate-500">
                           {court.specs.map((spec, i) => (
-                            <span key={spec} className="flex items-center gap-2">
+                            <span
+                              key={spec}
+                              className="flex items-center gap-2"
+                            >
                               {i > 0 && (
                                 <span className="size-1 rounded-full bg-slate-300" />
                               )}
@@ -115,7 +114,6 @@ export function AvailabelCourt({
                       )}
                     </div>
 
-                    {/* Right: price, players, status */}
                     <div className="flex items-end justify-between gap-3 border-t border-slate-100 pt-3 sm:min-w-[170px] sm:flex-col sm:items-end sm:border-l sm:border-t-0 sm:pl-5 sm:pt-0">
                       <div className="space-y-1.5 sm:text-right">
                         <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700">
@@ -140,7 +138,7 @@ export function AvailabelCourt({
                           "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold",
                           isClosed
                             ? "bg-rose-50 text-rose-700"
-                            : "bg-emerald-50 text-emerald-700"
+                            : "bg-emerald-50 text-emerald-700",
                         )}
                       >
                         {isClosed ? (

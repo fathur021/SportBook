@@ -6,7 +6,7 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { authInputClass } from "@/components/auth/auth-field";
-import { cn } from "cn";
+import { cn } from "@/lib/utils";
 
 function PasswordInput({
   className,

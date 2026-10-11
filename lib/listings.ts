@@ -3,7 +3,6 @@
 //
 // • venueListings   → explore page (card list + filter)
 // • popularVenues   → homepage "Popular Venues Near You"
-// • getVenueBySlug  → lookup venue berdasarkan slug
 // ---------------------------------------------------------------------------
 
 // ----- Tipe utama untuk explore page (listing card) ----- //
@@ -288,13 +287,3 @@ export const popularVenues: Venue[] = [
     pricePerHour: 250000,
   },
 ];
-
-// ---------------------------------------------------------------------------
-// Helper: cari venue berdasarkan slug di kedua koleksi
-// ---------------------------------------------------------------------------
-export function getVenueBySlug(slug: string) {
-  return (
-    venueListings.find((v) => v.slug === slug) ??
-    popularVenues.find((v) => v.slug === slug)
-  );
-}

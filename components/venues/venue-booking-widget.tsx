@@ -1,8 +1,12 @@
-"use client"; // wajib, karena komponen ini pakai useState (interaktif)
+// Widget booking di sidebar halaman venue: pilih disiplin, lapangan, tanggal,
+// durasi & jam, lalu hitung harga sesi dan arahkan ke halaman /book.
+
+"use client";
 
 import { useMemo, useState } from "react";
-import { MessageCircle, Shield, Star, Zap } from "lucide-react";
 import Link from "next/link";
+import { MessageCircle, Shield, Star, Zap } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -11,13 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { SportDiscipline, TimeSlotPrice } from "@/lib/venue-detail";
-import type { TimeSlotOption } from "@/lib/time-slots";
 import { formatRupiah } from "@/lib/format-rupiah";
+import type { TimeSlotOption } from "@/lib/time-slots";
+import type { SportDiscipline, TimeSlotPrice } from "@/lib/venue-detail";
 import { cn } from "@/lib/utils";
 
-// Data 4 tombol tanggal, statis (tidak berubah), jadi ditaruh di luar
-// komponen supaya tidak dibuat ulang tiap kali komponen ini render
+// Data tombol tanggal statis, ditaruh di luar komponen agar tidak dibuat ulang
+// setiap render.
 const DATES = [
   { label: "TODAY", day: "24" },
   { label: "FRI", day: "25" },
@@ -25,7 +29,6 @@ const DATES = [
   { label: "SUN", day: "27" },
 ];
 
-// Bentuk props yang diterima komponen ini dari page.tsx
 interface VenueBookingWidgetProps {
   rating: number;
   reviewCount: number;
@@ -51,62 +54,43 @@ export function VenueBookingWidget({
   conciergeName,
   venueSlug,
 }: VenueBookingWidgetProps) {
-  // ===== STATE =====
-
-  // Olahraga yang sedang dipilih, default-nya olahraga pertama di data
   const [sportSlug, setSportSlug] = useState(disciplines[0].slug);
-
-  // Cari data lengkap olahraga yang sedang aktif (bukan state, dihitung
-  // ulang tiap render dari sportSlug)
   const activeSport =
     disciplines.find((d) => d.slug === sportSlug) ?? disciplines[0];
 
-  const [courtId, setCourtId] = useState(activeSport.courts[0].id); // lapangan yang dipilih
-  const [dateIndex, setDateIndex] = useState(0); // index tombol tanggal aktif, 0 = "TODAY"
+  const [courtId, setCourtId] = useState(activeSport.courts[0].id);
+  const [dateIndex, setDateIndex] = useState(0);
   const [duration, setDuration] = useState(
-    sessionDurations[1] ?? sessionDurations[0], // default durasi ke-2, fallback ke-1
+    sessionDurations[1] ?? sessionDurations[0],
   );
   const [selectedSlot, setSelectedSlot] = useState(
-    popularSlots[1]?.time ?? popularSlots[0]?.time ?? "", // default slot ke-2
+    popularSlots[1]?.time ?? popularSlots[0]?.time ?? "",
+  );
+  const [selectedTime, setSelectedTime] = useState(
+    timeSlots.find((t) => !t.booked)?.time ?? "",
   );
 
-  // ===== PERHITUNGAN HARGA =====
   const activeCourt =
     activeSport.courts.find((c) => c.id === courtId) ?? activeSport.courts[0];
-
-  const [selectedTime, setSelectedTime] = useState(
-    timeSlots.find((t) => !t.booked)?.time ?? "", // default jam pertama yang tersedia
-  );
-
   const hourlyPrice = activeCourt?.pricePerHour ?? basePricePerHour;
 
-  // Ambil angka dari teks durasi, misal "1.5 Hours" -> 1.5
-  // "|| 1" jaga-jaga kalau hasilnya NaN, dianggap 1 jam
+  // "1.5 Hours" -> 1.5 ("|| 1" untuk nilai NaN dianggap 1 jam)
   const durationHours = parseFloat(duration) || 1;
-
-  // Hitung total harga sesi. useMemo "mengingat" hasilnya, cuma dihitung
-  // ulang kalau basePricePerHour atau durationHours berubah
   const sessionPrice = useMemo(
     () => Math.round(hourlyPrice * durationHours),
     [hourlyPrice, durationHours],
   );
 
-  // ===== HANDLER =====
-
-  // Dipanggil saat tombol olahraga (Padel/Futsal) diklik
-  function handleSportChange(slug: string) {
+  const handleSportChange = (slug: string) => {
     setSportSlug(slug);
-    // Reset pilihan lapangan ke lapangan pertama olahraga yang baru dipilih
     const nextSport = disciplines.find((d) => d.slug === slug);
     if (nextSport) {
       setCourtId(nextSport.courts[0].id);
     }
-  }
+  };
 
-  // ===== TAMPILAN =====
   return (
     <aside className="flex w-full flex-col gap-4 rounded-xl border border-slate-200/80 bg-white p-6 shadow-xs">
-      {/* Harga mulai dari + rating */}
       <div className="flex items-start justify-between">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -129,7 +113,6 @@ export function VenueBookingWidget({
         </span>
       </div>
 
-      {/* Tab pilihan olahraga */}
       <div className="space-y-1.5">
         <p className="text-xs font-semibold">Sport Discipline</p>
         <div className="grid grid-cols-2 gap-2">
@@ -140,7 +123,7 @@ export function VenueBookingWidget({
               onClick={() => handleSportChange(d.slug)}
               className={cn(
                 "rounded-lg px-3 py-2 text-xs font-medium transition",
-                sportSlug === d.slug // highlight tombol yang aktif
+                sportSlug === d.slug
                   ? "bg-slate-900 text-white"
                   : "bg-slate-50 text-slate-600 hover:bg-slate-100",
               )}
@@ -151,7 +134,6 @@ export function VenueBookingWidget({
         </div>
       </div>
 
-      {/* Dropdown pilih lapangan, isinya ikut berubah sesuai olahraga aktif */}
       <div className="space-y-1.5">
         <p className="text-xs font-semibold">Court Selection</p>
         <Select value={courtId} onValueChange={(v) => setCourtId(v ?? "")}>
@@ -159,7 +141,6 @@ export function VenueBookingWidget({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {/* activeSport.courts, bukan semua lapangan */}
             {activeSport.courts.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 <span className="flex items-center justify-between gap-3">
@@ -174,7 +155,6 @@ export function VenueBookingWidget({
         </Select>
       </div>
 
-      {/* 4 tombol tanggal */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold">Select Session Date</p>
@@ -203,7 +183,6 @@ export function VenueBookingWidget({
         </div>
       </div>
 
-      {/* Dropdown durasi + dropdown pilihan waktu dari data timeSlots */}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1.5">
           <p className="text-xs font-semibold">Session Duration</p>
@@ -230,15 +209,13 @@ export function VenueBookingWidget({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {/* booked -> disabled + teks merah coret, tak bisa dipilih */}
               {timeSlots.map((t) => (
                 <SelectItem
                   key={t.time}
                   value={t.time}
                   disabled={t.booked}
                   className={cn(
-                    t.booked &&
-                      "text-red-400 line-through data-disabled:opacity-100",
+                    t.booked && "text-red-400 line-through data-disabled:opacity-100",
                   )}
                 >
                   {t.time}
@@ -249,7 +226,6 @@ export function VenueBookingWidget({
         </div>
       </div>
 
-      {/* 3 tombol slot jam populer */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold">Popular Slots Tonight</p>
@@ -266,7 +242,6 @@ export function VenueBookingWidget({
                 type="button"
                 onClick={() => {
                   setSelectedSlot(slot.time);
-                  // Sinkronkan dropdown Select Time (kalau jamnya tersedia)
                   const match = timeSlots.find(
                     (t) => t.time.startsWith(slot.time) && !t.booked,
                   );
@@ -293,7 +268,6 @@ export function VenueBookingWidget({
         </span>
       </div>
 
-      {/* Rincian harga, otomatis berubah mengikuti "duration" */}
       <div className="space-y-1.5 border-t pt-3 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">
@@ -336,7 +310,6 @@ export function VenueBookingWidget({
         <span>12h Free Cancellation</span>
       </div>
 
-      {/* Kotak concierge di paling bawah */}
       <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2.5">
         <span className="flex items-center gap-2 text-xs">
           <MessageCircle className="size-4 text-emerald-700" />
