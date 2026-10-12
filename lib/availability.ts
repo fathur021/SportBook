@@ -7,9 +7,10 @@ import {
 const SLOT_PATTERN = [4, 6, 7, 5, 2, 1, 3, 0]; // 0 = penuh
 
 export async function getCourtAvailability(
-  courtId: string
+  _courtId: string
 ): Promise<AvailabilityByDate> {
-  // TODO: ganti dengan query database / fetch ke backend berdasarkan courtId
+  // TODO: ganti dengan query database / fetch ke backend berdasarkan _courtId
+  void _courtId;
   const now = new Date();
   const result: AvailabilityByDate = {};
 

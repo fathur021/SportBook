@@ -22,14 +22,16 @@ const startOfWeekMonday = (date: Date) => addDays(date, -((date.getDay() + 6) % 
 type Props = {
   availability: AvailabilityByDate;
   selectedSlotsCount?: number;
+  value: string | null; // "YYYY-MM-DD"
+  onValueChange: (date: string) => void;
 };
 
 export function ReservationDatePicker({
   availability,
   selectedSlotsCount = 0,
+  value,
+  onValueChange,
 }: Props) {
-  const [value, setValue] = useState<string | null>(null); // "YYYY-MM-DD"
-
   const today = useMemo(() => addDays(new Date(), 0), []);
   const maxDate = addDays(today, MAX_DAYS_AHEAD);
 
@@ -101,7 +103,7 @@ export function ReservationDatePicker({
               type="button"
               disabled={disabled}
               aria-pressed={selected}
-              onClick={() => setValue(key)}
+              onClick={() => onValueChange(key)}
               className={cn(
                 "relative flex flex-col items-center gap-1 rounded-xl px-2 py-4 text-center transition",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600",

@@ -1,8 +1,10 @@
 import { Container } from "@/components/layout/container";
 import { VenueBreadcrumb } from "@/components/venues/venue-breadcrumb";
 import { BookingHeader } from "@/components/booking/booking-header";
-import { ReservationDatePicker } from "@/components/booking/reservation-date-picker";
+import { BookingForm } from "@/components/booking/booking-form";
 import { getCourtAvailability } from "@/lib/availability";
+import { getVenueEquipment } from "@/lib/equipment";
+import { getTimeSlots } from "@/lib/time-slots";
 import { getVenueDetail } from "@/lib/venue-detail";
 import { notFound } from "next/navigation";
 
@@ -22,6 +24,7 @@ const BookPage = async ({ params, searchParams }: BookPageProps) => {
   if (!discipline || !court) notFound();
 
   const availability = await getCourtAvailability(court.id);
+  const pricePerHour = court.pricePerHour ?? venue.pricePerHour;
 
   return (
     <Container className="flex flex-col gap-6 py-6">
@@ -41,7 +44,15 @@ const BookPage = async ({ params, searchParams }: BookPageProps) => {
         duration={typeof duration === "string" ? duration : undefined}
       />
 
-      <ReservationDatePicker availability={availability} />
+      <BookingForm
+        availability={availability}
+        timeSlots={getTimeSlots(venue.slug)}
+        equipmentItems={getVenueEquipment(venue.slug)}
+        pricePerHour={pricePerHour}
+        duration={typeof duration === "string" ? duration : undefined}
+        venueName={venue.name}
+        courtLabel={court.label}
+      />
     </Container>
   );
 };
