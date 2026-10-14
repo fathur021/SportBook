@@ -2,9 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatRupiah } from "@/lib/format-rupiah";
 import type { EquipmentItem } from "@/lib/equipment";
-
+import Link from "next/link";
 type BookingSummaryProps = {
   venueName: string;
+  venueSlug: string;
+  courtId: string;
   courtLabel: string;
   pricePerHour: number;
   duration?: string;
@@ -25,6 +27,8 @@ const formatDateKey = (key: string) => {
 
 export function BookingSummary({
   venueName,
+  venueSlug,
+  courtId,
   courtLabel,
   pricePerHour,
   duration,
@@ -42,10 +46,22 @@ export function BookingSummary({
 
   const equipmentTotal = selectedEquipment.reduce(
     (sum, { item, qty }) => sum + qty * item.pricePerUnit,
-    0
+    0,
   );
   const total = sessionPrice + equipmentTotal;
+  const params = new URLSearchParams({
+    venue: venueSlug,
+    court: courtId,
+    date: selectedDate ?? "",
+    time: selectedTime ?? "",
+    duration: duration ?? "1",
+  });
 
+  selectedEquipment.forEach(({ item, qty }) => {
+    params.append("equipment", `${item.id}:${qty}`);
+  });
+
+  const checkoutHref = `/checkout?${params.toString()}`;
   return (
     <Card className="p-6 shadow-sm">
       <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
@@ -93,10 +109,12 @@ export function BookingSummary({
 
       <Button
         type="button"
+        nativeButton={false}
+        disabled={!selectedDate || !selectedTime}
         className="mt-4 h-11 w-full gap-1.5 bg-emerald-700 font-medium hover:bg-emerald-800"
-      >
-        Continue to Checkout
-      </Button>
+      render={<Link href={checkoutHref}>Continue to Checkout</Link>}
+      />
+        
     </Card>
   );
 }
