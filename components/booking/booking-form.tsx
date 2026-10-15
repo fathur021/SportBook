@@ -16,7 +16,11 @@ type BookingFormProps = {
   pricePerHour: number;
   duration?: string;
   venueName: string;
+  venueSlug: string;
+  courtId: string;
   courtLabel: string;
+
+  
 };
 
 export function BookingForm({
@@ -26,6 +30,8 @@ export function BookingForm({
   pricePerHour,
   duration,
   venueName,
+  venueSlug,
+  courtId,
   courtLabel,
 }: BookingFormProps) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -56,6 +62,8 @@ export function BookingForm({
       <div className="lg:sticky lg:top-6">
         <BookingSummary
           venueName={venueName}
+          venueSlug={venueSlug}
+          courtId={courtId}
           courtLabel={courtLabel}
           pricePerHour={pricePerHour}
           duration={duration}
@@ -63,6 +71,8 @@ export function BookingForm({
           selectedTime={selectedTime}
           equipmentItems={equipmentItems}
           quantities={quantities}
+
+          
         />
       </div>
     </div>

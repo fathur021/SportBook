@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { formatRupiah } from "@/lib/format-rupiah";
 import type { EquipmentItem } from "@/lib/equipment";
 import Link from "next/link";
+
 type BookingSummaryProps = {
   venueName: string;
   venueSlug: string;
@@ -112,9 +113,8 @@ export function BookingSummary({
         nativeButton={false}
         disabled={!selectedDate || !selectedTime}
         className="mt-4 h-11 w-full gap-1.5 bg-emerald-700 font-medium hover:bg-emerald-800"
-      render={<Link href={checkoutHref}>Continue to Checkout</Link>}
+        render={<Link href={checkoutHref}>Continue to Checkout</Link>}
       />
-        
     </Card>
   );
 }

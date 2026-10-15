@@ -51,7 +51,16 @@ const BookPage = async ({ params, searchParams }: BookPageProps) => {
         pricePerHour={pricePerHour}
         duration={typeof duration === "string" ? duration : undefined}
         venueName={venue.name}
+        venueSlug={venue.slug}
+        courtId={court.id}
         courtLabel={court.label}
+
+        //checkout
+        venueAddress= {venue.address}
+        sportLabel={discipline.label.split(" ")[0]}
+        courtImage= {court.image ?? venue.images[court.imageIndex ?? 0]?.src}
+        courtSpecs={court.specs}
+        maxPlayer={court.maxPlayers}
       />
     </Container>
   );
