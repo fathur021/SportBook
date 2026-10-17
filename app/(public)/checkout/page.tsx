@@ -1,31 +1,54 @@
 import { ReservationTimer } from "@/components/checkout/reservation-timer";
+import { CheckoutSummary, SelectedEquipment } from "@/components/checkout/checkout-summary";
 import { Container } from "@/components/layout/container";
 import { VenueBreadcrumb } from "@/components/venues/venue-breadcrumb";
 import { getVenueDetail } from "@/lib/venue-detail";
+import { getVenueEquipment } from "@/lib/equipment";
+import { ContactDetailsCard } from "@/components/checkout/contact-details-card";
+import { PaymentMethodCard } from "@/components/checkout/payment-method-card";
+import { UserProfile } from "@/lib/user";
 
 const HOLD_MS = 10 * 60 * 1000; // 10 menit
 
-// searchParams bisa berupa string, string[], atau undefined
 const firstParam = (value: string | string[] | undefined) =>
   typeof value === "string" ? value : "";
 
-const page = async ({ searchParams }: PageProps<"/checkout">) => {
+export default async function CheckoutPage({ searchParams }: PageProps<"/checkout">) {
   const sp = await searchParams;
   const venueSlug = firstParam(sp.venue);
   const courtId = firstParam(sp.court);
-  const duration = firstParam(sp.duration);
+  const duration = parseFloat(firstParam(sp.duration)) || 1;
+  const date = firstParam(sp.date);
+  const time = firstParam(sp.time);
 
-  // Data venue dipakai untuk menyusun jejak breadcrumb
+  // Ambil detail data venue & lapangan
   const venue = getVenueDetail(venueSlug);
-
-  // Disiplin dicari dari court yang dipilih agar link "Book" kembali ke konteks yang benar
   const discipline = venue?.disciplines.find((d) =>
-    d.courts.some((c) => c.id === courtId),
+    d.courts.some((c) => c.id === courtId)
   );
+  const court = discipline?.courts.find((c) => c.id === courtId);
+
+  // Parse equipment dari searchParams (format: id:qty)
+  const equipmentParam = sp.equipment;
+  const rawEquipment = Array.isArray(equipmentParam)
+    ? equipmentParam
+    : equipmentParam ? [equipmentParam] : [];
+
+  const venueEquipmentList = getVenueEquipment(venueSlug);
+  const equipmentList: SelectedEquipment[] = rawEquipment.map((entry) => {
+    const [id, qtyStr] = entry.split(":");
+    const found = venueEquipmentList.find((e) => e.id === id);
+    return {
+      name: found?.name ?? id,
+      qty: parseInt(qtyStr) || 1,
+      pricePerUnit: found?.pricePerUnit ?? 0,
+    };
+  });
+
   const bookParams = new URLSearchParams();
   if (discipline) bookParams.set("sport", discipline.slug);
   if (courtId) bookParams.set("court", courtId);
-  if (duration) bookParams.set("duration", duration);
+  if (duration) bookParams.set("duration", duration.toString());
   const bookQuery = bookParams.toString();
 
   const breadcrumbItems = [
@@ -43,16 +66,51 @@ const page = async ({ searchParams }: PageProps<"/checkout">) => {
     { label: "Checkout" },
   ];
 
-  // Batas waktu slot. Dihitung sekali saat halaman dirender.
-  const expiresAt = Date.now() + HOLD_MS;
+  const pricePerHour = court?.pricePerHour ?? 220000;
+  const platformFee = 5000;
+  const discountAmount = 0;
+  const courtRentalTotal = pricePerHour * duration;
+  const equipmentTotal = equipmentList.reduce(
+    (sum, item) => sum + item.qty * item.pricePerUnit,
+    0
+  );
+  const grandTotal = courtRentalTotal + equipmentTotal + platformFee - discountAmount;
 
   return (
-    <Container className="flex flex-col gap-6 py-6">
+    <Container className="flex flex-col gap-6 py-6 max-w-5xl">
       <VenueBreadcrumb items={breadcrumbItems} />
-      <ReservationTimer expiresAt={expiresAt} totalMs={HOLD_MS}/>
-      <div>page</div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Kolom Kiri: Reservation Timer & Form Identitas/Pembayaran */}
+        <div className="lg:col-span-7 flex flex-col gap-6">
+          <ReservationTimer expiresAt={Date.now() + HOLD_MS} totalMs={HOLD_MS} />
+
+          <ContactDetailsCard user={UserProfile} />
+
+          <PaymentMethodCard
+            venueName={venue?.name ?? "Gelora Padel"}
+            grandTotal={grandTotal}
+          />
+        </div>
+
+        {/* Kolom Kanan: Checkout Summary (sejajar tepat di samping Reservation Timer) */}
+        <div className="lg:col-span-5 lg:sticky lg:top-6">
+          <CheckoutSummary
+            venueName={venue?.name ?? "Venue"}
+            venueAddress={venue?.address ?? "Jakarta"}
+            sportLabel={discipline?.label?.split(" ")[0] ?? "Padel"}
+            courtName={court?.label ?? "Court"}
+            courtImage={court?.image ?? (venue?.images?.[court?.imageIndex ?? 0]?.src ?? "/hero.webp")}
+            courtSpecs={court?.specs}
+            maxPlayers={court?.maxPlayers}
+            date={date}
+            time={time}
+            durationHours={duration}
+            pricePerHour={court?.pricePerHour ?? 220000}
+            equipmentList={equipmentList}
+          />
+        </div>
+      </div>
     </Container>
   );
-};
-
-export default page;
+}

@@ -54,13 +54,6 @@ const BookPage = async ({ params, searchParams }: BookPageProps) => {
         venueSlug={venue.slug}
         courtId={court.id}
         courtLabel={court.label}
-
-        //checkout
-        venueAddress= {venue.address}
-        sportLabel={discipline.label.split(" ")[0]}
-        courtImage= {court.image ?? venue.images[court.imageIndex ?? 0]?.src}
-        courtSpecs={court.specs}
-        maxPlayer={court.maxPlayers}
       />
     </Container>
   );
