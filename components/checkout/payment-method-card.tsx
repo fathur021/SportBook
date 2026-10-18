@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { formatRupiah } from "@/lib/format-rupiah";
 import {
@@ -23,8 +24,21 @@ export function PaymentMethodCard({
   venueName = "Gelora Padel",
   grandTotal = 495000,
 }: PaymentMethodCardProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedMethod, setSelectedMethod] = useState<string>("qris");
   const [agreeTerms, setAgreeTerms] = useState<boolean>(true);
+
+  // Fungsi saat Pay Now diklik
+  const handlePayNow = () => {
+    const orderId = `SPB-${Date.now().toString().slice(-6)}`;
+    const query = new URLSearchParams(searchParams.toString());
+    query.set("order_id", orderId);
+    query.set("method", selectedMethod);
+    
+    // Pindah ke halaman checkout success
+    router.push(`/checkout/success?${query.toString()}`);
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -344,11 +358,7 @@ export function PaymentMethodCard({
         <button
           type="button"
           disabled={!agreeTerms}
-          onClick={() =>
-            alert(
-              `Memproses pembayaran ${formatRupiah(grandTotal)} via metode: ${selectedMethod.toUpperCase()}`
-            )
-          }
+          onClick={handlePayNow}
           className="mt-5 w-full flex items-center justify-center gap-2 rounded-xl bg-[#03624c] hover:bg-[#02523f] active:scale-[0.99] py-3.5 px-6 text-base font-bold text-white shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           <Lock className="h-4 w-4" />
