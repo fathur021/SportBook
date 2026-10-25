@@ -65,6 +65,7 @@ export default function AdminSchedulePage() {
         </div>
         <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 shadow-sm">
           <span className="size-2 rounded-full bg-emerald-500" />
+          
           {venue?.name ?? "Pilih venue"}
           <ChevronDown className="ml-2 size-4 text-slate-400" />
         </div>

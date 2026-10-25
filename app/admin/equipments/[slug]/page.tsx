@@ -23,9 +23,10 @@ import {
 import { getVenueEquipment } from "@/lib/equipment";
 import { formatRupiah } from "@/lib/format-rupiah";
 import { venueListings } from "@/lib/listings";
+import { EquipmentFormDialog } from "@/components/admin/Eqipment-form-dialod";
 
 export default async function AdminVenueEquipmentsPage(
-  props: PageProps<"/admin/equipments/[slug]">
+  props: PageProps<"/admin/equipments/[slug]">,
 ) {
   const { slug } = await props.params;
   const venue = venueListings.find((item) => item.slug === slug);
@@ -65,10 +66,14 @@ export default async function AdminVenueEquipmentsPage(
             Daftar peralatan yang bisa disewa di venue ini.
           </CardDescription>
           <CardAction>
-            <Button variant="brand" size="sm">
-              <Plus data-icon="inline-start" />
-              Tambah Item
-            </Button>
+            <EquipmentFormDialog
+              trigger={
+                <Button variant="brand" size="sm">
+                  <Plus data-icon="inline-start" />
+                  Tambah Item
+                </Button>
+              }
+            />
           </CardAction>
         </CardHeader>
 
