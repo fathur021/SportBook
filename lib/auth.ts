@@ -25,13 +25,13 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24,
   },
   user: {
-    additionalFields:{
-        role:{
-            type:["USER","ADMIN"],
-            required:false,
-            defaultValue:"USER",
-            input:false
-        }
+    additionalFields: {
+      role: {
+        type: "string",
+        required: false,
+        defaultValue: "USER",
+        input: false
+      }
     }
   }
 });

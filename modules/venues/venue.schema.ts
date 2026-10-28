@@ -29,10 +29,28 @@ export const createVenueSchema = z.object({
     .max(100, "Nama kota maksimal 100 karakter"),
   phone: z.string().trim().max(30).nullable().optional(),
 
-  email: z.email().nullable().optional(),
+  email: z
+    .string()
+    .trim()
+    .email("Format email tidak valid")
+    .or(z.literal(""))
+    .nullable()
+    .optional()
+    .transform((val) => (val ? val : null)),
+
+
   timeZone: z.string().trim().min(1).max(100).default("Asia/Jakarta"),
 
   coverImage: z.string().trim().max(2048).nullable().optional(),
 });
 
+export const updateVenueSchema = createVenueSchema
+  .omit({ slug: true })
+  .partial()
+  .refine(
+    (data) => Object.keys(data).length > 0,
+    "Minimal satu field harus diisi",
+  );
+
+export type UpdateVenueInput = z.infer<typeof updateVenueSchema>;
 export type CreateVenueInput = z.infer<typeof createVenueSchema>;

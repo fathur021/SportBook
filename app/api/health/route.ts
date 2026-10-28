@@ -8,6 +8,7 @@ export async function GET() {
       Database: "connected",
     });
   } catch (error) {
+    console.error("Health check database failed:", error);
     return Response.json(
       {
         status: "error",

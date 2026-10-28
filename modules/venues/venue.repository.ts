@@ -1,6 +1,6 @@
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { CreateVenueInput } from "./venue.schema";
+import type { CreateVenueInput, UpdateVenueInput } from "./venue.schema";
 
 const publicVenueSelect = {
   id: true,
@@ -62,4 +62,40 @@ export function createVenue(data: CreateVenueInput) {
     data,
     select: createdVenueSelect,
   });
+}
+
+export function updateVenueBySlug(slug: string, data: UpdateVenueInput) {
+  return prisma.venue.update({
+    where: { slug },
+    data,
+    select: createdVenueSelect,
+  });
+}
+
+export function deactivateVenueBySlug(slug: string) {
+  return prisma.venue.update({
+    where: { slug },
+    data: { isActive: false },
+    select: createdVenueSelect,
+  });
+}
+
+export function findAdminVenues() {
+  return prisma.venue.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      ...createdVenueSelect,
+      courts: {
+        select: {
+          id: true,
+          name: true,
+          sport: true,
+          pricePerHour: true,
+          isActive: true,
+
+        }
+      }
+
+    }
+  })
 }
