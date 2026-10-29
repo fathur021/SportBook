@@ -47,3 +47,8 @@ export type Account = Prisma.AccountModel
  * 
  */
 export type Verification = Prisma.VerificationModel
+/**
+ * Model Equipment
+ * 
+ */
+export type Equipment = Prisma.EquipmentModel

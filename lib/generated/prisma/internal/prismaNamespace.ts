@@ -402,7 +402,8 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Account: 'Account',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  Equipment: 'Equipment'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -418,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "venue" | "court" | "user" | "session" | "account" | "verification"
+    modelProps: "venue" | "court" | "user" | "session" | "account" | "verification" | "equipment"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -866,6 +867,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Equipment: {
+      payload: Prisma.$EquipmentPayload<ExtArgs>
+      fields: Prisma.EquipmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EquipmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EquipmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EquipmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EquipmentPayload>
+        }
+        findFirst: {
+          args: Prisma.EquipmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EquipmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EquipmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EquipmentPayload>
+        }
+        findMany: {
+          args: Prisma.EquipmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EquipmentPayload>[]
+        }
+        create: {
+          args: Prisma.EquipmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EquipmentPayload>
+        }
+        createMany: {
+          args: Prisma.EquipmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EquipmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EquipmentPayload>[]
+        }
+        delete: {
+          args: Prisma.EquipmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EquipmentPayload>
+        }
+        update: {
+          args: Prisma.EquipmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EquipmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.EquipmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EquipmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EquipmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EquipmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.EquipmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EquipmentPayload>
+        }
+        aggregate: {
+          args: Prisma.EquipmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEquipment>
+        }
+        groupBy: {
+          args: Prisma.EquipmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EquipmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EquipmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EquipmentCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -998,6 +1073,21 @@ export const VerificationScalarFieldEnum = {
 } as const
 
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
+
+
+export const EquipmentScalarFieldEnum = {
+  id: 'id',
+  venueId: 'venueId',
+  name: 'name',
+  price: 'price',
+  stock: 'stock',
+  category: 'category',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EquipmentScalarFieldEnum = (typeof EquipmentScalarFieldEnum)[keyof typeof EquipmentScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1249,6 +1339,7 @@ export type GlobalOmitConfig = {
   session?: Prisma.SessionOmit
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
+  equipment?: Prisma.EquipmentOmit
 }
 
 /* Types for Logging */
