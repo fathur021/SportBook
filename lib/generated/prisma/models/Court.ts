@@ -256,6 +256,7 @@ export type CourtWhereInput = {
   isActive?: Prisma.BoolFilter<"Court"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Court"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Court"> | Date | string
+  bookings?: Prisma.BookingListRelationFilter
   venue?: Prisma.XOR<Prisma.VenueScalarRelationFilter, Prisma.VenueWhereInput>
 }
 
@@ -270,6 +271,7 @@ export type CourtOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  bookings?: Prisma.BookingOrderByRelationAggregateInput
   venue?: Prisma.VenueOrderByWithRelationInput
 }
 
@@ -288,6 +290,7 @@ export type CourtWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"Court"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Court"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Court"> | Date | string
+  bookings?: Prisma.BookingListRelationFilter
   venue?: Prisma.XOR<Prisma.VenueScalarRelationFilter, Prisma.VenueWhereInput>
 }, "id" | "venueId_name">
 
@@ -335,6 +338,7 @@ export type CourtCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  bookings?: Prisma.BookingCreateNestedManyWithoutCourtInput
   venue: Prisma.VenueCreateNestedOneWithoutCourtsInput
 }
 
@@ -349,6 +353,7 @@ export type CourtUncheckedCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutCourtInput
 }
 
 export type CourtUpdateInput = {
@@ -361,6 +366,7 @@ export type CourtUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUpdateManyWithoutCourtNestedInput
   venue?: Prisma.VenueUpdateOneRequiredWithoutCourtsNestedInput
 }
 
@@ -375,6 +381,7 @@ export type CourtUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutCourtNestedInput
 }
 
 export type CourtCreateManyInput = {
@@ -477,6 +484,11 @@ export type CourtSumOrderByAggregateInput = {
   pricePerHour?: Prisma.SortOrder
 }
 
+export type CourtScalarRelationFilter = {
+  is?: Prisma.CourtWhereInput
+  isNot?: Prisma.CourtWhereInput
+}
+
 export type CourtCreateNestedManyWithoutVenueInput = {
   create?: Prisma.XOR<Prisma.CourtCreateWithoutVenueInput, Prisma.CourtUncheckedCreateWithoutVenueInput> | Prisma.CourtCreateWithoutVenueInput[] | Prisma.CourtUncheckedCreateWithoutVenueInput[]
   connectOrCreate?: Prisma.CourtCreateOrConnectWithoutVenueInput | Prisma.CourtCreateOrConnectWithoutVenueInput[]
@@ -527,6 +539,20 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type CourtCreateNestedOneWithoutBookingsInput = {
+  create?: Prisma.XOR<Prisma.CourtCreateWithoutBookingsInput, Prisma.CourtUncheckedCreateWithoutBookingsInput>
+  connectOrCreate?: Prisma.CourtCreateOrConnectWithoutBookingsInput
+  connect?: Prisma.CourtWhereUniqueInput
+}
+
+export type CourtUpdateOneRequiredWithoutBookingsNestedInput = {
+  create?: Prisma.XOR<Prisma.CourtCreateWithoutBookingsInput, Prisma.CourtUncheckedCreateWithoutBookingsInput>
+  connectOrCreate?: Prisma.CourtCreateOrConnectWithoutBookingsInput
+  upsert?: Prisma.CourtUpsertWithoutBookingsInput
+  connect?: Prisma.CourtWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CourtUpdateToOneWithWhereWithoutBookingsInput, Prisma.CourtUpdateWithoutBookingsInput>, Prisma.CourtUncheckedUpdateWithoutBookingsInput>
+}
+
 export type CourtCreateWithoutVenueInput = {
   id?: string
   name: string
@@ -537,6 +563,7 @@ export type CourtCreateWithoutVenueInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  bookings?: Prisma.BookingCreateNestedManyWithoutCourtInput
 }
 
 export type CourtUncheckedCreateWithoutVenueInput = {
@@ -549,6 +576,7 @@ export type CourtUncheckedCreateWithoutVenueInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutCourtInput
 }
 
 export type CourtCreateOrConnectWithoutVenueInput = {
@@ -593,6 +621,74 @@ export type CourtScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Court"> | Date | string
 }
 
+export type CourtCreateWithoutBookingsInput = {
+  id?: string
+  name: string
+  sport: string
+  surface?: string | null
+  isIndoor?: boolean
+  pricePerHour: number
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  venue: Prisma.VenueCreateNestedOneWithoutCourtsInput
+}
+
+export type CourtUncheckedCreateWithoutBookingsInput = {
+  id?: string
+  venueId: string
+  name: string
+  sport: string
+  surface?: string | null
+  isIndoor?: boolean
+  pricePerHour: number
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type CourtCreateOrConnectWithoutBookingsInput = {
+  where: Prisma.CourtWhereUniqueInput
+  create: Prisma.XOR<Prisma.CourtCreateWithoutBookingsInput, Prisma.CourtUncheckedCreateWithoutBookingsInput>
+}
+
+export type CourtUpsertWithoutBookingsInput = {
+  update: Prisma.XOR<Prisma.CourtUpdateWithoutBookingsInput, Prisma.CourtUncheckedUpdateWithoutBookingsInput>
+  create: Prisma.XOR<Prisma.CourtCreateWithoutBookingsInput, Prisma.CourtUncheckedCreateWithoutBookingsInput>
+  where?: Prisma.CourtWhereInput
+}
+
+export type CourtUpdateToOneWithWhereWithoutBookingsInput = {
+  where?: Prisma.CourtWhereInput
+  data: Prisma.XOR<Prisma.CourtUpdateWithoutBookingsInput, Prisma.CourtUncheckedUpdateWithoutBookingsInput>
+}
+
+export type CourtUpdateWithoutBookingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sport?: Prisma.StringFieldUpdateOperationsInput | string
+  surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isIndoor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  venue?: Prisma.VenueUpdateOneRequiredWithoutCourtsNestedInput
+}
+
+export type CourtUncheckedUpdateWithoutBookingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  venueId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  sport?: Prisma.StringFieldUpdateOperationsInput | string
+  surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isIndoor?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type CourtCreateManyVenueInput = {
   id?: string
   name: string
@@ -615,6 +711,7 @@ export type CourtUpdateWithoutVenueInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUpdateManyWithoutCourtNestedInput
 }
 
 export type CourtUncheckedUpdateWithoutVenueInput = {
@@ -627,6 +724,7 @@ export type CourtUncheckedUpdateWithoutVenueInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutCourtNestedInput
 }
 
 export type CourtUncheckedUpdateManyWithoutVenueInput = {
@@ -642,6 +740,35 @@ export type CourtUncheckedUpdateManyWithoutVenueInput = {
 }
 
 
+/**
+ * Count Type CourtCountOutputType
+ */
+
+export type CourtCountOutputType = {
+  bookings: number
+}
+
+export type CourtCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  bookings?: boolean | CourtCountOutputTypeCountBookingsArgs
+}
+
+/**
+ * CourtCountOutputType without action
+ */
+export type CourtCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CourtCountOutputType
+   */
+  select?: Prisma.CourtCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * CourtCountOutputType without action
+ */
+export type CourtCountOutputTypeCountBookingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BookingWhereInput
+}
+
 
 export type CourtSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -654,7 +781,9 @@ export type CourtSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  bookings?: boolean | Prisma.Court$bookingsArgs<ExtArgs>
   venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
+  _count?: boolean | Prisma.CourtCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["court"]>
 
 export type CourtSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -700,7 +829,9 @@ export type CourtSelectScalar = {
 
 export type CourtOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "venueId" | "name" | "sport" | "surface" | "isIndoor" | "pricePerHour" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["court"]>
 export type CourtInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  bookings?: boolean | Prisma.Court$bookingsArgs<ExtArgs>
   venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
+  _count?: boolean | Prisma.CourtCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CourtIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
@@ -712,6 +843,7 @@ export type CourtIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
 export type $CourtPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Court"
   objects: {
+    bookings: Prisma.$BookingPayload<ExtArgs>[]
     venue: Prisma.$VenuePayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1119,6 +1251,7 @@ readonly fields: CourtFieldRefs;
  */
 export interface Prisma__CourtClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  bookings<T extends Prisma.Court$bookingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Court$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   venue<T extends Prisma.VenueDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VenueDefaultArgs<ExtArgs>>): Prisma.Prisma__VenueClient<runtime.Types.Result.GetResult<Prisma.$VenuePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1557,6 +1690,30 @@ export type CourtDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Limit how many Courts to delete.
    */
   limit?: number
+}
+
+/**
+ * Court.bookings
+ */
+export type Court$bookingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Booking
+   */
+  select?: Prisma.BookingSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Booking
+   */
+  omit?: Prisma.BookingOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingInclude<ExtArgs> | null
+  where?: Prisma.BookingWhereInput
+  orderBy?: Prisma.BookingOrderByWithRelationInput | Prisma.BookingOrderByWithRelationInput[]
+  cursor?: Prisma.BookingWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BookingScalarFieldEnum | Prisma.BookingScalarFieldEnum[]
 }
 
 /**

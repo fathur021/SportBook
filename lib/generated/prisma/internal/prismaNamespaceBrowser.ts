@@ -57,7 +57,8 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
-  Equipment: 'Equipment'
+  Equipment: 'Equipment',
+  Booking: 'Booking'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -184,6 +185,26 @@ export const EquipmentScalarFieldEnum = {
 } as const
 
 export type EquipmentScalarFieldEnum = (typeof EquipmentScalarFieldEnum)[keyof typeof EquipmentScalarFieldEnum]
+
+
+export const BookingScalarFieldEnum = {
+  id: 'id',
+  orderCode: 'orderCode',
+  courtId: 'courtId',
+  userId: 'userId',
+  playDate: 'playDate',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  durationHour: 'durationHour',
+  pricePerHour: 'pricePerHour',
+  totalPrice: 'totalPrice',
+  status: 'status',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BookingScalarFieldEnum = (typeof BookingScalarFieldEnum)[keyof typeof BookingScalarFieldEnum]
 
 
 export const SortOrder = {

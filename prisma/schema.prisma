@@ -28,16 +28,17 @@ model Venue {
 }
 
 model Court {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   venueId      String
   name         String
   sport        String
   surface      String?
-  isIndoor     Boolean  @default(false)
+  isIndoor     Boolean   @default(false)
   pricePerHour Int
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  bookings     Booking[]
 
   venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
 
@@ -56,6 +57,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  bookings      Booking[]
 
   @@unique([email])
   @@map("user")
@@ -123,4 +125,27 @@ model Equipment {
   venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
 
   @@index([venueId])
+}
+
+model Booking {
+  id           String   @id @default(cuid())
+  orderCode    String   @unique
+  courtId      String
+  userId       String
+  playDate     String
+  startTime    String
+  endTime      String
+  durationHour Int
+  pricePerHour Int
+  totalPrice   Int
+  status       String   @default("PENDING")
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  court Court @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([courtId])
+  @@index([userId])
 }
