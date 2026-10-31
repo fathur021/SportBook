@@ -18,9 +18,22 @@ export async function requireAdmin(request: Request) {
     };
   }
   return {
-    ok:true  as const,
-    user:session.user
-  }
+    ok: true as const,
+    user: session.user,
+  };
 }
 
-
+export async function requireUser(request: Request) {
+  const session = await getRequestSession(request);
+  if (!session) {
+    return {
+      ok: false as const,
+      status: 401 as const,
+      error: "UNAUTHENTICATED",
+    };
+  }
+  return {
+    ok: true as const,
+    user: session.user,
+  };
+}

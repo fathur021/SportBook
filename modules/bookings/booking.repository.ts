@@ -8,7 +8,7 @@ const bookingSelect = {
   playDate: true, // Hari main
   startTime: true, // Jam mulai
   endTime: true, // Jam selesai
-  durationHours: true, // Lama sewa
+  durationHour: true, // Lama sewa
   pricePerHour: true, // Harga per jam saat booking dibuat
   totalPrice: true, // Total harga
   status: true, // Status booking
@@ -58,7 +58,7 @@ export function findCourtById(
 
 //2 Mengambil semua booking aktif(pending | confirmed) milik satu lapangan di satu tanggal
 export function findBookingConflictList(
-  tx: Prisma.TransactionClient,
+  tx: Prisma.TransactionClient | typeof prisma,
   courtId: string,
   playDate: string,
 ) {

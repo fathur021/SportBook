@@ -30,8 +30,11 @@ export const createBookingSchema = z.object({
     playDate : z
         .string()
         .trim()
-        .regex(timeFormatRegex,"Format harus HH:MM"),
-    
+        .regex(dateFormatRegex,"Format tanggal harus YYYY-MM-DD"),
+    startTime: z
+        .string()
+        .trim()
+        .regex(timeFormatRegex),
     durationHour: z
         .number({error: "Durasi harus berupa angka"})
         .int()

@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { CourtNotFoundError } from "../courts/court.service"; // import error dari court
 import {
   findBookingById,
@@ -7,7 +8,6 @@ import {
   insertBooking,
   runInTransaction,
   updateBookingStatusById,
-  findCourtByIdOutsideTransaction
 } from "./booking.repository"; // import fungsi query dari repository
 import type { CreateBookingInput } from "./booking.schema"; // mengimport
 
@@ -38,10 +38,10 @@ export class InvalidOperatingHourError extends Error {
   }
 }
 // Error HTTP 400: user mencoba booking tanggal yang sudah lewat
-export class PasteDateError extends Error {
+export class PastDateError extends Error {
   constructor() {
     super("Tidak bisa membuat booking untuk tanggal yang sudah lewat");
-    this.name = "PasteDateError";
+    this.name = "PastDateError";
   }
 }
 // Error HTTP 404: booking dengan ID tersebut tidak ada di database
@@ -115,6 +115,122 @@ function isTimeOverlap(
 // === service ===
 
 //1. cek slot
-export async function getAvailabilityService(courtId:string, playDate:string) {
-    
+export async function getAvailabilityService(
+  courtId: string,
+  playDate: string,
+) {
+  const court = await findCourtById(prisma, courtId);
+  if (!court || !court.isActive || !court.venue.isActive) {
+    throw new CourtNotFoundError();
+  }
+  const existingBookings = await findBookingConflictList(
+    prisma,
+    courtId,
+    playDate,
+  );
+  const slots = [];
+  for (let hour = OPEN_HOUR; hour < CLOSE_HOUR; hour++) {
+    const startTime = formatHour(hour);
+    const endTime = formatHour(hour + 1);
+
+    //cek slot ini bentrok dengan salah satu booking yang sudah ada atau tidak
+    const isBooked = existingBookings.some((existing) =>
+      isTimeOverlap(startTime, endTime, existing.startTime, existing.endTime),
+    );
+    slots.push({
+      startTime,
+      endTime,
+      isBooked,
+    });
+  }
+  return {
+    court: {
+      id: court.id,
+      name: court.name,
+      pricePerHour: court.pricePerHour,
+    },
+    date: playDate, // tanggal yang diperiksa
+    slots, // daftar slot lengkap,
+  };
+}
+
+//2. Buat Booking baru
+export async function createBookingService(
+  userId: string,
+  input: CreateBookingInput,
+) {
+  const endTime = addHour(input.startTime, input.durationHour); //hitung jam selesai
+  // tolak jika jam mulai/ akhit melewati jam buka
+  if (
+    input.startTime < formatHour(OPEN_HOUR) ||
+    endTime > formatHour(CLOSE_HOUR)
+  ) {
+    throw new InvalidOperatingHourError();
+  }
+  //todal jika tanggal mainnya sudah lewat
+  if (input.playDate < todayDateString()) {
+    throw new PastDateError();
+  }
+  // Jalankan semua operasi berikut dalam SATU transaksi: sukses semua atau gagal semua
+  return runInTransaction(async (tx) => {
+    //ambil court di dalam transaksi
+    const court = await findCourtById(tx, input.courtId);
+    //gagal kalau lanpangan tidak ada
+    if (!court || !court.isActive || !court.venue.isActive) {
+      throw new CourtNotFoundError();
+    }
+    // Baca ulang slot terkunci DI DALAM transaksi yang sama (agar aman dari tarik-menarik data)
+    const conflicts = await findBookingConflictList(
+      tx,
+      input.courtId,
+      input.playDate,
+    );
+    // Cek apakah rentang jam yang diminta bentrok dengan booking yang sudah ada
+    const hasOverlap = conflicts.some((existing) =>
+      isTimeOverlap(
+        input.startTime,
+        endTime,
+        existing.startTime,
+        existing.endTime,
+      ),
+    );
+
+    //jika bentrok, error 409- karena masih dalam transaksi dn data tidak masuk ke database
+    if (hasOverlap) {
+      throw new SlotUnavailableError();
+    }
+    const totalPrice = court.pricePerHour * input.durationHour;
+
+    return insertBooking(tx, {
+      orderCode: generateOrderCode(),
+      courtId: input.courtId, // lapangan yang disewa
+      userId, // ID user yang sedang login
+      playDate: input.playDate, // tanggal main
+      startTime: input.startTime, // jam mulai
+      endTime, // jam selesai (hasil perhitungan)
+      durationHour: input.durationHour, // lama sewa
+      pricePerHour: court.pricePerHour, // salinan harga saat itu
+      totalPrice, // total harga
+      notes: input.notes ?? null, // catatan opsional (null bila tidak dikirim)
+    });
+  });
+}
+// 3. Daftar Boking milik user
+export async function listMyBookingService(userId: string) {
+  return findBookingsByUserId(userId);
+}
+
+//4. batalkan booking
+export async function cancelBookingService(userId: string, bookingId: string) {
+  const booking = await findBookingById(bookingId);
+  if (!booking) {
+    throw new BookingNotFoundError();
+  }
+  if (booking.userId !== userId) {
+    throw new BookingAccessDeniedError();
+  }
+  if (!ACTIVE_STATUSES.includes(booking.status)) {
+    throw new BookingAlreadyFinalizedError();
+  }
+  return updateBookingStatusById(bookingId, "CANCELLED");
 }
