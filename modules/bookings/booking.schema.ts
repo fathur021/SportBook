@@ -43,4 +43,24 @@ export const createBookingSchema = z.object({
     
     notes : z.string().trim().max(255).optional().nullable()
 })
+
+// untuk admin, skema validasi query string untuk endpoint list booking
+export const BOOKING_STATUSES = ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"] as const;
+export const adminBookingQuerySchema = z.object({
+  // Filter berdasarkan status — boleh tidak dikirim (= tampilkan semua)
+  status: z.enum(BOOKING_STATUSES).optional(),
+  // Filter berdasarkan tanggal main — boleh tidak dikirim
+  playDate: z
+    .string() // wajib string bila dikirim
+    .trim() // hapus spasi kosong
+    .regex(dateFormatRegex, "Format tanggal harus YYYY-MM-DD") // harus pola "2026-11-05"
+    .optional(), // opsional
+});
+
+// Skema validasi body perubahan status (PATCH /api/admin/bookings/[bookingId]/status)
+export const updateBookingStatusSchema = z.object({
+  // Status baru yang diinginkan admin — harus salah satu dari 4 status di atas
+  status: z.enum(BOOKING_STATUSES, { error: "Status tidak valid" }),
+});
+
 export type CreateBookingInput = z.infer<typeof createBookingSchema>

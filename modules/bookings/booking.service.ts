@@ -8,6 +8,7 @@ import {
   insertBooking,
   runInTransaction,
   updateBookingStatusById,
+  findAllBookings,
 } from "./booking.repository"; // import fungsi query dari repository
 import type { CreateBookingInput } from "./booking.schema"; // mengimport
 
@@ -233,4 +234,48 @@ export async function cancelBookingService(userId: string, bookingId: string) {
     throw new BookingAlreadyFinalizedError();
   }
   return updateBookingStatusById(bookingId, "CANCELLED");
+}
+
+//Bagian booking untuk admin
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  PENDING: ["CONFIRMED", "CANCELLED"], // menunggu → dikonfirmasi / ditolak
+  CONFIRMED: ["COMPLETED", "CANCELLED"], // dikonfirmasi → selesai / dibatalkan
+  CANCELLED: [], // final, tidak bisa berubah lagi
+  COMPLETED: [], // final, tidak bisa berubah lagi
+};
+
+export class InvalidStatusTransitionError extends Error{
+  constructor(){
+    super("Perubahan status tidak sesuai aturan"),
+    this.name = "invalidStatusTransitionError"
+  }
+}
+
+// 5. Daftar semua booking (dengan filter opsional) — khusus admin
+export async function listAllBookingService(
+  filter: {
+    status?: string;
+    playDate?:string;
+  }
+){
+  return findAllBookings(filter);
+}
+
+//6. Ubah status booking (khusus admin)
+export async function updateBookingStatusService(
+  BookingId:string,
+  newStatus:string
+){
+  const booking = await findBookingById(BookingId);
+  if(!booking){
+    throw new BookingNotFoundError();
+  }
+  const allowed = ALLOWED_TRANSITIONS[booking.status]
+  if(allowed.length === 0){
+    throw new BookingAlreadyFinalizedError();
+  }
+  if(!allowed.includes(newStatus)){
+     throw new InvalidStatusTransitionError();
+  }
+  return updateBookingStatusById(BookingId,newStatus);
 }

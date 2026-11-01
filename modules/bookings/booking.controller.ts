@@ -1,5 +1,5 @@
 // Mengimpor guard "wajib login" dari modul auth
-import { requireUser } from "../auth/auth.guard";
+import { requireUser, requireAdmin } from "../auth/auth.guard";
 // Mengimpor "lapangan tidak ditemukan" dari modul court
 import { CourtNotFoundError } from "../courts/court.service";
 // Mengimpor skema validasi dari modul booking
@@ -7,6 +7,8 @@ import {
   availabilityQuerySchema,
   bookingIdSchema,
   createBookingSchema,
+  adminBookingQuerySchema,
+  updateBookingStatusSchema,
 } from "./booking.schema";
 // Mengimpor semua service dan custom error — PASTIKAN cancelBookingService ikut terimport
 import {
@@ -20,6 +22,9 @@ import {
   listMyBookingService,
   PastDateError,
   SlotUnavailableError,
+  InvalidStatusTransitionError,
+  listAllBookingService,
+  updateBookingStatusService,
 } from "./booking.service";
 
 // 1. Cek ketersedian lapangan
@@ -37,7 +42,10 @@ export async function getAvailabiltyController(
     );
   }
   try {
-    const result = await getAvailabilityService(rawCourtId, queryResult.data.date);
+    const result = await getAvailabilityService(
+      rawCourtId,
+      queryResult.data.date,
+    );
     return Response.json({ data: result });
   } catch (error) {
     // Lapangan/venue tidak ada atau non-aktif → HTTP 404
@@ -182,6 +190,111 @@ export async function cancelBookingController(
     console.error("Gagal membatalkan booking:", error);
     return Response.json(
       { error: "Gagal membatalkan booking" },
+      { status: 500 },
+    );
+  }
+}
+
+// 5. Controller: daftar semua booking — khusus admin
+export async function listAllBookingsController(
+  request: Request, // session admin dibaca dari cookie di dalamnya
+  searchParams: URLSearchParams, // query string (?status= & ?playDate=)
+): Promise<Response> {
+  try {
+    // Autentikasi: hanya ADMIN yang boleh melihat semua booking
+    const authorization = await requireAdmin(request);
+    if (!authorization.ok) {
+      return Response.json(
+        { error: authorization.error },
+        { status: authorization.status },
+      );
+    }
+
+    // Validasi filter query dengan Zod (boleh kosong = tanpa filter)
+    const queryResult = adminBookingQuerySchema.safeParse({
+      status: searchParams.get("status") ?? undefined, // undefined bila tidak dikirim
+      playDate: searchParams.get("playDate") ?? undefined,
+    });
+    if (!queryResult.success) {
+      return Response.json(
+        { error: "Parameter filter tidak valid" },
+        { status: 400 },
+      );
+    }
+
+    // Ambil semua booking sesuai filter
+    const bookings = await listAllBookingService(queryResult.data);
+    // HTTP 200 + data
+    return Response.json({ data: bookings });
+  } catch (error) {
+    // Log teknis untuk debugging
+    console.error("Gagal mengambil daftar booking admin:", error);
+    // Error tak terduga → HTTP 500
+    return Response.json(
+      { error: "Gagal mengambil daftar booking" },
+      { status: 500 },
+    );
+  }
+}
+
+//6. Controller: ubah status booking — khusus admin
+export async function updateBookingStatusController(
+  request: Request,
+  rawBookingId: string,
+): Promise<Response> {
+  try {
+    const authorization = await requireAdmin(request);
+    if (!authorization.ok) {
+      return Response.json(
+        { error: authorization.error },
+        { status: authorization.status },
+      );
+    }
+    const idResult = bookingIdSchema.safeParse(rawBookingId);
+    if (!idResult.success) {
+      return Response.json(
+        { error: "ID booking tidak valid" },
+        { status: 400 },
+      );
+    }
+
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch (error) {
+      console.error("Gagal parsing JSON body booking : ", error);
+      return Response.json(
+        { error: "Body harus berupa JSON yang valid" },
+        { status: 400 },
+      );
+    }
+    const parseResult = updateBookingStatusSchema.safeParse(body);
+    if (!parseResult.success) {
+      return Response.json({ error: "Status tidak valid" }, { status: 400 });
+    }
+    const booking = await updateBookingStatusService(
+      idResult.data,
+      parseResult.data.status,
+    );
+    return Response.json({ data: booking });
+  } catch (error) {
+    // Booking tidak ada → HTTP 404
+    if (error instanceof BookingNotFoundError) {
+      return Response.json({ error: error.message }, { status: 404 });
+    }
+    // Booking sudah final (CANCELLED/COMPLETED) → HTTP 409
+    if (error instanceof BookingAlreadyFinalizedError) {
+      return Response.json({ error: error.message }, { status: 409 });
+    }
+    // Aturan perpindahan dilanggar → HTTP 400
+    if (error instanceof InvalidStatusTransitionError) {
+      return Response.json({ error: error.message }, { status: 400 });
+    }
+    // Log teknis
+    console.error("Gagal mengubah status booking:", error);
+    // Error tak terduga → HTTP 500
+    return Response.json(
+      { error: "Gagal mengubah status booking" },
       { status: 500 },
     );
   }

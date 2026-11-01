@@ -162,3 +162,34 @@ export function runInTransaction<T>(
 ) {
   return prisma.$transaction(fn); // menyerahkan fungsi ke transaksi prisma
 }
+
+
+// admin
+//ambil semua booking dengan filter opsional 
+export function findAllBookings(
+  filter:{
+    status?: string,
+    playDate?: string
+  }
+){
+  return prisma.booking.findMany({
+    where:{
+      ...(filter.status ? {status:filter.status} : {}),
+      ...(filter.playDate ? {playDate:filter.playDate} : {})
+    },
+    orderBy: [
+      {playDate:"desc"},
+      {startTime:"asc"}
+    ],
+    select: {
+      ...bookingSelect,
+      user: {
+        select:{
+          id:true,
+          name:true,
+          email:true
+        }
+      }
+    }
+  })
+}
