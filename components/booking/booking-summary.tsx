@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatRupiah } from "@/lib/format-rupiah";
 import type { EquipmentItem } from "@/lib/equipment";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 type BookingSummaryProps = {
   venueName: string;
@@ -40,6 +41,8 @@ export function BookingSummary({
 }: BookingSummaryProps) {
   const durationHours = parseFloat(duration ?? "") || 1;
   const sessionPrice = Math.round(pricePerHour * durationHours);
+  const router = useRouter();
+  const [creating, setCreating] = useState(false);
 
   const selectedEquipment = equipmentItems
     .map((item) => ({ item, qty: quantities[item.id] ?? 0 }))
@@ -50,19 +53,52 @@ export function BookingSummary({
     0,
   );
   const total = sessionPrice + equipmentTotal;
-  const params = new URLSearchParams({
-    venue: venueSlug,
-    court: courtId,
-    date: selectedDate ?? "",
-    time: selectedTime ?? "",
-    duration: duration ?? "1",
-  });
 
-  selectedEquipment.forEach(({ item, qty }) => {
-    params.append("equipment", `${item.id}:${qty}`);
-  });
+  const handleCheckout = async () => {
+    if (!selectedDate || !selectedTime) return;
+    setCreating(true);
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courtId,
+          playDate: selectedDate,
+          startTime: selectedTime,
+          durationHour: durationHours,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        alert(json.error || "Gagal membuat booking");
+        setCreating(false);
+        return;
+      }
+      const bookingId = json.data?.id || json.id;
+      if (!bookingId) {
+        alert("Gagal mendapatkan ID booking");
+        setCreating(false);
+        return;
+      }
 
-  const checkoutHref = `/checkout?${params.toString()}`;
+      const params = new URLSearchParams({
+        venue: venueSlug,
+        court: courtId,
+        date: selectedDate,
+        time: selectedTime,
+        duration: duration ?? "1",
+        bookingId,
+      });
+      selectedEquipment.forEach(({ item, qty }) => {
+        params.append("equipment", `${item.id}:${qty}`);
+      });
+      router.push(`/checkout?${params.toString()}`);
+    } catch (error) {
+      alert("Terjadi kesalahan saat membuat booking");
+      setCreating(false);
+    }
+  };
+
   return (
     <Card className="p-6 shadow-sm">
       <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
@@ -110,11 +146,12 @@ export function BookingSummary({
 
       <Button
         type="button"
-        nativeButton={false}
-        disabled={!selectedDate || !selectedTime}
+        disabled={!selectedDate || !selectedTime || creating}
         className="mt-4 h-11 w-full gap-1.5 bg-emerald-700 font-medium hover:bg-emerald-800"
-        render={<Link href={checkoutHref}>Continue to Checkout</Link>}
-      />
+        onClick={handleCheckout}
+      >
+        {creating ? "Memproses..." : "Continue to Checkout"}
+      </Button>
     </Card>
   );
 }

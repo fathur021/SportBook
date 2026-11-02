@@ -81,3 +81,8 @@ export type Equipment = Prisma.EquipmentModel
  * 
  */
 export type Booking = Prisma.BookingModel
+/**
+ * Model Payment
+ * 
+ */
+export type Payment = Prisma.PaymentModel

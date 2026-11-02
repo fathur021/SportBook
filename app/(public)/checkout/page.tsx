@@ -7,7 +7,7 @@ import { getVenueEquipment } from "@/lib/equipment";
 import { ContactDetailsCard } from "@/components/checkout/contact-details-card";
 import { PaymentMethodCard } from "@/components/checkout/payment-method-card";
 import { UserProfile } from "@/lib/user";
-
+import Script from "next/script";
 const HOLD_MS = 10 * 60 * 1000; // 10 menit
 
 const firstParam = (value: string | string[] | undefined) =>
@@ -20,7 +20,7 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
   const duration = parseFloat(firstParam(sp.duration)) || 1;
   const date = firstParam(sp.date);
   const time = firstParam(sp.time);
-
+  const bookingId = firstParam(sp.bookingId);
   // Ambil detail data venue & lapangan
   const venue = getVenueDetail(venueSlug);
   const discipline = venue?.disciplines.find((d) =>
@@ -77,20 +77,33 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
   const grandTotal = courtRentalTotal + equipmentTotal + platformFee - discountAmount;
 
   return (
-    <Container className="flex flex-col gap-6 py-6 max-w-5xl">
+    <>
+      {/* Muat library Snap Midtrans agar window.snap tersedia di browser */}
+      <Script
+        src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+        strategy="afterInteractive"
+      />
+      <Container className="flex flex-col gap-6 py-6 max-w-5xl">
       <VenueBreadcrumb items={breadcrumbItems} />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Kolom Kiri: Reservation Timer & Form Identitas/Pembayaran */}
         <div className="lg:col-span-7 flex flex-col gap-6">
-          <ReservationTimer expiresAt={Date.now() + HOLD_MS} totalMs={HOLD_MS} />
+          {/* Server component dirender ulang tiap request, jadi Date.now() di sini aman */}
+          <ReservationTimer
+            // eslint-disable-next-line react-hooks/purity
+            expiresAt={Date.now() + HOLD_MS}
+            totalMs={HOLD_MS}
+          />
 
           <ContactDetailsCard user={UserProfile} />
 
           <PaymentMethodCard
-            venueName={venue?.name ?? "Gelora Padel"}
-            grandTotal={grandTotal}
-          />
+          venueName={venue?.name ?? "Gelora Padel"}
+          grandTotal={grandTotal}
+          bookingId={bookingId}    // ← TAMBAH INI
+/>
         </div>
 
         {/* Kolom Kanan: Checkout Summary (sejajar tepat di samping Reservation Timer) */}
@@ -112,5 +125,6 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
         </div>
       </div>
     </Container>
+    </>
   );
 }

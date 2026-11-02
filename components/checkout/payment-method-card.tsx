@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { formatRupiah } from "@/lib/format-rupiah";
 import {
@@ -15,31 +15,86 @@ import {
   Check,
 } from "lucide-react";
 
+// Memperkaya tipe global: setelah script Midtrans dimuat, window.snap tersedia di browser
+declare global {
+  interface Window {
+    snap?: { pay: (token: string, opts?: object) => void };
+  }
+}
+
 interface PaymentMethodCardProps {
   venueName?: string;
   grandTotal?: number;
+  bookingId: string;
 }
 
 export function PaymentMethodCard({
   venueName = "Gelora Padel",
   grandTotal = 495000,
+  bookingId,
 }: PaymentMethodCardProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [selectedMethod, setSelectedMethod] = useState<string>("qris");
   const [agreeTerms, setAgreeTerms] = useState<boolean>(true);
+  // status "sedang memproses" supaya tombol tidak bisa bisa di-double-click
+  const [paying, setPaying] = useState<boolean>(false);
+  // // Fungsi saat Pay Now diklik
+  // const handlePayNow = () => {
+  //   const orderId = `SPB-${Date.now().toString().slice(-6)}`;
+  //   const query = new URLSearchParams(searchParams.toString());
+  //   query.set("order_id", orderId);
+  //   query.set("method", selectedMethod);
 
-  // Fungsi saat Pay Now diklik
-  const handlePayNow = () => {
-    const orderId = `SPB-${Date.now().toString().slice(-6)}`;
-    const query = new URLSearchParams(searchParams.toString());
-    query.set("order_id", orderId);
-    query.set("method", selectedMethod);
-    
-    // Pindah ke halaman checkout success
-    router.push(`/checkout/success?${query.toString()}`);
+  //   // Pindah ke halaman checkout success
+  //   router.push(`/checkout/success?${query.toString()}`);
+  // };
+
+  const handlePayNow = async () => {
+    try {
+      setPaying(true); // nyalakan loading
+      //1.Panggil endpoint server kita
+      const res = await fetch(`/bookings/${bookingId}/pay`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ amount: grandTotal }),
+      });
+      //2. ambil json dari response
+      const json = (await res.json()) as {
+        data?: { paymentId: string; token: string };
+        error?: string;
+      };
+      
+        // Kalau gagal → tampilkan error dari server
+      if (!res.ok || !json.data?.token) {
+        alert(json.error ?? "Gagal memulai pembayaran");
+        return;
+      }
+
+      //4. Ambil fungsi snap.pay dari objek global (script dimuat di checkout/page.tsx)
+      // Buka popup Midtrans Snap
+      const snapPay = window.snap?.pay;
+      if (typeof snapPay !== "function") {
+        alert("Halaman pembayaran belum siap, coba lagi");
+        return;
+      }
+      snapPay.call(window.snap, json.data.token, {
+        onSuccess: (result: unknown) => {
+          console.log("Pembayaran sukses", result);
+          // Redirect ke success page dengan paymentId
+          router.push(`/checkout/success?paymentId=${json.data!.paymentId}`);
+        },
+        onPending: (result: unknown) => {
+          console.log("Menunggu pembayaran", result);
+          router.push(`/checkout/success?paymentId=${json.data!.paymentId}`);
+        },
+        onError: (error: unknown) => {
+          console.error("Pembayaran error", error);
+        },
+      });
+    } finally {
+      setPaying(false); // matikan loading lagi (di kasus popup, popup tetap terbuka)
+    }
   };
-
   return (
     <div className="flex flex-col gap-6">
       {/* KARTU 1: SELECT PAYMENT METHOD */}
@@ -121,27 +176,159 @@ export function PaymentMethodCard({
                       fill="currentColor"
                     >
                       {/* Corner Outer Box 1 */}
-                      <rect x="5" y="5" width="28" height="28" rx="4" fill="none" stroke="currentColor" strokeWidth="6" />
-                      <rect x="13" y="13" width="12" height="12" rx="2" fill="currentColor" />
+                      <rect
+                        x="5"
+                        y="5"
+                        width="28"
+                        height="28"
+                        rx="4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                      />
+                      <rect
+                        x="13"
+                        y="13"
+                        width="12"
+                        height="12"
+                        rx="2"
+                        fill="currentColor"
+                      />
                       {/* Corner Outer Box 2 */}
-                      <rect x="67" y="5" width="28" height="28" rx="4" fill="none" stroke="currentColor" strokeWidth="6" />
-                      <rect x="75" y="13" width="12" height="12" rx="2" fill="currentColor" />
+                      <rect
+                        x="67"
+                        y="5"
+                        width="28"
+                        height="28"
+                        rx="4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                      />
+                      <rect
+                        x="75"
+                        y="13"
+                        width="12"
+                        height="12"
+                        rx="2"
+                        fill="currentColor"
+                      />
                       {/* Corner Outer Box 3 */}
-                      <rect x="5" y="67" width="28" height="28" rx="4" fill="none" stroke="currentColor" strokeWidth="6" />
-                      <rect x="13" y="75" width="12" height="12" rx="2" fill="currentColor" />
+                      <rect
+                        x="5"
+                        y="67"
+                        width="28"
+                        height="28"
+                        rx="4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="6"
+                      />
+                      <rect
+                        x="13"
+                        y="75"
+                        width="12"
+                        height="12"
+                        rx="2"
+                        fill="currentColor"
+                      />
                       {/* Center & Accent Pattern Bits */}
-                      <rect x="42" y="10" width="8" height="8" rx="1" fill="currentColor" />
-                      <rect x="42" y="24" width="8" height="8" rx="1" fill="currentColor" />
-                      <rect x="54" y="17" width="8" height="8" rx="1" fill="currentColor" />
-                      <rect x="10" y="42" width="8" height="8" rx="1" fill="currentColor" />
-                      <rect x="24" y="42" width="8" height="8" rx="1" fill="currentColor" />
-                      <rect x="17" y="54" width="8" height="8" rx="1" fill="currentColor" />
-                      <rect x="42" y="42" width="16" height="16" rx="2" fill="currentColor" />
-                      <rect x="67" y="42" width="8" height="8" rx="1" fill="currentColor" />
-                      <rect x="82" y="42" width="8" height="8" rx="1" fill="currentColor" />
-                      <rect x="42" y="67" width="8" height="8" rx="1" fill="currentColor" />
-                      <rect x="42" y="82" width="8" height="8" rx="1" fill="currentColor" />
-                      <rect x="67" y="67" width="24" height="24" rx="3" fill="currentColor" />
+                      <rect
+                        x="42"
+                        y="10"
+                        width="8"
+                        height="8"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="42"
+                        y="24"
+                        width="8"
+                        height="8"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="54"
+                        y="17"
+                        width="8"
+                        height="8"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="10"
+                        y="42"
+                        width="8"
+                        height="8"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="24"
+                        y="42"
+                        width="8"
+                        height="8"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="17"
+                        y="54"
+                        width="8"
+                        height="8"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="42"
+                        y="42"
+                        width="16"
+                        height="16"
+                        rx="2"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="67"
+                        y="42"
+                        width="8"
+                        height="8"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="82"
+                        y="42"
+                        width="8"
+                        height="8"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="42"
+                        y="67"
+                        width="8"
+                        height="8"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="42"
+                        y="82"
+                        width="8"
+                        height="8"
+                        rx="1"
+                        fill="currentColor"
+                      />
+                      <rect
+                        x="67"
+                        y="67"
+                        width="24"
+                        height="24"
+                        rx="3"
+                        fill="currentColor"
+                      />
                     </svg>
                     <span className="text-[10px] font-medium text-slate-400 mt-1">
                       Scan to preview
@@ -155,7 +342,9 @@ export function PaymentMethodCard({
                       <span>Dynamic QR generated on checkout</span>
                     </div>
                     <p className="text-[11px] text-slate-500 leading-relaxed">
-                      The high-definition transaction QR will update with your order total and court slot lock. Auto-detects payment in 3 seconds.
+                      The high-definition transaction QR will update with your
+                      order total and court slot lock. Auto-detects payment in 3
+                      seconds.
                     </p>
 
                     {/* Supported Apps Badges */}
@@ -343,11 +532,17 @@ export function PaymentMethodCard({
           </button>
           <p className="text-xs text-slate-600 leading-relaxed">
             I agree to the{" "}
-            <a href="#" className="font-semibold text-emerald-700 hover:underline">
+            <a
+              href="#"
+              className="font-semibold text-emerald-700 hover:underline"
+            >
               SportBook Terms of Service
             </a>{" "}
             and{" "}
-            <a href="#" className="font-semibold text-emerald-700 hover:underline">
+            <a
+              href="#"
+              className="font-semibold text-emerald-700 hover:underline"
+            >
               {venueName} venue rules
             </a>{" "}
             (free cancellation with full refund up to 12h before match start).
@@ -357,12 +552,16 @@ export function PaymentMethodCard({
         {/* Big Pay Now Button */}
         <button
           type="button"
-          disabled={!agreeTerms}
+          disabled={paying || !agreeTerms}
           onClick={handlePayNow}
           className="mt-5 w-full flex items-center justify-center gap-2 rounded-xl bg-[#03624c] hover:bg-[#02523f] active:scale-[0.99] py-3.5 px-6 text-base font-bold text-white shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           <Lock className="h-4 w-4" />
-          <span>Pay Now • {formatRupiah(grandTotal)}</span>
+          <span>
+            {paying
+              ? "Menyiapkan pembayaran..."
+              : `Pay Now • ${formatRupiah(grandTotal)}`}
+          </span>
         </button>
 
         {/* Trust Badges Footer */}
