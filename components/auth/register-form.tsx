@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { ArrowRightIcon } from "lucide-react";
-
+import { authClient } from "@/lib/auth-client"; 
+import { useRouter } from "next/navigation";
 import { AuthDivider, GoogleButton } from "@/components/auth/auth-social";
 import {
   AuthField,
@@ -17,16 +18,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 function RegisterForm() {
+  const router = useRouter();
   const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function handleConfirmChange(event: ChangeEvent<HTMLInputElement>) {
     if (confirmError && event.target.value) setConfirmError(null);
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
 
     const data = new FormData(event.currentTarget);
+    const name = String(data.get("name") ?? "");
+    const email = String(data.get("email") ?? "");
     const password = String(data.get("password") ?? "");
     const confirmation = String(data.get("confirmPassword") ?? "");
 
@@ -36,10 +43,38 @@ function RegisterForm() {
     }
 
     setConfirmError(null);
+
+    setLoading(true);
+
+    const {error:authError} = await authClient.signUp.email({
+      name,email,password
+    })
+    if(authError){
+      console.error("Registrasi Gagal:",authError);
+      setError(authError.message ?? "Gagal membuat akun, coba lagi.");
+      setLoading(false);
+      return;
+    }
+    setLoading(false);
+    const {data:session} = await authClient.getSession();
+    if(session){
+      router.push("/");
+      router.refresh();
+    }else{
+      router.push("/login");
+    }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {error && (
+        <p
+          className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+          role="alert"
+        >
+          {error}
+        </p>
+      )}
       <AuthField label="Nama lengkap" htmlFor="name">
         <Input
           id="name"
@@ -125,8 +160,9 @@ function RegisterForm() {
         type="submit"
         variant="brand"
         className="h-11 w-full text-sm font-semibold"
+        disabled={loading} 
       >
-        Buat akun
+        {loading ? "Memproses..." : "Buat akun"}
         <ArrowRightIcon className="size-4" />
       </Button>
 

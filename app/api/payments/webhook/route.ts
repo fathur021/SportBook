@@ -41,6 +41,19 @@ export async function POST(request: Request): Promise<Response> {
       return Response.json({ error: "Payment not found" }, { status: 404 });
     }
 
+    const grossAmount = Number(body.gross_amount);
+    if (Number.isNaN(grossAmount) || grossAmount !== payment.amount) {
+      console.error(
+        "Nominal tidak cocok!",
+        body.order_id,
+        "midtrans:",
+        body.gross_amount,
+        "db:",
+        payment.amount,
+      );
+      return Response.json({ error: "Amount mismatch" }, { status: 400 });
+    }
+
     // 4. Kalau sudah PAID, jangan proses ulang
     if (payment.status === "PAID") {
       return Response.json({ message: "Already paid" });
@@ -57,7 +70,10 @@ export async function POST(request: Request): Promise<Response> {
     //    "cancel"   → dibatalkan
     const txStatus = body.transaction_status;
 
-    if (txStatus === "settlement" || (txStatus === "capture" && body.fraud_status === "accept")) {
+    if (
+      txStatus === "settlement" ||
+      (txStatus === "capture" && body.fraud_status === "accept")
+    ) {
       //  PEMBAYARAN BERHASIL → update Payment + Booking
       await prisma.$transaction([
         // Update Payment: status → PAID, catat waktu bayar & metode
@@ -77,7 +93,11 @@ export async function POST(request: Request): Promise<Response> {
       ]);
 
       console.log(" Payment berhasil:", body.order_id);
-    } else if (txStatus === "expire" || txStatus === "cancel" || txStatus === "deny") {
+    } else if (
+      txStatus === "expire" ||
+      txStatus === "cancel" ||
+      txStatus === "deny"
+    ) {
       //  PEMBAYARAN GAGAL/EXPIRED → update Payment saja
       await prisma.payment.update({
         where: { id: payment.id },
@@ -97,6 +117,6 @@ export async function POST(request: Request): Promise<Response> {
     console.error("Webhook error:", error);
     // Tetap balas 200 supaya Midtrans tidak retry terus
     // (error di sisi kita, bukan salah Midtrans)
-    return Response.json({ message: "Error processed" });
+    return Response.json({ error: "Internal error" }, { status: 500 });
   }
 }

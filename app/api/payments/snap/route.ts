@@ -1,7 +1,11 @@
 //route untuk midtrans snap
-
+import { requireUser } from "@/modules/auth/auth.guard";
 export async function POST(request:Request):Promise<Response>{
     try {
+        const authorization = await requireUser(request);
+        if(!authorization.ok){
+            return Response.json({error:authorization.error},{status:authorization.status})
+        }
         // 1. Baca body (boleh gagal/null — tidak masalah untuk test)
         const body = (await request.json().catch(()=> null)) as {amount?:number,} | null;
         // 2. Jumlah tagihan dari body, minimal 1000 (syarat Midtrans)

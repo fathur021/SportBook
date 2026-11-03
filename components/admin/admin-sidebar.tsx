@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -11,10 +12,12 @@ import {
   BarChart3,
   Settings,
   ArrowLeft,
+  LogOut,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 const MENU_GROUPS = [
@@ -39,6 +42,14 @@ const MENU_GROUPS = [
 
 export function AdminSidebar() {
   const pathName = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    // Hapus sesi di server + cookie, lalu keluar dari halaman admin
+    await authClient.signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-slate-200 bg-white md:flex">
@@ -101,8 +112,8 @@ export function AdminSidebar() {
 
       <Separator />
 
-      {/* Tombol Kembali ke Website Publik */}
-      <div className="p-3">
+      {/* Tombol Kembali ke Website Publik & Logout */}
+      <div className="p-3 space-y-1">
         <Link
           href="/"
           className={cn(
@@ -113,6 +124,17 @@ export function AdminSidebar() {
           <ArrowLeft className="h-3.5 w-3.5 text-slate-400" />
           <span>Ke Website Customer</span>
         </Link>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "sm" }),
+            "w-full justify-start gap-2 text-xs text-slate-500 hover:text-red-600"
+          )}
+        >
+          <LogOut className="h-3.5 w-3.5 text-slate-400 hover:text-red-600" />
+          <span>Keluar</span>
+        </button>
       </div>
     </aside>
   );

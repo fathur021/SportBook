@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BellIcon } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { NavbarAuth } from "@/components/layout/navbar-auth";
 import { Container } from "@/components/layout/container";
 import { cn } from "@/lib/utils";
 
@@ -13,11 +14,6 @@ const links = [
 ];
 
 const rightLinks = [{ title: "List Your Venue", href: "/list-your-venue" }];
-
-const authLinks = [
-  { title: "Masuk", href: "/login", variant: "outline" as const },
-  { title: "Register", href: "/register", variant: "brand" as const },
-];
 
 export function Navbar() {
   return (
@@ -75,18 +71,7 @@ export function Navbar() {
 
           <span aria-hidden="true" className="mx-0.5 h-5 w-px bg-border" />
 
-          {authLinks.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                buttonVariants({ variant: item.variant }),
-                "px-2.5 text-sm font-semibold lg:px-3"
-              )}
-            >
-              {item.title}
-            </Link>
-          ))}
+          <NavbarAuth />
         </div>
       </Container>
     </header>
