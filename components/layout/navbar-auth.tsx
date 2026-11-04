@@ -58,7 +58,7 @@ export function NavbarAuth() {
       <span className="hidden text-sm font-semibold sm:inline">
         {session.user.name}
       </span>
-      {session.user.role === "ADMIN" && (
+      {(session.user as { role?: string }).role === "ADMIN" && (
         <span className="rounded border border-emerald-200/60 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
           Admin
         </span>

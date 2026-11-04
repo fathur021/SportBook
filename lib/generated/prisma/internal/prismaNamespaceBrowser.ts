@@ -89,6 +89,7 @@ export const VenueScalarFieldEnum = {
   email: 'email',
   timeZone: 'timeZone',
   coverImage: 'coverImage',
+  facilities: 'facilities',
   isVerified: 'isVerified',
   isActive: 'isActive',
   createdAt: 'createdAt',
@@ -106,6 +107,8 @@ export const CourtScalarFieldEnum = {
   surface: 'surface',
   isIndoor: 'isIndoor',
   pricePerHour: 'pricePerHour',
+  image: 'image',
+  maxPlayers: 'maxPlayers',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

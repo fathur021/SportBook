@@ -39,6 +39,18 @@ export const createCourtSchema = z.object({
     .int("Harga per jam harus bilangan bulat") // Tidak boleh bilangan desimal / koma
     .positive("Harga per jam harus lebih dari 0") // Nilai harga harus di atas 0
     .min(10000, "Harga sewa minimal Rp 10.000"), // Nilai batas minimal sewa
+
+  // URL gambar lapangan (opsional, boleh kosong atau null)
+  image: z.string().trim().max(1000).nullable().optional(),
+
+  // Kapasitas pemain (opsional, contoh: 4 untuk padel, 10 untuk futsal)
+  maxPlayers: z
+    .number()
+    .int("Kapasitas pemain harus bilangan bulat")
+    .positive("Kapasitas pemain harus lebih dari 0")
+    .max(100, "Kapasitas maksimal 100 pemain")
+    .nullable()
+    .optional(),
 });
 
 // Skema validasi untuk update lapangan (Update / PATCH)

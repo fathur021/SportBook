@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import type { FormEvent, ReactElement } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useState, useId } from "react";
+import { useCreateVenueMutation } from "@/lib/redux/admin-api";
 
 type VenueFormDialogProps = {
   trigger: ReactElement;
@@ -23,15 +24,53 @@ type VenueFormDialogProps = {
 
 export function VenueFormDialog({ trigger }: VenueFormDialogProps) {
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState("");
+  const id = useId();
+  const [createVenue, { isLoading }] = useCreateVenueMutation();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError("");
 
-    const data = Object.fromEntries(new FormData(event.currentTarget).entries());
-    console.log(data); // sementara: lihat hasil input di console
-    // TODO: kirim ke API / server action kalau backend sudah siap
+    const formData = new FormData(event.currentTarget);
+    const name = formData.get("name");
+    const slug = formData.get("slug");
+    const address = formData.get("address");
+    const city = formData.get("city");
+    const phone = formData.get("phone");
+    const image = formData.get("image");
+    const facilitiesRaw = formData.get("facilities");
 
-    setOpen(false);
+    if (!name || !slug || !address || !city) return;
+
+    const facilities = facilitiesRaw
+      ? String(facilitiesRaw)
+          .split(",")
+          .map((f) => f.trim())
+          .filter(Boolean)
+      : [];
+
+    const body = {
+      name: String(name),
+      slug: String(slug),
+      address: String(address),
+      city: String(city),
+      phone: phone ? String(phone) : undefined,
+      coverImage: image ? String(image) : undefined,
+      facilities,
+    };
+
+    try {
+      await createVenue(body).unwrap();
+      setOpen(false);
+      event.currentTarget.reset();
+    } catch (err: any) {
+      const message =
+        err?.data?.error?.message ||
+        err?.data?.message ||
+        "Gagal membuat venue";
+      setError(message);
+    }
   }
 
   return (
@@ -68,11 +107,11 @@ export function VenueFormDialog({ trigger }: VenueFormDialogProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="venue-sport">Cabang olahraga *</Label>
+              <Label htmlFor="venue-city">Kota *</Label>
               <Input
-                id="venue-sport"
-                name="sportTag"
-                placeholder="Padel"
+                id="venue-city"
+                name="city"
+                placeholder="Jakarta"
                 required
               />
             </div>
@@ -90,31 +129,32 @@ export function VenueFormDialog({ trigger }: VenueFormDialogProps) {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="venue-price">Harga per jam (Rp) *</Label>
+              <Label htmlFor="venue-phone">Nomor WhatsApp CS</Label>
               <Input
-                id="venue-price"
-                name="pricePerHour"
-                type="number"
-                min={0}
-                placeholder="260000"
-                required
+                id="venue-phone"
+                name="phone"
+                placeholder="081234567890"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="venue-image">URL foto</Label>
+              <Label htmlFor="venue-image">URL foto cover</Label>
               <Input id="venue-image" name="image" placeholder="/hero.webp" />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="venue-specs">Spesifikasi</Label>
+            <Label htmlFor="venue-facilities">Fasilitas Venue</Label>
             <Input
-              id="venue-specs"
-              name="specs"
-              placeholder="4 Panoramic Courts, Indoor AC"
+              id="venue-facilities"
+              name="facilities"
+              placeholder="Free Wi-Fi, AC Lounge, Hot Shower, Parkir Luas"
             />
             <p className="text-xs text-slate-500">Pisahkan dengan koma.</p>
           </div>
+
+          {error && (
+            <p className="text-sm text-red-500">{error}</p>
+          )}
 
           <DialogFooter>
             <DialogClose render={<Button type="button" variant="outline" />}>
@@ -122,9 +162,10 @@ export function VenueFormDialog({ trigger }: VenueFormDialogProps) {
             </DialogClose>
             <Button
               type="submit"
+              disabled={isLoading}
               className="bg-emerald-600 text-white hover:bg-emerald-700"
             >
-              Simpan Venue
+              {isLoading ? "Menyimpan..." : "Simpan Venue"}
             </Button>
           </DialogFooter>
         </form>

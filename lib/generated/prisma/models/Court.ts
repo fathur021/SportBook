@@ -28,10 +28,12 @@ export type AggregateCourt = {
 
 export type CourtAvgAggregateOutputType = {
   pricePerHour: number | null
+  maxPlayers: number | null
 }
 
 export type CourtSumAggregateOutputType = {
   pricePerHour: number | null
+  maxPlayers: number | null
 }
 
 export type CourtMinAggregateOutputType = {
@@ -42,6 +44,8 @@ export type CourtMinAggregateOutputType = {
   surface: string | null
   isIndoor: boolean | null
   pricePerHour: number | null
+  image: string | null
+  maxPlayers: number | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -55,6 +59,8 @@ export type CourtMaxAggregateOutputType = {
   surface: string | null
   isIndoor: boolean | null
   pricePerHour: number | null
+  image: string | null
+  maxPlayers: number | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -68,6 +74,8 @@ export type CourtCountAggregateOutputType = {
   surface: number
   isIndoor: number
   pricePerHour: number
+  image: number
+  maxPlayers: number
   isActive: number
   createdAt: number
   updatedAt: number
@@ -77,10 +85,12 @@ export type CourtCountAggregateOutputType = {
 
 export type CourtAvgAggregateInputType = {
   pricePerHour?: true
+  maxPlayers?: true
 }
 
 export type CourtSumAggregateInputType = {
   pricePerHour?: true
+  maxPlayers?: true
 }
 
 export type CourtMinAggregateInputType = {
@@ -91,6 +101,8 @@ export type CourtMinAggregateInputType = {
   surface?: true
   isIndoor?: true
   pricePerHour?: true
+  image?: true
+  maxPlayers?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -104,6 +116,8 @@ export type CourtMaxAggregateInputType = {
   surface?: true
   isIndoor?: true
   pricePerHour?: true
+  image?: true
+  maxPlayers?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -117,6 +131,8 @@ export type CourtCountAggregateInputType = {
   surface?: true
   isIndoor?: true
   pricePerHour?: true
+  image?: true
+  maxPlayers?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -217,6 +233,8 @@ export type CourtGroupByOutputType = {
   surface: string | null
   isIndoor: boolean
   pricePerHour: number
+  image: string | null
+  maxPlayers: number | null
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -253,6 +271,8 @@ export type CourtWhereInput = {
   surface?: Prisma.StringNullableFilter<"Court"> | string | null
   isIndoor?: Prisma.BoolFilter<"Court"> | boolean
   pricePerHour?: Prisma.IntFilter<"Court"> | number
+  image?: Prisma.StringNullableFilter<"Court"> | string | null
+  maxPlayers?: Prisma.IntNullableFilter<"Court"> | number | null
   isActive?: Prisma.BoolFilter<"Court"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Court"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Court"> | Date | string
@@ -268,6 +288,8 @@ export type CourtOrderByWithRelationInput = {
   surface?: Prisma.SortOrderInput | Prisma.SortOrder
   isIndoor?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
+  image?: Prisma.SortOrderInput | Prisma.SortOrder
+  maxPlayers?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -287,6 +309,8 @@ export type CourtWhereUniqueInput = Prisma.AtLeast<{
   surface?: Prisma.StringNullableFilter<"Court"> | string | null
   isIndoor?: Prisma.BoolFilter<"Court"> | boolean
   pricePerHour?: Prisma.IntFilter<"Court"> | number
+  image?: Prisma.StringNullableFilter<"Court"> | string | null
+  maxPlayers?: Prisma.IntNullableFilter<"Court"> | number | null
   isActive?: Prisma.BoolFilter<"Court"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Court"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Court"> | Date | string
@@ -302,6 +326,8 @@ export type CourtOrderByWithAggregationInput = {
   surface?: Prisma.SortOrderInput | Prisma.SortOrder
   isIndoor?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
+  image?: Prisma.SortOrderInput | Prisma.SortOrder
+  maxPlayers?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -323,6 +349,8 @@ export type CourtScalarWhereWithAggregatesInput = {
   surface?: Prisma.StringNullableWithAggregatesFilter<"Court"> | string | null
   isIndoor?: Prisma.BoolWithAggregatesFilter<"Court"> | boolean
   pricePerHour?: Prisma.IntWithAggregatesFilter<"Court"> | number
+  image?: Prisma.StringNullableWithAggregatesFilter<"Court"> | string | null
+  maxPlayers?: Prisma.IntNullableWithAggregatesFilter<"Court"> | number | null
   isActive?: Prisma.BoolWithAggregatesFilter<"Court"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Court"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Court"> | Date | string
@@ -335,6 +363,8 @@ export type CourtCreateInput = {
   surface?: string | null
   isIndoor?: boolean
   pricePerHour: number
+  image?: string | null
+  maxPlayers?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -350,6 +380,8 @@ export type CourtUncheckedCreateInput = {
   surface?: string | null
   isIndoor?: boolean
   pricePerHour: number
+  image?: string | null
+  maxPlayers?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -363,6 +395,8 @@ export type CourtUpdateInput = {
   surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isIndoor?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  maxPlayers?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -378,6 +412,8 @@ export type CourtUncheckedUpdateInput = {
   surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isIndoor?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  maxPlayers?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -392,6 +428,8 @@ export type CourtCreateManyInput = {
   surface?: string | null
   isIndoor?: boolean
   pricePerHour: number
+  image?: string | null
+  maxPlayers?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -404,6 +442,8 @@ export type CourtUpdateManyMutationInput = {
   surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isIndoor?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  maxPlayers?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -417,6 +457,8 @@ export type CourtUncheckedUpdateManyInput = {
   surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isIndoor?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  maxPlayers?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -445,6 +487,8 @@ export type CourtCountOrderByAggregateInput = {
   surface?: Prisma.SortOrder
   isIndoor?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
+  image?: Prisma.SortOrder
+  maxPlayers?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -452,6 +496,7 @@ export type CourtCountOrderByAggregateInput = {
 
 export type CourtAvgOrderByAggregateInput = {
   pricePerHour?: Prisma.SortOrder
+  maxPlayers?: Prisma.SortOrder
 }
 
 export type CourtMaxOrderByAggregateInput = {
@@ -462,6 +507,8 @@ export type CourtMaxOrderByAggregateInput = {
   surface?: Prisma.SortOrder
   isIndoor?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
+  image?: Prisma.SortOrder
+  maxPlayers?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -475,6 +522,8 @@ export type CourtMinOrderByAggregateInput = {
   surface?: Prisma.SortOrder
   isIndoor?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
+  image?: Prisma.SortOrder
+  maxPlayers?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -482,6 +531,7 @@ export type CourtMinOrderByAggregateInput = {
 
 export type CourtSumOrderByAggregateInput = {
   pricePerHour?: Prisma.SortOrder
+  maxPlayers?: Prisma.SortOrder
 }
 
 export type CourtScalarRelationFilter = {
@@ -539,6 +589,14 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type CourtCreateNestedOneWithoutBookingsInput = {
   create?: Prisma.XOR<Prisma.CourtCreateWithoutBookingsInput, Prisma.CourtUncheckedCreateWithoutBookingsInput>
   connectOrCreate?: Prisma.CourtCreateOrConnectWithoutBookingsInput
@@ -560,6 +618,8 @@ export type CourtCreateWithoutVenueInput = {
   surface?: string | null
   isIndoor?: boolean
   pricePerHour: number
+  image?: string | null
+  maxPlayers?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -573,6 +633,8 @@ export type CourtUncheckedCreateWithoutVenueInput = {
   surface?: string | null
   isIndoor?: boolean
   pricePerHour: number
+  image?: string | null
+  maxPlayers?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -616,6 +678,8 @@ export type CourtScalarWhereInput = {
   surface?: Prisma.StringNullableFilter<"Court"> | string | null
   isIndoor?: Prisma.BoolFilter<"Court"> | boolean
   pricePerHour?: Prisma.IntFilter<"Court"> | number
+  image?: Prisma.StringNullableFilter<"Court"> | string | null
+  maxPlayers?: Prisma.IntNullableFilter<"Court"> | number | null
   isActive?: Prisma.BoolFilter<"Court"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Court"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Court"> | Date | string
@@ -628,6 +692,8 @@ export type CourtCreateWithoutBookingsInput = {
   surface?: string | null
   isIndoor?: boolean
   pricePerHour: number
+  image?: string | null
+  maxPlayers?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -642,6 +708,8 @@ export type CourtUncheckedCreateWithoutBookingsInput = {
   surface?: string | null
   isIndoor?: boolean
   pricePerHour: number
+  image?: string | null
+  maxPlayers?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -670,6 +738,8 @@ export type CourtUpdateWithoutBookingsInput = {
   surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isIndoor?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  maxPlayers?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -684,6 +754,8 @@ export type CourtUncheckedUpdateWithoutBookingsInput = {
   surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isIndoor?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  maxPlayers?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -696,6 +768,8 @@ export type CourtCreateManyVenueInput = {
   surface?: string | null
   isIndoor?: boolean
   pricePerHour: number
+  image?: string | null
+  maxPlayers?: number | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -708,6 +782,8 @@ export type CourtUpdateWithoutVenueInput = {
   surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isIndoor?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  maxPlayers?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -721,6 +797,8 @@ export type CourtUncheckedUpdateWithoutVenueInput = {
   surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isIndoor?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  maxPlayers?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -734,6 +812,8 @@ export type CourtUncheckedUpdateManyWithoutVenueInput = {
   surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isIndoor?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  maxPlayers?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -778,6 +858,8 @@ export type CourtSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   surface?: boolean
   isIndoor?: boolean
   pricePerHour?: boolean
+  image?: boolean
+  maxPlayers?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -794,6 +876,8 @@ export type CourtSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   surface?: boolean
   isIndoor?: boolean
   pricePerHour?: boolean
+  image?: boolean
+  maxPlayers?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -808,6 +892,8 @@ export type CourtSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   surface?: boolean
   isIndoor?: boolean
   pricePerHour?: boolean
+  image?: boolean
+  maxPlayers?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -822,12 +908,14 @@ export type CourtSelectScalar = {
   surface?: boolean
   isIndoor?: boolean
   pricePerHour?: boolean
+  image?: boolean
+  maxPlayers?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CourtOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "venueId" | "name" | "sport" | "surface" | "isIndoor" | "pricePerHour" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["court"]>
+export type CourtOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "venueId" | "name" | "sport" | "surface" | "isIndoor" | "pricePerHour" | "image" | "maxPlayers" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["court"]>
 export type CourtInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   bookings?: boolean | Prisma.Court$bookingsArgs<ExtArgs>
   venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
@@ -854,6 +942,8 @@ export type $CourtPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     surface: string | null
     isIndoor: boolean
     pricePerHour: number
+    image: string | null
+    maxPlayers: number | null
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -1289,6 +1379,8 @@ export interface CourtFieldRefs {
   readonly surface: Prisma.FieldRef<"Court", 'String'>
   readonly isIndoor: Prisma.FieldRef<"Court", 'Boolean'>
   readonly pricePerHour: Prisma.FieldRef<"Court", 'Int'>
+  readonly image: Prisma.FieldRef<"Court", 'String'>
+  readonly maxPlayers: Prisma.FieldRef<"Court", 'Int'>
   readonly isActive: Prisma.FieldRef<"Court", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Court", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Court", 'DateTime'>

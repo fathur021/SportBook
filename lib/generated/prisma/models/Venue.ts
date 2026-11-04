@@ -69,6 +69,7 @@ export type VenueCountAggregateOutputType = {
   email: number
   timeZone: number
   coverImage: number
+  facilities: number
   isVerified: number
   isActive: number
   createdAt: number
@@ -122,6 +123,7 @@ export type VenueCountAggregateInputType = {
   email?: true
   timeZone?: true
   coverImage?: true
+  facilities?: true
   isVerified?: true
   isActive?: true
   createdAt?: true
@@ -212,6 +214,7 @@ export type VenueGroupByOutputType = {
   email: string | null
   timeZone: string
   coverImage: string | null
+  facilities: string[]
   isVerified: boolean
   isActive: boolean
   createdAt: Date
@@ -250,6 +253,7 @@ export type VenueWhereInput = {
   email?: Prisma.StringNullableFilter<"Venue"> | string | null
   timeZone?: Prisma.StringFilter<"Venue"> | string
   coverImage?: Prisma.StringNullableFilter<"Venue"> | string | null
+  facilities?: Prisma.StringNullableListFilter<"Venue">
   isVerified?: Prisma.BoolFilter<"Venue"> | boolean
   isActive?: Prisma.BoolFilter<"Venue"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Venue"> | Date | string
@@ -269,6 +273,7 @@ export type VenueOrderByWithRelationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   timeZone?: Prisma.SortOrder
   coverImage?: Prisma.SortOrderInput | Prisma.SortOrder
+  facilities?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -291,6 +296,7 @@ export type VenueWhereUniqueInput = Prisma.AtLeast<{
   email?: Prisma.StringNullableFilter<"Venue"> | string | null
   timeZone?: Prisma.StringFilter<"Venue"> | string
   coverImage?: Prisma.StringNullableFilter<"Venue"> | string | null
+  facilities?: Prisma.StringNullableListFilter<"Venue">
   isVerified?: Prisma.BoolFilter<"Venue"> | boolean
   isActive?: Prisma.BoolFilter<"Venue"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Venue"> | Date | string
@@ -310,6 +316,7 @@ export type VenueOrderByWithAggregationInput = {
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   timeZone?: Prisma.SortOrder
   coverImage?: Prisma.SortOrderInput | Prisma.SortOrder
+  facilities?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -333,6 +340,7 @@ export type VenueScalarWhereWithAggregatesInput = {
   email?: Prisma.StringNullableWithAggregatesFilter<"Venue"> | string | null
   timeZone?: Prisma.StringWithAggregatesFilter<"Venue"> | string
   coverImage?: Prisma.StringNullableWithAggregatesFilter<"Venue"> | string | null
+  facilities?: Prisma.StringNullableListFilter<"Venue">
   isVerified?: Prisma.BoolWithAggregatesFilter<"Venue"> | boolean
   isActive?: Prisma.BoolWithAggregatesFilter<"Venue"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Venue"> | Date | string
@@ -350,6 +358,7 @@ export type VenueCreateInput = {
   email?: string | null
   timeZone?: string
   coverImage?: string | null
+  facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -369,6 +378,7 @@ export type VenueUncheckedCreateInput = {
   email?: string | null
   timeZone?: string
   coverImage?: string | null
+  facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -388,6 +398,7 @@ export type VenueUpdateInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   timeZone?: Prisma.StringFieldUpdateOperationsInput | string
   coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -407,6 +418,7 @@ export type VenueUncheckedUpdateInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   timeZone?: Prisma.StringFieldUpdateOperationsInput | string
   coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -426,6 +438,7 @@ export type VenueCreateManyInput = {
   email?: string | null
   timeZone?: string
   coverImage?: string | null
+  facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -443,6 +456,7 @@ export type VenueUpdateManyMutationInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   timeZone?: Prisma.StringFieldUpdateOperationsInput | string
   coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -460,10 +474,19 @@ export type VenueUncheckedUpdateManyInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   timeZone?: Prisma.StringFieldUpdateOperationsInput | string
   coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
 }
 
 export type VenueCountOrderByAggregateInput = {
@@ -477,6 +500,7 @@ export type VenueCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   timeZone?: Prisma.SortOrder
   coverImage?: Prisma.SortOrder
+  facilities?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -522,12 +546,21 @@ export type VenueScalarRelationFilter = {
   isNot?: Prisma.VenueWhereInput
 }
 
+export type VenueCreatefacilitiesInput = {
+  set: string[]
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
+}
+
+export type VenueUpdatefacilitiesInput = {
+  set?: string[]
+  push?: string | string[]
 }
 
 export type BoolFieldUpdateOperationsInput = {
@@ -577,6 +610,7 @@ export type VenueCreateWithoutCourtsInput = {
   email?: string | null
   timeZone?: string
   coverImage?: string | null
+  facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -595,6 +629,7 @@ export type VenueUncheckedCreateWithoutCourtsInput = {
   email?: string | null
   timeZone?: string
   coverImage?: string | null
+  facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -629,6 +664,7 @@ export type VenueUpdateWithoutCourtsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   timeZone?: Prisma.StringFieldUpdateOperationsInput | string
   coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -647,6 +683,7 @@ export type VenueUncheckedUpdateWithoutCourtsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   timeZone?: Prisma.StringFieldUpdateOperationsInput | string
   coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -665,6 +702,7 @@ export type VenueCreateWithoutEquipmentInput = {
   email?: string | null
   timeZone?: string
   coverImage?: string | null
+  facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -683,6 +721,7 @@ export type VenueUncheckedCreateWithoutEquipmentInput = {
   email?: string | null
   timeZone?: string
   coverImage?: string | null
+  facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -717,6 +756,7 @@ export type VenueUpdateWithoutEquipmentInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   timeZone?: Prisma.StringFieldUpdateOperationsInput | string
   coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -735,6 +775,7 @@ export type VenueUncheckedUpdateWithoutEquipmentInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   timeZone?: Prisma.StringFieldUpdateOperationsInput | string
   coverImage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -793,6 +834,7 @@ export type VenueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   email?: boolean
   timeZone?: boolean
   coverImage?: boolean
+  facilities?: boolean
   isVerified?: boolean
   isActive?: boolean
   createdAt?: boolean
@@ -813,6 +855,7 @@ export type VenueSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   email?: boolean
   timeZone?: boolean
   coverImage?: boolean
+  facilities?: boolean
   isVerified?: boolean
   isActive?: boolean
   createdAt?: boolean
@@ -830,6 +873,7 @@ export type VenueSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   email?: boolean
   timeZone?: boolean
   coverImage?: boolean
+  facilities?: boolean
   isVerified?: boolean
   isActive?: boolean
   createdAt?: boolean
@@ -847,13 +891,14 @@ export type VenueSelectScalar = {
   email?: boolean
   timeZone?: boolean
   coverImage?: boolean
+  facilities?: boolean
   isVerified?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type VenueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "address" | "city" | "phone" | "email" | "timeZone" | "coverImage" | "isVerified" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["venue"]>
+export type VenueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "address" | "city" | "phone" | "email" | "timeZone" | "coverImage" | "facilities" | "isVerified" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["venue"]>
 export type VenueInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   courts?: boolean | Prisma.Venue$courtsArgs<ExtArgs>
   equipment?: boolean | Prisma.Venue$equipmentArgs<ExtArgs>
@@ -879,6 +924,7 @@ export type $VenuePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     email: string | null
     timeZone: string
     coverImage: string | null
+    facilities: string[]
     isVerified: boolean
     isActive: boolean
     createdAt: Date
@@ -1318,6 +1364,7 @@ export interface VenueFieldRefs {
   readonly email: Prisma.FieldRef<"Venue", 'String'>
   readonly timeZone: Prisma.FieldRef<"Venue", 'String'>
   readonly coverImage: Prisma.FieldRef<"Venue", 'String'>
+  readonly facilities: Prisma.FieldRef<"Venue", 'String[]'>
   readonly isVerified: Prisma.FieldRef<"Venue", 'Boolean'>
   readonly isActive: Prisma.FieldRef<"Venue", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Venue", 'DateTime'>

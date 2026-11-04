@@ -1,6 +1,8 @@
-import Image from "next/image";
-import { BadgeCheck, CircleAlert, Users } from "lucide-react";
+"use client";
 
+import Image from "next/image";
+import { formatRupiah } from "@/lib/format-rupiah";
+import { cn } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -9,47 +11,58 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatRupiah } from "@/lib/format-rupiah";
-import { cn } from "@/lib/utils";
-import type { SportDiscipline, VenueDetail } from "@/lib/venue-detail";
+import { Badge } from "@/components/ui/badge";
+import { useGetVenueCourtsQuery } from "@/lib/redux/admin-api";
 
-type CourtTableProps = {
-  courts: SportDiscipline["courts"];
-  images: VenueDetail["images"];
-  defaultPricePerHour?: number;
-};
+interface CourtTableProps {
+  slug: string;
+}
 
-export function CourtTable({
-  courts,
-  images,
-  defaultPricePerHour,
-}: CourtTableProps) {
+export function CourtTable({ slug }: CourtTableProps) {
+  const { data: courts, isLoading, isError } = useGetVenueCourtsQuery(slug);
+
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="p-8 text-center text-sm text-slate-500">
+          Memuat data court...
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="p-8 text-center text-sm text-red-500">
+          Gagal memuat data court. Coba muat ulang halaman.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <Table>
         <TableHeader className="bg-slate-50">
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="w-[144px]">Foto</TableHead>
-            <TableHead className="min-w-[160px]">Nama Court</TableHead>
-            <TableHead className="min-w-[220px]">Detail</TableHead>
-            <TableHead className="w-[110px]">Kapasitas</TableHead>
-            <TableHead className="w-[130px]">Harga / Jam</TableHead>
-            <TableHead className="w-[110px] text-right">Status</TableHead>
+          <TableRow>
+            <TableHead className="min-w-36">Foto</TableHead>
+            <TableHead className="min-w-44">Nama Court</TableHead>
+            <TableHead className="min-w-56">Detail</TableHead>
+            <TableHead className="min-w-28">Kapasitas</TableHead>
+            <TableHead className="min-w-32">Harga / Jam</TableHead>
+            <TableHead className="min-w-28 text-right">Status</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
-          {courts.length > 0 ? (
+          {courts && courts.length > 0 ? (
             courts.map((court) => {
-              const imageSrc =
-                court.image ?? images[court.imageIndex ?? 0]?.src;
-              const pricePerHour = court.pricePerHour ?? defaultPricePerHour;
-              // Sama seperti di halaman venue (available-court): court yang
-              // statusnya belum diisi dianggap aktif.
-              const isOperational = court.isOperational !== false;
-              const hasDetail = Boolean(
-                court.badge || court.specs?.length || court.features?.length,
-              );
+              const detailParts: string[] = [];
+              if (court.sport) detailParts.push(court.sport);
+              if (court.surface) detailParts.push(court.surface);
+              if (court.isIndoor) detailParts.push("Indoor");
+              else detailParts.push("Outdoor");
 
               return (
                 <TableRow
@@ -57,14 +70,15 @@ export function CourtTable({
                   className="align-middle hover:bg-slate-50/70"
                 >
                   <TableCell className="py-3">
-                    {imageSrc ? (
-                      <Image
-                        src={imageSrc}
-                        alt={court.label}
-                        width={128}
-                        height={80}
-                        className="h-20 w-32 rounded-lg border object-cover"
-                      />
+                    {court.image ? (
+                      <div className="relative h-20 w-32 overflow-hidden rounded-lg bg-slate-100">
+                        <Image
+                          src={court.image}
+                          alt={court.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
                     ) : (
                       <div className="flex h-20 w-32 items-center justify-center rounded-lg bg-slate-100 text-xs text-slate-500">
                         Foto belum ada
@@ -74,80 +88,49 @@ export function CourtTable({
 
                   <TableCell className="whitespace-normal py-3">
                     <p className="font-semibold text-slate-900">
-                      {court.label}
+                      {court.name}
                     </p>
                   </TableCell>
 
                   <TableCell className="whitespace-normal py-3">
-                    {hasDetail ? (
-                      <div className="space-y-2">
-                        {court.badge && (
-                          <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
-                            {court.badge}
-                          </span>
-                        )}
-                        {court.specs && court.specs.length > 0 && (
-                          <p className="text-xs text-slate-500">
-                            {court.specs.join(" • ")}
-                          </p>
-                        )}
-                        {court.features && court.features.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {court.features.map((feature) => (
-                              <span
-                                key={feature}
-                                className="rounded bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600"
-                              >
-                                {feature}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {detailParts.map((part) => (
+                          <Badge
+                            key={part}
+                            variant="secondary"
+                            className="bg-slate-100 text-slate-600 border-slate-200 font-medium"
+                          >
+                            {part}
+                          </Badge>
+                        ))}
                       </div>
-                    ) : (
-                      <p className="text-sm text-slate-400">Belum diisi</p>
-                    )}
+                    </div>
                   </TableCell>
 
                   <TableCell className="py-3">
-                    <span className="inline-flex items-center gap-1.5 text-sm text-slate-700">
-                      <Users className="size-4 text-slate-400" />
-                      {court.maxPlayers != null
-                        ? `${court.maxPlayers} pemain`
-                        : "-"}
+                    <span className="text-sm font-medium text-slate-700">
+                      {court.maxPlayers ? `${court.maxPlayers} Orang` : "-"}
                     </span>
                   </TableCell>
 
                   <TableCell className="py-3">
-                    {pricePerHour != null ? (
-                      <p className="whitespace-nowrap font-semibold text-slate-900">
-                        {formatRupiah(pricePerHour)}
-                        <span className="ml-1 text-xs font-normal text-slate-500">
-                          / jam
-                        </span>
-                      </p>
-                    ) : (
-                      <span className="text-sm text-slate-400">
-                        Belum diatur
+                    <p className="whitespace-nowrap font-semibold text-slate-900">
+                      {formatRupiah(court.pricePerHour)}
+                      <span className="ml-1 text-xs font-normal text-slate-500">
+                        / jam
                       </span>
-                    )}
+                    </p>
                   </TableCell>
 
                   <TableCell className="py-3 text-right">
                     <span
                       className={cn(
                         "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold",
-                        isOperational
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-rose-50 text-rose-700",
+                        "bg-emerald-50 text-emerald-700",
                       )}
                     >
-                      {isOperational ? (
-                        <BadgeCheck className="size-3.5" />
-                      ) : (
-                        <CircleAlert className="size-3.5" />
-                      )}
-                      {isOperational ? "Aktif" : "Nonaktif"}
+                      Aktif
                     </span>
                   </TableCell>
                 </TableRow>
@@ -157,9 +140,9 @@ export function CourtTable({
             <TableRow>
               <TableCell
                 colSpan={6}
-                className="h-24 text-center text-sm text-slate-500"
+                className="py-8 text-center text-sm text-slate-500"
               >
-                Belum ada court untuk cabang olahraga ini.
+                Belum ada court yang terdaftar untuk venue ini.
               </TableCell>
             </TableRow>
           )}

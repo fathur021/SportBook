@@ -18,6 +18,7 @@ model Venue {
   email       String?
   timeZone    String   @default("Asia/Jakarta")
   coverImage  String?
+  facilities  String[] @default([])
   isVerified  Boolean  @default(false)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -35,6 +36,8 @@ model Court {
   surface      String?
   isIndoor     Boolean   @default(false)
   pricePerHour Int
+  image        String?
+  maxPlayers   Int?      @default(4)
   isActive     Boolean   @default(true)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

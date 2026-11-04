@@ -9,7 +9,9 @@ const publicVenueSelect = {
   description: true,
   address: true,
   city: true,
+  phone: true,
   coverImage: true,
+  facilities: true,
   isVerified: true,
   courts: {
     where: { isActive: true },
@@ -21,6 +23,8 @@ const publicVenueSelect = {
       surface: true,
       isIndoor: true,
       pricePerHour: true,
+      image: true,
+      maxPlayers: true,
     },
   },
 } satisfies Prisma.VenueSelect;
@@ -36,6 +40,7 @@ const createdVenueSelect = {
   email: true,
   timeZone: true,
   coverImage: true,
+  facilities: true,
   isVerified: true,
   isActive: true,
   createdAt: true,
@@ -91,11 +96,11 @@ export function findAdminVenues() {
           name: true,
           sport: true,
           pricePerHour: true,
+          image: true,
+          maxPlayers: true,
           isActive: true,
-
-        }
-      }
-
-    }
-  })
+        },
+      },
+    },
+  });
 }

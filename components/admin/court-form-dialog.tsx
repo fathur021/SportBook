@@ -1,12 +1,11 @@
 "use client";
 
 import { useId, useState } from "react";
-import type { FormEvent, ReactElement } from "react";
+import type { ReactElement } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -17,30 +16,57 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useCreateCourtMutation } from "@/lib/redux/admin-api";
 
 type CourtFormDialogProps = {
   trigger: ReactElement;
-  defaultPricePerHour?: number;
-  disciplineLabel?: string;
+  slug: string;
 };
 
 export default function CourtFormDialog({
   trigger,
-  defaultPricePerHour,
-  disciplineLabel,
+  slug,
 }: CourtFormDialogProps) {
   const [open, setOpen] = useState(false);
+  const [createCourt, { isLoading: isSubmitting }] = useCreateCourtMutation();
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isIndoor, setIsIndoor] = useState(false);
   const id = useId();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setFormError(null);
 
-    const data = Object.fromEntries(new FormData(event.currentTarget).entries());
-    console.log(data); // sementara: lihat hasil input di console
-    // TODO: kirim ke API / server action kalau backend sudah siap
+    const formData = new FormData(event.currentTarget);
+    const name = formData.get("name")?.toString()?.trim();
+    const sport = formData.get("sport")?.toString()?.trim();
+    const surfaceRaw = formData.get("surface")?.toString()?.trim();
+    const surface = surfaceRaw || undefined;
+    const pricePerHourStr = formData.get("pricePerHour")?.toString();
+    const pricePerHour = pricePerHourStr ? Number(pricePerHourStr) : undefined;
+    const imageRaw = formData.get("image")?.toString()?.trim();
+    const image = imageRaw || undefined;
+    const maxPlayersStr = formData.get("maxPlayers")?.toString();
+    const maxPlayers = maxPlayersStr ? Number(maxPlayersStr) : undefined;
 
-    setOpen(false);
-  }
+    if (!name || !sport || !pricePerHour) {
+      setFormError("Nama court, cabang olahraga, dan harga per jam wajib diisi.");
+      return;
+    }
+
+    try {
+      await createCourt({
+        slug,
+        body: { name, sport, surface, isIndoor, pricePerHour, image, maxPlayers },
+      }).unwrap();
+      setOpen(false);
+      setIsIndoor(false);
+      event.currentTarget.reset();
+    } catch (err: any) {
+      const serverMsg = err?.data?.error || err?.error || "Gagal membuat court. Coba lagi.";
+      setFormError(serverMsg);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -50,18 +76,22 @@ export default function CourtFormDialog({
         <DialogHeader>
           <DialogTitle>Tambah Court</DialogTitle>
           <DialogDescription>
-            {disciplineLabel
-              ? `Isi data court untuk cabang ${disciplineLabel}. Field bertanda * wajib diisi.`
-              : "Isi data court. Field bertanda * wajib diisi."}
+            Isi data court untuk venue ini. Field bertanda * wajib diisi.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {formError && (
+            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">
+              {formError}
+            </div>
+          )}
+
           <div className="space-y-1.5">
-            <Label htmlFor={`${id}-label`}>Nama court *</Label>
+            <Label htmlFor={`${id}-name`}>Nama court *</Label>
             <Input
-              id={`${id}-label`}
-              name="label"
+              id={`${id}-name`}
+              name="name"
               placeholder="Court 1 - Panoramic Glass"
               required
             />
@@ -69,14 +99,11 @@ export default function CourtFormDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor={`${id}-price`}>Harga per jam (Rp) *</Label>
+              <Label htmlFor={`${id}-sport`}>Cabang olahraga *</Label>
               <Input
-                id={`${id}-price`}
-                name="pricePerHour"
-                type="number"
-                min={0}
-                defaultValue={defaultPricePerHour}
-                placeholder="260000"
+                id={`${id}-sport`}
+                name="sport"
+                placeholder="Padel"
                 required
               />
             </div>
@@ -92,68 +119,67 @@ export default function CourtFormDialog({
             </div>
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor={`${id}-surface`}>Jenis permukaan</Label>
+            <Input
+              id={`${id}-surface`}
+              name="surface"
+              placeholder="Vinyl"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor={`${id}-image`}>URL Gambar</Label>
+            <Input
+              id={`${id}-image`}
+              name="image"
+              type="url"
+              placeholder="https://images.unsplash.com/..."
+            />
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor={`${id}-badge`}>Badge</Label>
+              <Label htmlFor={`${id}-price`}>Harga per jam (Rp) *</Label>
               <Input
-                id={`${id}-badge`}
-                name="badge"
-                placeholder="Featured Arena"
+                id={`${id}-price`}
+                name="pricePerHour"
+                type="number"
+                min={10000}
+                placeholder="260000"
+                required
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor={`${id}-image`}>URL foto</Label>
-              <Input
-                id={`${id}-image`}
-                name="image"
-                placeholder="/hero.webp"
+
+            <div className="flex items-center justify-between gap-4 rounded-lg border p-3">
+              <div className="space-y-0.5">
+                <Label htmlFor={`${id}-indoor`}>Indoor</Label>
+                <p className="text-xs text-slate-500">
+                  Centang jika court indoor.
+                </p>
+              </div>
+              <Switch
+                id={`${id}-indoor`}
+                checked={isIndoor}
+                onCheckedChange={setIsIndoor}
               />
             </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor={`${id}-specs`}>Spesifikasi</Label>
-            <Input
-              id={`${id}-specs`}
-              name="specs"
-              placeholder="Panoramic Glass, Supercourt Mondo Turf"
-            />
-            <p className="text-xs text-slate-500">Pisahkan dengan koma.</p>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor={`${id}-features`}>Fasilitas</Label>
-            <Input
-              id={`${id}-features`}
-              name="features"
-              placeholder="AC Indoor, LED Lighting"
-            />
-            <p className="text-xs text-slate-500">Pisahkan dengan koma.</p>
-          </div>
-
-          <div className="flex items-center justify-between gap-4 rounded-lg border p-3">
-            <div className="space-y-0.5">
-              <Label htmlFor={`${id}-operational`}>Court aktif</Label>
-              <p className="text-xs text-slate-500">
-                Court nonaktif tidak bisa dipesan.
-              </p>
-            </div>
-            <Switch
-              id={`${id}-operational`}
-              name="isOperational"
-              defaultChecked
-            />
           </div>
 
           <DialogFooter>
-            <DialogClose render={<Button type="button" variant="outline" />}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               Batal
-            </DialogClose>
+            </Button>
             <Button
               type="submit"
+              disabled={isSubmitting}
               className="bg-emerald-600 text-white hover:bg-emerald-700"
             >
-              Simpan Court
+              {isSubmitting ? "Menyimpan..." : "Simpan Court"}
             </Button>
           </DialogFooter>
         </form>

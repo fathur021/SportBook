@@ -1,0 +1,13 @@
+"use client";
+import { useRef } from "react";
+import { Provider } from "react-redux";
+import { makeStore, type AppStore } from "@/lib/redux/store";
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  // useRef supaya store hanya dibuat sekali, bukan tiap render
+  const storeRef = useRef<AppStore | null>(null);
+  if (!storeRef.current) {
+    storeRef.current = makeStore();
+  }
+  return <Provider store={storeRef.current}>{children}</Provider>;
+}

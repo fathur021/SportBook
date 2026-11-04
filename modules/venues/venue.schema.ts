@@ -38,10 +38,11 @@ export const createVenueSchema = z.object({
     .optional()
     .transform((val) => (val ? val : null)),
 
-
   timeZone: z.string().trim().min(1).max(100).default("Asia/Jakarta"),
 
   coverImage: z.string().trim().max(2048).nullable().optional(),
+
+  facilities: z.array(z.string().trim()).default([]).optional(),
 });
 
 export const updateVenueSchema = createVenueSchema

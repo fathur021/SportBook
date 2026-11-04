@@ -3,7 +3,6 @@ import { Plus } from "lucide-react";
 import { VenueFormDialog } from "@/components/admin/venue-form-dialog";
 import { VenueTable } from "@/components/admin/venue-table";
 import { Button } from "@/components/ui/button";
-import { venueListings } from "@/lib/listings";
 
 export default function AdminVenuePage() {
   return (
@@ -28,7 +27,7 @@ export default function AdminVenuePage() {
         />
       </div>
 
-      <VenueTable venues={venueListings} />
+      <VenueTable />
     </div>
   );
 }

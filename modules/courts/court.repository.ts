@@ -12,6 +12,8 @@ const courtSelect = {
   surface: true, // Mengambil jenis lantai/permukaan
   isIndoor: true, // Mengambil status indoor/outdoor
   pricePerHour: true, // Mengambil tarif sewa per jam
+  image: true, // Mengambil URL gambar lapangan
+  maxPlayers: true, // Kapasitas pemain
   isActive: true, // Mengambil status aktif (true/false) untuk soft delete
   createdAt: true, // Mengambil timestamp saat data dibuat
   updatedAt: true, // Mengambil timestamp saat data terakhir diubah
@@ -58,12 +60,12 @@ export function updateCourtById(id: string, data: UpdateCourtInput) {
   });
 }
 
-// 5. Menonaktifkan status lapangan / Soft Delete (Delete)
+// 5. Menonaktifkan lapangan / soft delete (Deactivate)
 export function deactivateCourtById(id: string) {
-  // Query Prisma update untuk mengubah isActive menjadi false tanpa menghapus baris dari database
+  // Query Prisma update untuk mengubah status isActive menjadi false
   return prisma.court.update({
-    where: { id }, // Menargetkan baris berdasarkan ID lapangan
-    data: { isActive: false }, // Mengubah status aktif menjadi false
-    select: courtSelect, // Mengembalikan record yang telah dinonaktifkan
+    where: { id }, // Menargetkan baris berdasarkan ID unik lapangan
+    data: { isActive: false }, // Mengubah status menjadi false agar tidak tampil di pencarian publik
+    select: courtSelect, // Mengembalikan data hasil pembaruan
   });
 }
