@@ -59,9 +59,13 @@ function LoginForm() {
 
     const params = new URLSearchParams(window.location.search);
     const next = params.get("next");
+    // ?next= harus path internal (mulai dari "/") — cegah redirect ke situs luar
+    const isInternal =
+      next !== null && next.startsWith("/") && !next.startsWith("//");
+    const isAdminPath = next?.startsWith("/admin") ?? false;
 
-    if (isAdmin && next && next.startsWith("/") && next !== "/login") {
-      // ?next= harus path internal (mulai dari "/") — cegah redirect ke situs luar
+    // User biasa boleh kembali ke halaman asalnya, kecuali halaman admin.
+    if (isInternal && next !== "/login" && (isAdmin || !isAdminPath)) {
       router.push(next);
     } else if (isAdmin) {
       router.push("/admin");

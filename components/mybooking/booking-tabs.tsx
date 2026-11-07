@@ -1,7 +1,7 @@
 "use client";
 
 import { LayoutGrid, TableProperties } from "lucide-react";
-import type { BookingStatus } from "@/lib/mock-bookings";
+import type { BookingStatus } from "@/lib/mybooking-mapper";
 
 interface BookingTabsProps {
   activeTab: BookingStatus;

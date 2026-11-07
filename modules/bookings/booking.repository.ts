@@ -1,10 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
 
+// Batas waktu user menyelesaikan pembayaran sebelum slot dilepas kembali.
+export const BOOKING_HOLD_MS = 10 * 60 * 1000;
+
 // Objek reusable untuk menentukan kolom apa saja yang diambil dari tabel Booking
 const bookingSelect = {
   id: true, // ID unik booking
   orderCode: true, // Kode pesanan yang ditampilkan ke user
+  courtId: true, // ID lapangan
   playDate: true, // Hari main
   startTime: true, // Jam mulai
   endTime: true, // Jam selesai
@@ -14,6 +18,16 @@ const bookingSelect = {
   status: true, // Status booking
   notes: true, // Catatan user
   createdAt: true, // Waktu dibuat
+  // [TAMBAH] Info pembayaran, supaya status lunas ikut terkirim ke API
+  payment: {
+    select: {
+      orderCode: true, // Kode transaksi Midtrans
+      status: true, // PENDING / PAID / EXPIRE / CANCEL / DENY
+      method: true, // Metode bayar dari Midtrans
+      paidAt: true, // Waktu pembayaran berhasil
+      amount: true, // Nominal yang dibayar, dipakai halaman tiket
+    },
+  },
   court: {
     // Relasi: data lapangan yang disewa
     select: {
@@ -26,6 +40,8 @@ const bookingSelect = {
           id: true, // ID venue
           name: true, // Nama venue
           slug: true, // Slug venue (untuk link)
+          address: true, // Alamat venue untuk halaman tiket
+          coverImage: true, // Foto venue untuk kartu MyBooking
         },
       },
     },
@@ -98,6 +114,29 @@ export function insertBooking(
       status: "PENDING", // Booking baru selalu berstatus PENDING
     },
     select: bookingSelect, // Kembalikan data lengkap sesuai format bookingSelect
+  });
+}
+
+//3b. Membatalkan booking PENDING yang sudah tidak mungkin dibayar.
+// - booking tanpa pembayaran yang masa hold-nya sudah lewat
+// - booking yang pembayarannya sudah dinyatakan gagal oleh Midtrans
+// Booking dengan pembayaran PENDING sengaja dibiarkan agar tidak
+// menabrak pembayaran yang masih diproses.
+export function cancelExpiredBookings(
+  tx: Prisma.TransactionClient | typeof prisma = prisma,
+  now = new Date(),
+) {
+  const holdCutoff = new Date(now.getTime() - BOOKING_HOLD_MS);
+
+  return tx.booking.updateMany({
+    where: {
+      status: "PENDING",
+      OR: [
+        { payment: { is: null }, createdAt: { lt: holdCutoff } },
+        { payment: { status: { in: ["EXPIRE", "CANCEL", "DENY"] } } },
+      ],
+    },
+    data: { status: "CANCELLED" },
   });
 }
 
@@ -192,4 +231,53 @@ export function findAllBookings(
       }
     }
   })
+}
+
+export function findBookingsByCourtAndDateRange(
+  tx : Prisma.TransactionClient | typeof prisma,
+  courtId: string,
+  startDate:string,
+  endDate:string
+){
+  return tx.booking.findMany({
+    where:{
+      courtId,
+      status: { in : ["PENDING","CONFIRMED"]},
+      playDate: {gte: startDate, lte:endDate}
+    },
+    select: {
+      playDate:true,
+      startTime:true,
+      endTime:true
+    }
+  })
+
+}
+
+// Mencari booking berdasarkan kode pesanan (untuk halaman tiket)
+export function findBookingByOrderCode(orderCode: string) {
+  return prisma.booking.findUnique({
+    where: { orderCode },
+    select: {
+      ...bookingSelect,
+      userId: true,
+    },
+  });
+}
+
+// Mencari booking berdasarkan ID pembayaran Midtrans
+export async function findBookingByPaymentId(paymentId: string) {
+  const payment = await prisma.payment.findUnique({
+    where: { id: paymentId },
+    select: {
+      booking: {
+        select: {
+          ...bookingSelect,
+          userId: true,
+        },
+      },
+    },
+  });
+
+  return payment?.booking ?? null;
 }

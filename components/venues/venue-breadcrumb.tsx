@@ -12,7 +12,7 @@ export function VenueBreadcrumb({ items }: { items: BreadcrumbItem[] }) {
   return (
     <nav className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
       {items.map((item, i) => (
-        <span key={item.label} className="flex items-center gap-1.5">
+        <span key={`${item.label}-${i}`} className="flex items-center gap-1.5">
           {item.href ? (
             <Link href={item.href} className="text-emerald-700 hover:underline">
               {item.label}

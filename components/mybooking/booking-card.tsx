@@ -4,20 +4,32 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatRupiah } from "@/lib/format-rupiah";
 import { Calendar, Clock, QrCode, RotateCw } from "lucide-react";
-import type { BookingItem } from "@/lib/mock-bookings";
+import {
+  getBookingBadge,
+  type BookingBadgeTone,
+  type MyBookingItem,
+} from "@/lib/mybooking-mapper";
 
 interface BookingCardProps {
-  booking: BookingItem;
+  booking: MyBookingItem;
 }
+
+// Warna badge mengikuti status pembayaran.
+const badgeToneClass: Record<BookingBadgeTone, string> = {
+  emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  amber: "bg-amber-50 text-amber-700 border-amber-200",
+  red: "bg-red-50 text-red-700 border-red-200",
+  slate: "bg-slate-100 text-slate-600 border-slate-200",
+};
 
 export function BookingCard({ booking }: BookingCardProps) {
   const isUpcoming = booking.status === "upcoming";
+  const badge = getBookingBadge(booking);
 
   return (
     <Card className="p-5 rounded-2xl border border-slate-200/90 bg-white shadow-2xs hover:shadow-md transition-all flex flex-col md:flex-row md:items-center justify-between gap-5">
       {/* Sisi Kiri: Foto Venue & Informasi Jadwal */}
       <div className="flex items-start gap-4">
-        {/* Gambar Venue */}
         <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl bg-slate-100 border border-slate-100">
           <Image
             src={booking.venueImage}
@@ -30,7 +42,6 @@ export function BookingCard({ booking }: BookingCardProps) {
           </span>
         </div>
 
-        {/* Detail Info */}
         <div className="flex flex-col gap-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-mono font-bold text-slate-500">
@@ -38,15 +49,9 @@ export function BookingCard({ booking }: BookingCardProps) {
             </span>
             <Badge
               variant="secondary"
-              className={`text-[10px] font-bold capitalize ${
-                isUpcoming
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : booking.status === "completed"
-                  ? "bg-slate-100 text-slate-600"
-                  : "bg-red-50 text-red-700 border-red-200"
-              }`}
+              className={`text-[10px] font-bold ${badgeToneClass[badge.tone]}`}
             >
-              {isUpcoming ? "Confirmed / Paid" : booking.status}
+              {badge.label}
             </Badge>
           </div>
 
@@ -74,7 +79,7 @@ export function BookingCard({ booking }: BookingCardProps) {
       <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 pt-3 md:pt-0 gap-3 shrink-0">
         <div className="text-left md:text-right">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Total Paid
+            {booking.paymentStatus === "PAID" ? "Total Paid" : "Total"}
           </span>
           <p className="text-base font-extrabold text-slate-900">
             {formatRupiah(booking.totalPrice)}
@@ -84,7 +89,7 @@ export function BookingCard({ booking }: BookingCardProps) {
         <div>
           {isUpcoming ? (
             <Link
-              href={`/checkout/success?order_id=${booking.orderId}&venue=${booking.venueSlug}`}
+              href={`/checkout/success?order_id=${booking.orderId}`}
               className="flex items-center gap-1.5 rounded-xl bg-[#03624c] hover:bg-[#02523f] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition"
             >
               <QrCode className="h-3.5 w-3.5" />

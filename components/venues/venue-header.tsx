@@ -13,7 +13,7 @@ export function VenueHeader({ venue }: { venue: VenueDetail }) {
       <VenueBreadcrumb
         items={venue.breadcrumb.map((label, i) => ({
           label,
-          href: i === 0 ? "/venues" : undefined,
+          href: i === 0 ? "/explore" : undefined,
         }))}
       />
       {/* venue.breadcrumb di sini diteruskan lagi ke komponen anak */}
@@ -29,13 +29,15 @@ export function VenueHeader({ venue }: { venue: VenueDetail }) {
           </div>
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1 font-medium text-foreground">
-              <Star className="size-4 fill-amber-400 text-amber-400" />
-              {venue.rating.toFixed(1)}
-              <span className="font-normal text-muted-foreground">
-                ({venue.reviewCount} verified reviews)
+            {venue.reviewCount > 0 && (
+              <span className="flex items-center gap-1 font-medium text-foreground">
+                <Star className="size-4 fill-amber-400 text-amber-400" />
+                {venue.rating.toFixed(1)}
+                <span className="font-normal text-muted-foreground">
+                  ({venue.reviewCount} verified reviews)
+                </span>
               </span>
-            </span>
+            )}
             <span className="flex items-center gap-1">
               <MapPin className="size-4" />
               {venue.address}

@@ -59,14 +59,17 @@ export function VenueListingCard({ venue }: VenueListingCardProps) {
           </Badge>
         </div>
 
-        {/* Badge Overlay Rating & Ulasan di pojok kiri bawah dengan efek kaca (backdrop-blur) */}
-        <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs font-semibold backdrop-blur-sm">
-          <Star className="size-3.5 fill-amber-400 text-amber-400" />
-          {venue.rating.toFixed(1)}
-          <span className="font-normal text-muted-foreground">
-            ({venue.reviewCount} reviews)
-          </span>
-        </div>
+        {/* Badge Overlay Rating & Ulasan di pojok kiri bawah dengan efek kaca (backdrop-blur).
+            Disembunyikan kalau venue belum punya ulasan. */}
+        {venue.reviewCount > 0 && (
+          <div className="absolute bottom-3 left-3 inline-flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs font-semibold backdrop-blur-sm">
+            <Star className="size-3.5 fill-amber-400 text-amber-400" />
+            {venue.rating.toFixed(1)}
+            <span className="font-normal text-muted-foreground">
+              ({venue.reviewCount} reviews)
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ------------------------------------------------------------------- */}
@@ -79,7 +82,8 @@ export function VenueListingCard({ venue }: VenueListingCardProps) {
             <h3 className="text-lg font-semibold">{venue.name}</h3>
             <p className="flex items-center gap-1 text-xs text-muted-foreground">
               <MapPin className="size-3.5 shrink-0" />
-              {venue.address} • {venue.distanceKm} km
+              {venue.address}
+              {venue.distanceKm > 0 && <> • {venue.distanceKm} km</>}
             </p>
           </div>
 

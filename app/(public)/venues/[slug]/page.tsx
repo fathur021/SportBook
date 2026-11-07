@@ -1,8 +1,7 @@
 // Mengimpor notFound untuk mengarahkan ke halaman 404 jika slug venue tidak ditemukan
 import { notFound } from "next/navigation";
-
-// Mengimpor fungsi pencari data detail venue berdasarkan slug
-import { getVenueDetail } from "@/lib/venue-detail";
+import { getPublicVenueBySlug } from "@/modules/venues/venue.service";
+import { toVenueDetail } from "@/lib/venue-detail-mapper";
 
 // Mengimpor pengambil data pilihan waktu per venue
 import { getTimeSlots } from "@/lib/time-slots";
@@ -20,14 +19,13 @@ import { AvailableCourt } from "@/components/courts/available-court";
 
 // Halaman utama detail venue (Server Component async karena membaca params dari URL)
 const page = async (props: PageProps<"/venues/[slug]">) => {
-  // 1. Membaca slug dari URL browser (misal: /venues/gelora-padel-club -> slug = "gelora-padel-club")
   const { slug } = await props.params;
+  // 1. Membaca slug dari URL browser (misal: /venues/gelora-padel-club -> slug = "gelora-padel-club")
+  const data = await getPublicVenueBySlug(slug);
+  if (!data) notFound();
 
-  // 2. Mengambil data detail venue yang cocok dari lib/venue-detail.ts
-  const venue = getVenueDetail(slug);
-
-  // 3. Jika slug tidak ditemukan di data, otomatis tampilkan halaman 404
-  if (!venue) notFound();
+  // 2. Ubah data database menjadi bentuk yang dipakai komponen tampilan
+  const venue = toVenueDetail(data);
 
   return (
     // Container utama agar lebar halaman konsisten dengan halaman lain di website
@@ -66,19 +64,23 @@ const page = async (props: PageProps<"/venues/[slug]">) => {
           />
         </div>
 
-        {/* Kolom Kanan: Widget pemilihan jadwal dan tombol booking lapangan */}
-        <VenueBookingWidget
-          rating={venue.rating}
-          reviewCount={venue.reviewCount}
-          basePricePerHour={venue.pricePerHour}
-          disciplines={venue.disciplines}
-          venueSlug={venue.slug}
-          sessionDurations={venue.sessionDurations}
-          popularSlots={venue.popularSlots}
-          timeSlots={getTimeSlots(venue.slug)}
-          facilityFeeNote={venue.facilityFeeNote}
-          conciergeName={venue.conciergeName}
-        />
+        {/* Kolom Kanan: Widget pemilihan jadwal dan tombol booking lapangan.
+            Disembunyikan kalau venue belum punya lapangan, karena widget
+            membutuhkan minimal satu discipline/court. */}
+        {venue.disciplines.length > 0 && (
+          <VenueBookingWidget
+            rating={venue.rating}
+            reviewCount={venue.reviewCount}
+            basePricePerHour={venue.pricePerHour}
+            disciplines={venue.disciplines}
+            venueSlug={venue.slug}
+            sessionDurations={venue.sessionDurations}
+            popularSlots={venue.popularSlots}
+            timeSlots={getTimeSlots(venue.slug)}
+            facilityFeeNote={venue.facilityFeeNote}
+            conciergeName={venue.conciergeName}
+          />
+        )}
       </div>
     </Container>
   );

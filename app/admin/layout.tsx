@@ -22,7 +22,7 @@ export default async function AdminLayout({
   return (
     <div className="flex min-h-screen bg-slate-50">
       <AdminSidebar />
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 min-w-0 flex-col">
         <header
           className="sticky top-0 z-30 flex h-16 items-center justify-between
         border-b border-slate-200 bg-white px-6"
@@ -45,7 +45,7 @@ export default async function AdminLayout({
             </div>
           </div>
         </header>
-        <main className="flex-1 p-6 md:p-8">{children}</main>
+        <main className="flex-1 min-w-0 max-w-full p-6 md:p-8">{children}</main>
       </div>
     </div>
   );

@@ -1,5 +1,19 @@
 export type TimeSlotOption = { time: string; booked?: boolean };
 
+// Menambah jam pada string "HH:MM". Contoh: ("09:00", 2) => "11:00".
+// Dipakai untuk menghitung jam selesai sesuai durasi sesi.
+export function addHoursToTime(time: string, hours: number) {
+  const [h, m] = time.split(":").map(Number);
+  if (Number.isNaN(h) || Number.isNaN(m)) return time;
+
+  const totalMinutes = h * 60 + m + Math.round(hours * 60);
+  const endHour = Math.floor(totalMinutes / 60) % 24;
+  const endMinute = totalMinutes % 60;
+
+  return `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
+}
+
+
 // Band jam untuk halaman booking; tidak sama dengan opsi filter sidebar
 export const TIME_SLOT_BANDS = [
   { id: "morning", label: "Morning", range: "06:00 - 12:00" },
@@ -123,7 +137,21 @@ export const venueTimeSlots: Record<string, TimeSlotOption[]> = {
   ],
 };
 
+// Slot bawaan untuk venue yang belum punya data khusus (misal venue baru
+// dari database). Mengikuti jam operasional 07:00 - 23:00.
+function buildDefaultTimeSlots(): TimeSlotOption[] {
+  const slots: TimeSlotOption[] = [];
+
+  for (let hour = 7; hour < 23; hour++) {
+    const start = String(hour).padStart(2, "0");
+    const end = String(hour + 1).padStart(2, "0");
+    slots.push({ time: `${start}:00 - ${end}:00` });
+  }
+
+  return slots;
+}
+
 // Getter dipakai oleh page venue, widget, dan halaman /book
 export function getTimeSlots(slug: string): TimeSlotOption[] {
-  return venueTimeSlots[slug] ?? [];
+  return venueTimeSlots[slug] ?? buildDefaultTimeSlots();
 }

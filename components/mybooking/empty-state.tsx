@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Ticket, ArrowRight } from "lucide-react";
-import type { BookingStatus } from "@/lib/mock-bookings";
+import type { BookingStatus } from "@/lib/mybooking-mapper";
 
 interface EmptyStateProps {
   status: BookingStatus;
 }
+
+// Label tab versi bahasa Indonesia.
+const STATUS_LABEL: Record<BookingStatus, string> = {
+  upcoming: "akan datang",
+  completed: "selesai",
+  cancelled: "dibatalkan",
+};
 
 export function EmptyBookingState({ status }: EmptyStateProps) {
   return (
@@ -14,13 +21,14 @@ export function EmptyBookingState({ status }: EmptyStateProps) {
         <Ticket className="h-7 w-7" />
       </div>
       <h3 className="text-base font-bold text-slate-800">
-        Tidak ada booking di status "{status}"
+        Tidak ada booking {STATUS_LABEL[status]}
       </h3>
       <p className="text-xs text-slate-500 max-w-sm mt-1 mb-5">
-        Anda belum memiliki jadwal lapangan di kategori ini. Cari lapangan dan mulai booking sekarang!
+        Anda belum memiliki jadwal lapangan di kategori ini. Cari lapangan dan
+        mulai booking sekarang!
       </p>
       <Link
-        href="/venues"
+        href="/explore"
         className="inline-flex items-center gap-2 rounded-xl bg-[#03624c] hover:bg-[#02523f] px-4 py-2.5 text-xs font-bold text-white transition shadow-sm"
       >
         <span>Jelajahi Lapangan</span>

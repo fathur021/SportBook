@@ -3,23 +3,29 @@ import {
   toDateKey,
   type AvailabilityByDate,
 } from "@/lib/booking-dates";
-
-const SLOT_PATTERN = [4, 6, 7, 5, 2, 1, 3, 0]; // 0 = penuh
+import { getCourtAvailabilityRangeService } from "@/modules/bookings/booking.service";
 
 export async function getCourtAvailability(
-  _courtId: string
+  courtId: string,
 ): Promise<AvailabilityByDate> {
-  // TODO: ganti dengan query database / fetch ke backend berdasarkan _courtId
-  void _courtId;
-  const now = new Date();
-  const result: AvailabilityByDate = {};
+  const today = new Date();
+  const startDate = toDateKey(today);
+  const endDate = toDateKey(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() + MAX_DAYS_AHEAD,
+    ),
+  );
 
-  for (let i = 0; i <= MAX_DAYS_AHEAD; i++) {
-    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
-    result[toDateKey(date)] = {
-      slots: SLOT_PATTERN[i % SLOT_PATTERN.length],
-      maintenance: i > 0 && i % 11 === 0,
-    };
+  const days = await getCourtAvailabilityRangeService(
+    courtId,
+    startDate,
+    endDate,
+  );
+  const result: AvailabilityByDate = {};
+  for (const day of days) {
+    result[day.date] = { slots: day.slots };
   }
   return result;
 }

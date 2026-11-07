@@ -22,12 +22,29 @@ import { cn } from "@/lib/utils";
 
 // Data tombol tanggal statis, ditaruh di luar komponen agar tidak dibuat ulang
 // setiap render.
-const DATES = [
-  { label: "TODAY", day: "24" },
-  { label: "FRI", day: "25" },
-  { label: "SAT", day: "26" },
-  { label: "SUN", day: "27" },
-];
+function buildNextDays(count = 4){
+  const days = []
+  const now = new Date();
+
+  for (let i = 0; i < count ; i++){
+    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+    const iso = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+    
+    days.push({
+      iso,
+      label:i === 0 
+        ? "TODAY"
+        : date.toLocaleDateString("en-us",{weekday:"short"})
+              .toUpperCase(),
+      day: String(date.getDate()).padStart(2, "0"),
+      display: `${
+        i === 0 ? "Today, " : ""
+      }${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
+    });
+  }
+  return days;
+}
 
 interface VenueBookingWidgetProps {
   rating: number;
@@ -54,24 +71,28 @@ export function VenueBookingWidget({
   conciergeName,
   venueSlug,
 }: VenueBookingWidgetProps) {
-  const [sportSlug, setSportSlug] = useState(disciplines[0].slug);
+  const days = useMemo(()=> buildNextDays(), [])
+
+  const [sportSlug, setSportSlug] = useState(disciplines[0]?.slug ?? "");
+  
   const activeSport =
     disciplines.find((d) => d.slug === sportSlug) ?? disciplines[0];
 
-  const [courtId, setCourtId] = useState(activeSport.courts[0].id);
+
+  const [courtId, setCourtId] = useState(activeSport?.courts[0]?.id ?? "");
   const [dateIndex, setDateIndex] = useState(0);
-  const [duration, setDuration] = useState(
-    sessionDurations[1] ?? sessionDurations[0],
-  );
-  const [selectedSlot, setSelectedSlot] = useState(
-    popularSlots[1]?.time ?? popularSlots[0]?.time ?? "",
-  );
+
+  const [duration, setDuration] = useState(sessionDurations[0] ?? "1 Hour");
+
+  const [selectedSlot, setSelectedSlot] = useState(popularSlots[0]?.time ?? "");
   const [selectedTime, setSelectedTime] = useState(
     timeSlots.find((t) => !t.booked)?.time ?? "",
   );
 
+  const selectedSlotData = popularSlots.find((s)=> s.time === selectedSlot)
+
   const activeCourt =
-    activeSport.courts.find((c) => c.id === courtId) ?? activeSport.courts[0];
+    activeSport?.courts.find((c) => c.id === courtId) ?? activeSport.courts[0];
   const hourlyPrice = activeCourt?.pricePerHour ?? basePricePerHour;
 
   // "1.5 Hours" -> 1.5 ("|| 1" untuk nilai NaN dianggap 1 jam)
@@ -81,12 +102,14 @@ export function VenueBookingWidget({
     [hourlyPrice, durationHours],
   );
 
+  if (!activeSport || activeSport.courts.length === 0) return null;
+
   const handleSportChange = (slug: string) => {
     setSportSlug(slug);
     const nextSport = disciplines.find((d) => d.slug === slug);
-    if (nextSport) {
-      setCourtId(nextSport.courts[0].id);
-    }
+    const firstCourt = nextSport?.courts[0];
+    if(firstCourt) setCourtId(firstCourt.id)
+    
   };
 
   return (
@@ -104,13 +127,15 @@ export function VenueBookingWidget({
             </span>
           </p>
         </div>
-        <span className="flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-sm font-semibold">
-          <Star className="size-4 fill-amber-400 text-amber-400" />
-          {rating.toFixed(1)}
-          <span className="font-normal text-muted-foreground">
-            ({reviewCount})
+        {reviewCount > 0 && (
+          <span className="flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-sm font-semibold">
+            <Star className="size-4 fill-amber-400 text-amber-400" />
+            {rating.toFixed(1)}
+            <span className="font-normal text-muted-foreground">
+              ({reviewCount})
+            </span>
           </span>
-        </span>
+        )}
       </div>
 
       <div className="space-y-1.5">
@@ -158,15 +183,16 @@ export function VenueBookingWidget({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold">Select Session Date</p>
-          <span className="text-[11px] text-emerald-700">Today, Oct 24</span>
+          <span className="text-[11px] text-emerald-700">{days[dateIndex].display}</span>
         </div>
         <div className="grid grid-cols-4 gap-2">
-          {DATES.map((d, i) => {
+          {days.map((d, i) => {
             const isSelected = i === dateIndex;
             return (
               <button
                 key={d.label}
                 type="button"
+                aria-pressed={isSelected}
                 onClick={() => setDateIndex(i)}
                 className={cn(
                   "flex flex-col items-center rounded-lg py-2 text-xs font-medium",
@@ -226,12 +252,18 @@ export function VenueBookingWidget({
         </div>
       </div>
 
+
+      {popularSlots.length > 0 && (
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold">Popular Slots Tonight</p>
-          <span className="text-[11px] text-muted-foreground">
-            3 spots left
-          </span>
+          
+            {selectedSlotData?.spotsLeft !== undefined && (
+               <span className="text-[11px] text-muted-foreground">
+                {selectedSlotData.spotsLeft} spots left
+              </span>
+            )}
+
         </div>
         <div className="grid grid-cols-3 gap-2">
           {popularSlots.map((slot) => {
@@ -239,6 +271,7 @@ export function VenueBookingWidget({
             return (
               <button
                 key={slot.time}
+                aria-pressed={isSelected}
                 type="button"
                 onClick={() => {
                   setSelectedSlot(slot.time);
@@ -260,7 +293,7 @@ export function VenueBookingWidget({
           })}
         </div>
       </div>
-
+        )}
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">Current Court Rate</span>
         <span className="font-semibold text-emerald-700">
@@ -293,7 +326,8 @@ export function VenueBookingWidget({
         nativeButton={false}
         render={
           <Link
-            href={`/venues/${venueSlug}/book?sport=${sportSlug}&court=${courtId}&date=${DATES[dateIndex].label}&duration=${encodeURIComponent(duration)}`}
+          
+            href={`/venues/${venueSlug}/book?sport=${sportSlug}&court=${courtId}&date=${days[dateIndex].iso}&duration=${encodeURIComponent(duration)}`}
             className="h-11 w-full gap-1.5 bg-emerald-700 font-medium hover:bg-emerald-800"
           >
             <Zap className="size-4" />

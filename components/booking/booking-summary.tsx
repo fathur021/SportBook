@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatRupiah } from "@/lib/format-rupiah";
+import { addHoursToTime } from "@/lib/time-slots";
 import type { EquipmentItem } from "@/lib/equipment";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -54,8 +55,15 @@ export function BookingSummary({
   );
   const total = sessionPrice + equipmentTotal;
 
+  // [TAMBAH] Ambil jam mulai dari slot, lalu hitung jam selesai sesuai durasi.
+  const startTime = selectedTime?.split(" - ")[0] ?? null;
+  const endTime = startTime ? addHoursToTime(startTime, durationHours) : null;
+  const timeLabel =
+    startTime && endTime ? `${startTime} - ${endTime}` : "Belum dipilih";
+
   const handleCheckout = async () => {
-    if (!selectedDate || !selectedTime) return;
+    // [GANTI] startTime sekarang sudah dihitung di atas.
+    if (!selectedDate || !startTime) return;
     setCreating(true);
     try {
       const res = await fetch("/api/bookings", {
@@ -64,7 +72,7 @@ export function BookingSummary({
         body: JSON.stringify({
           courtId,
           playDate: selectedDate,
-          startTime: selectedTime,
+          startTime,
           durationHour: durationHours,
         }),
       });
@@ -85,7 +93,7 @@ export function BookingSummary({
         venue: venueSlug,
         court: courtId,
         date: selectedDate,
-        time: selectedTime,
+        time: startTime,
         duration: duration ?? "1",
         bookingId,
       });
@@ -93,7 +101,7 @@ export function BookingSummary({
         params.append("equipment", `${item.id}:${qty}`);
       });
       router.push(`/checkout?${params.toString()}`);
-    } catch (error) {
+    } catch {
       alert("Terjadi kesalahan saat membuat booking");
       setCreating(false);
     }
@@ -114,7 +122,8 @@ export function BookingSummary({
           label="Date"
           value={selectedDate ? formatDateKey(selectedDate) : "Belum dipilih"}
         />
-        <Row label="Time" value={selectedTime ?? "Belum dipilih"} />
+        {/* [GANTI] Pakai timeLabel agar jam selesai ikut durasi. */}
+        <Row label="Time" value={timeLabel} />
       </div>
 
       <div className="mt-4 space-y-1.5 border-t pt-3 text-sm">

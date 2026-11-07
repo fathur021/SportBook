@@ -7,8 +7,17 @@ import { VenueListings } from "@/components/venues/venue-listings";
 import { VenuePagination } from "@/components/venues/venue-pagination";
 
 import { filterVenues } from "@/lib/filter-venues";
-import { venueListings } from "@/lib/listings";
 import { paginate, parsePage } from "@/lib/pagination";
+
+// [HAPUS] Baris lama: import { venueListings } from "@/lib/listings";
+
+// [TAMBAH] Ambil data asli dari database dan ubah bentuknya.
+import { listPublicVenues } from "@/modules/venues/venue.service";
+import { toVenueListing } from "@/lib/venue-listings";
+
+// [TAMBAH] Supaya data selalu diambil ulang saat halaman dibuka,
+// tidak dibekukan sekali saat proses build.
+export const dynamic = "force-dynamic";
 
 const PER_PAGE = 6;
 
@@ -16,10 +25,15 @@ const page = async function Page(props: PageProps<"/explore">) {
   // Di Next 16 searchParams itu Promise, bukan objek biasa
   const sp = await props.searchParams;
 
-  // 1. filter dulu dari semua data
-  const filtered = filterVenues(venueListings, sp);
+  // [TAMBAH] 1. Ambil venue aktif dari database, lalu ubah ke bentuk VenueListing.
+  const venuesFromDb = await listPublicVenues();
+  const listings = venuesFromDb.map(toVenueListing);
 
-  // 2. baru dipaginasi dari hasil filter
+  // [GANTI] Dulu: filterVenues(venueListings, sp)
+  // Sekarang memakai hasil query database di atas.
+  const filtered = filterVenues(listings, sp);
+
+  // 2. Baru dipaginasi dari hasil filter
   const { items, total, totalPages, currentPage, hasPrev, hasNext } = paginate(
     filtered,
     parsePage(sp.page),

@@ -17,11 +17,16 @@ export async function POST(request: Request): Promise<Response> {
     };
 
     // 2. Verifikasi signature — pastikan request benar dari Midtrans
-    //    Rumus: SHA512(order_id + status_code + gross_amount + serverKey)
-    const serverKey = process.env.MIDTRANS_SERVER_KEY!;
+    //    Rumus: SHA512(order_id + status_code + gross_amount + signatureKey)
+    //    Midtrans memakai kunci tanda tangan notifikasi yang berbeda dari
+    //    server key untuk memanggil API. Kalau tidak diisi, pakai server key.
+    const signatureKey =
+      process.env.MIDTRANS_SIGNATURE_KEY ?? process.env.MIDTRANS_SERVER_KEY!;
     const expectedSignature = crypto
       .createHash("sha512")
-      .update(body.order_id + body.status_code + body.gross_amount + serverKey)
+      .update(
+        body.order_id + body.status_code + body.gross_amount + signatureKey,
+      )
       .digest("hex");
 
     if (body.signature_key !== expectedSignature) {
@@ -74,7 +79,7 @@ export async function POST(request: Request): Promise<Response> {
       txStatus === "settlement" ||
       (txStatus === "capture" && body.fraud_status === "accept")
     ) {
-      //  PEMBAYARAN BERHASIL → update Payment + Booking
+    //  PEMBAYARAN BERHASIL → update Payment + Booking
       await prisma.$transaction([
         // Update Payment: status → PAID, catat waktu bayar & metode
         prisma.payment.update({
@@ -98,13 +103,23 @@ export async function POST(request: Request): Promise<Response> {
       txStatus === "cancel" ||
       txStatus === "deny"
     ) {
-      //  PEMBAYARAN GAGAL/EXPIRED → update Payment saja
-      await prisma.payment.update({
-        where: { id: payment.id },
-        data: {
-          status: txStatus.toUpperCase(), // "EXPIRE", "CANCEL", atau "DENY"
-        },
-      });
+      //  PEMBAYARAN GAGAL/EXPIRED → update Payment + batalkan Booking
+      //  supaya slot lapangan langsung dilepas dan status di admin ikut benar.
+      await prisma.$transaction([
+        prisma.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: txStatus.toUpperCase(), // "EXPIRE", "CANCEL", atau "DENY"
+          },
+        }),
+        prisma.booking.updateMany({
+          where: {
+            id: payment.bookingId,
+            status: { in: ["PENDING", "CONFIRMED"] },
+          },
+          data: { status: "CANCELLED" },
+        }),
+      ]);
 
       console.log(" Payment gagal/expired:", body.order_id, txStatus);
     }

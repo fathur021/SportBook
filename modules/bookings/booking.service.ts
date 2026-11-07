@@ -9,6 +9,8 @@ import {
   runInTransaction,
   updateBookingStatusById,
   findAllBookings,
+  findBookingByOrderCode,
+  findBookingByPaymentId,
 } from "./booking.repository"; // import fungsi query dari repository
 import type { CreateBookingInput } from "./booking.schema"; // mengimport
 
@@ -278,4 +280,73 @@ export async function updateBookingStatusService(
      throw new InvalidStatusTransitionError();
   }
   return updateBookingStatusById(BookingId,newStatus);
+}
+
+//7. Slot tersedia per tanggal dalam rentang (untuk calendar view)
+function toDateKeyLocal(d: Date) {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const date = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${date}`;
+}
+
+export async function getCourtAvailabilityRangeService(
+  courtId: string,
+  startDate: string,
+  endDate: string,
+) {
+  // Validasi court sekali di awal
+  const court = await findCourtById(prisma, courtId);
+  if (!court || !court.isActive || !court.venue.isActive) {
+    throw new CourtNotFoundError();
+  }
+
+  // Generate semua tanggal dalam rentang
+  const dates: string[] = [];
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    dates.push(toDateKeyLocal(d));
+  }
+
+  // Untuk setiap tanggal, hitung slot tersedia
+  const results = [];
+  for (const date of dates) {
+    try {
+      const availability = await getAvailabilityService(courtId, date);
+      const availableSlots = availability.slots.filter((s) => !s.isBooked).length;
+      results.push({ date, slots: availableSlots });
+    } catch {
+      // Jika error (seharusnya tidak terjadi karena court sudah divalidasi), skip
+      results.push({ date, slots: 0 });
+    }
+  }
+
+  return results;
+}
+
+//8. Ambil detail booking untuk halaman tiket/receipt (checkout/success)
+export async function getBookingReceiptService(
+  identifier: { orderCode?: string; paymentId?: string },
+  userId: string,
+  isAdmin: boolean,
+) {
+  let booking = null;
+
+  if (identifier.orderCode) {
+    booking = await findBookingByOrderCode(identifier.orderCode);
+  } else if (identifier.paymentId) {
+    booking = await findBookingByPaymentId(identifier.paymentId);
+  }
+
+  if (!booking) {
+    return null;
+  }
+
+  // Admin bisa melihat booking siapa saja
+  if (!isAdmin && booking.userId !== userId) {
+    return null;
+  }
+
+  return booking;
 }

@@ -12,6 +12,45 @@ export interface AdminCourt {
   isActive?: boolean;
 }
 
+export interface AdminBooking {
+  id: string;
+  orderCode: string;
+  courtId?: string;
+  playDate: string;
+  startTime: string;
+  endTime: string;
+  durationHour: number;
+  pricePerHour: number;
+  totalPrice: number;
+  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+  notes?: string | null;
+  createdAt: string;
+  court: {
+    id: string;
+    name: string;
+    sport: string;
+    venue?: {
+      id: string;
+      name: string;
+      slug: string;
+      address?: string | null;
+      coverImage?: string | null;
+    };
+  };
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  payment?: {
+    orderCode: string;
+    status: string;
+    method?: string | null;
+    paidAt?: string | null;
+    amount?: number | null;
+  } | null;
+}
+
 export interface AdminVenue {
   id: string;
   slug: string;
@@ -72,7 +111,7 @@ export interface UpdateCourtBody {
 const adminApi = createApi({
   reducerPath: "adminApi",
   baseQuery: fetchBaseQuery({ baseUrl: "/", credentials: "include" }),
-  tagTypes: ["AdminVenue", "AdminCourt"],
+  tagTypes: ["AdminVenue", "AdminCourt", "AdminBooking"],
   endpoints: (build) => ({
     getAdminVenues: build.query<AdminVenue[], void>({
       query: () => "/api/admin/venues",
@@ -156,6 +195,34 @@ const adminApi = createApi({
       }),
       invalidatesTags: (_r, _e, { slug }) => [{ type: "AdminCourt", id: slug }],
     }),
+
+    getAdminBookings: build.query<
+      AdminBooking[],
+      { playDate?: string; status?: string } | void
+    >({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params?.playDate) searchParams.set("playDate", params.playDate);
+        if (params?.status) searchParams.set("status", params.status);
+        const qs = searchParams.toString();
+        return `/api/admin/booking${qs ? `?${qs}` : ""}`;
+      },
+      transformResponse: (res: { data: AdminBooking[] }) => res.data,
+      providesTags: ["AdminBooking"],
+    }),
+
+    updateBookingStatus: build.mutation<
+      AdminBooking,
+      { bookingId: string; status: string }
+    >({
+      query: ({ bookingId, status }) => ({
+        url: `/api/admin/booking/${bookingId}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+      transformResponse: (res: { data: AdminBooking }) => res.data,
+      invalidatesTags: ["AdminBooking"],
+    }),
   }),
 });
 
@@ -169,6 +236,8 @@ export const {
   useCreateCourtMutation,
   useUpdateCourtMutation,
   useDeactivateCourtMutation,
+  useGetAdminBookingsQuery,
+  useUpdateBookingStatusMutation,
 } = adminApi;
 
 export default adminApi;
