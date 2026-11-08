@@ -17,6 +17,8 @@ import {
   BookingNotFoundError,
   cancelBookingService,
   createBookingService,
+  EquipmentStockError,
+  EquipmentUnavailableError,
   getAvailabilityService,
   InvalidOperatingHourError,
   listMyBookingService,
@@ -108,6 +110,12 @@ export async function createBookingController(
     }
     // Slot sudah diambil → HTTP 409
     if (error instanceof SlotUnavailableError) {
+      return Response.json({ error: error.message }, { status: 409 });
+    }
+    if (
+      error instanceof EquipmentUnavailableError ||
+      error instanceof EquipmentStockError
+    ) {
       return Response.json({ error: error.message }, { status: 409 });
     }
     // Jam di luar jam operasional → HTTP 400

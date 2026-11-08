@@ -2,15 +2,19 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import {
   createEquipment,
   deactivateEquipmentById,
+  findEquipmentCountsByVenueIds,
   findEquipmentsByVenueId,
   findVenueBySlug,
   updateEquipmentById,
+  findActiveEquipmentsByVenueId,
+  deleteEquipmentById,
 } from "./equipment.repository";
 import type {
   CreateEquipmentInput,
   UpdateEquipmentInput,
 } from "./equipment.schema";
 import { VenueNotFoundError } from "../venues/venue.service";
+import { requireAdmin } from "../auth/auth.guard";
 
 export class EquipmentNotFoundError extends Error {
   constructor() {
@@ -33,6 +37,30 @@ export async function listEquipmentsByVenueSlugService(venueSlug: string) {
     throw new VenueNotFoundError();
   }
   return findEquipmentsByVenueId(venue.id);
+}
+
+export async function listActiveEquipmentsByVenueSlugService(
+  venueSlug: string,
+) {
+  const venue = await findVenueBySlug(venueSlug);
+
+  if (!venue) {
+    throw new VenueNotFoundError();
+  }
+
+  return findActiveEquipmentsByVenueId(venue.id);
+}
+
+// Hitung jumlah peralatan per venue untuk daftar admin.
+export async function countEquipmentsByVenueIdsService(venueIds: string[]) {
+  const rows = await findEquipmentCountsByVenueIds(venueIds);
+  const counts = new Map<string, number>();
+
+  for (const row of rows) {
+    counts.set(row.venueId, (counts.get(row.venueId) ?? 0) + 1);
+  }
+
+  return counts;
 }
 
 // 2. Tambah peralatan baru ke venue
@@ -85,6 +113,20 @@ export async function updateEquipmentService(
 export async function deactivateEquipmentService(equipmentId: string) {
   try {
     return await deactivateEquipmentById(equipmentId);
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      throw new EquipmentNotFoundError();
+    }
+    throw error;
+  }
+}
+
+export async function deleteEquipmentService(equipmentId: string) {
+  try {
+    return await deleteEquipmentById(equipmentId);
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

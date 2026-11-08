@@ -6,42 +6,54 @@ export const BOOKING_HOLD_MS = 10 * 60 * 1000;
 
 // Objek reusable untuk menentukan kolom apa saja yang diambil dari tabel Booking
 const bookingSelect = {
-  id: true, // ID unik booking
-  orderCode: true, // Kode pesanan yang ditampilkan ke user
-  courtId: true, // ID lapangan
-  playDate: true, // Hari main
-  startTime: true, // Jam mulai
-  endTime: true, // Jam selesai
-  durationHour: true, // Lama sewa
-  pricePerHour: true, // Harga per jam saat booking dibuat
-  totalPrice: true, // Total harga
-  status: true, // Status booking
-  notes: true, // Catatan user
-  createdAt: true, // Waktu dibuat
-  // [TAMBAH] Info pembayaran, supaya status lunas ikut terkirim ke API
+  id: true,
+  orderCode: true,
+  courtId: true,
+  playDate: true,
+  startTime: true,
+  endTime: true,
+  durationHour: true,
+  pricePerHour: true,
+  totalPrice: true,
+  status: true,
+  notes: true,
+  createdAt: true,
   payment: {
     select: {
-      orderCode: true, // Kode transaksi Midtrans
-      status: true, // PENDING / PAID / EXPIRE / CANCEL / DENY
-      method: true, // Metode bayar dari Midtrans
-      paidAt: true, // Waktu pembayaran berhasil
-      amount: true, // Nominal yang dibayar, dipakai halaman tiket
+      orderCode: true,
+      status: true,
+      method: true,
+      paidAt: true,
+      amount: true,
+    },
+  },
+  equipments: {
+    select: {
+      id: true,
+      equipmentId: true,
+      name: true,
+      price: true,
+      quantity: true,
+      subtotal: true,
     },
   },
   court: {
-    // Relasi: data lapangan yang disewa
     select: {
-      id: true, // ID lapangan
-      name: true, // Nama lapangan
-      sport: true, // Cabang olahraga
+      id: true,
+      name: true,
+      sport: true,
+      surface: true,
+      isIndoor: true,
+      maxPlayers: true,
+      pricePerHour: true,
+      image: true,
       venue: {
-        // Relasi bertingkat: data venue pemilik lapangan
         select: {
-          id: true, // ID venue
-          name: true, // Nama venue
-          slug: true, // Slug venue (untuk link)
-          address: true, // Alamat venue untuk halaman tiket
-          coverImage: true, // Foto venue untuk kartu MyBooking
+          id: true,
+          name: true,
+          slug: true,
+          address: true,
+          coverImage: true,
         },
       },
     },
@@ -72,6 +84,26 @@ export function findCourtById(
   });
 }
 
+export function findEquipmentsForBooking(
+  tx: Prisma.TransactionClient,
+  venueId: string,
+  equipmentIds: string[],
+) {
+  return tx.equipment.findMany({
+    where: {
+      venueId,
+      id: { in: equipmentIds },
+    },
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      stock: true,
+      isActive: true,
+    },
+  });
+}
+
 //2 Mengambil semua booking aktif(pending | confirmed) milik satu lapangan di satu tanggal
 export function findBookingConflictList(
   tx: Prisma.TransactionClient | typeof prisma,
@@ -93,9 +125,8 @@ export function findBookingConflictList(
 
 // 3. Memasukkan booking baru ke database (dipanggil di dalam transaksi)
 export function insertBooking(
-  tx: Prisma.TransactionClient, // Client transaksi
+  tx: Prisma.TransactionClient,
   data: {
-    // Data booking yang sudah diproses oleh service
     orderCode: string;
     courtId: string;
     userId: string;
@@ -106,14 +137,26 @@ export function insertBooking(
     pricePerHour: number;
     totalPrice: number;
     notes?: string | null;
+    equipments: {
+      equipmentId: string;
+      name: string;
+      price: number;
+      quantity: number;
+      subtotal: number;
+    }[];
   },
 ) {
+  const { equipments, ...bookingData } = data;
+
   return tx.booking.create({
     data: {
-      ...data, // Sebarkan semua data yang sudah diproses
-      status: "PENDING", // Booking baru selalu berstatus PENDING
+      ...bookingData,
+      status: "PENDING",
+      ...(equipments.length > 0
+        ? { equipments: { create: equipments } }
+        : {}),
     },
-    select: bookingSelect, // Kembalikan data lengkap sesuai format bookingSelect
+    select: bookingSelect,
   });
 }
 

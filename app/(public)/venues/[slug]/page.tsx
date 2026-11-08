@@ -3,9 +3,6 @@ import { notFound } from "next/navigation";
 import { getPublicVenueBySlug } from "@/modules/venues/venue.service";
 import { toVenueDetail } from "@/lib/venue-detail-mapper";
 
-// Mengimpor pengambil data pilihan waktu per venue
-import { getTimeSlots } from "@/lib/time-slots";
-
 // Mengimpor komponen-komponen UI penyusun halaman venue detail
 import { Container } from "@/components/layout/container";
 import { VenueGallery } from "@/components/venues/venue-gallery";
@@ -75,8 +72,6 @@ const page = async (props: PageProps<"/venues/[slug]">) => {
             disciplines={venue.disciplines}
             venueSlug={venue.slug}
             sessionDurations={venue.sessionDurations}
-            popularSlots={venue.popularSlots}
-            timeSlots={getTimeSlots(venue.slug)}
             facilityFeeNote={venue.facilityFeeNote}
             conciergeName={venue.conciergeName}
           />

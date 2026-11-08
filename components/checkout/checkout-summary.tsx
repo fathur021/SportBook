@@ -8,7 +8,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Tag,
   ShieldCheck,
   Headphones,
   Phone,
@@ -34,12 +33,11 @@ export type CheckoutSummaryProps = {
   maxPlayers?: number;
   date: string | null;
   time: string | null;
+  endTime: string | null;
   durationHours: number;
   pricePerHour: number;
   equipmentList?: SelectedEquipment[];
-  platformFee?: number;
-  promoCode?: string;
-  discountAmount?: number;
+  totalPrice: number;
 };
 
 // Helper: Format tanggal "2023-10-24" -> "Tuesday, 24 Oct 2023"
@@ -55,15 +53,17 @@ function formatFullDate(dateStr: string | null) {
   });
 }
 
-// Helper: Format jam "19:00" + durasi 2 jam -> "19:00 - 21:00 (2 Hours, Peak Slot)"
-function formatTimeSlot(timeStr: string | null, duration: number) {
-  if (!timeStr) return "Jam belum dipilih";
+// Helper: Format jam "19:00" + jam selesai "21:00" + durasi 2 jam
+function formatTimeSlot(
+  timeStr: string | null,
+  endTimeStr: string | null,
+  duration: number,
+) {
+  if (!timeStr || !endTimeStr) return "Jam belum dipilih";
   const [startHour] = timeStr.split(":").map(Number);
-  const endHour = (startHour + duration) % 24;
-  const formattedEnd = `${endHour.toString().padStart(2, "0")}:00`;
   const isPeak = startHour >= 17; // Contoh: jam 17:00 ke atas adalah peak slot
 
-  return `${timeStr} - ${formattedEnd} (${duration} ${duration > 1 ? "Hours" : "Hour"}${isPeak ? ", Peak Slot" : ""})`;
+  return `${timeStr} - ${endTimeStr} (${duration} ${duration > 1 ? "Hours" : "Hour"}${isPeak ? ", Peak Slot" : ""})`;
 }
 
 export function CheckoutSummary({
@@ -76,20 +76,14 @@ export function CheckoutSummary({
   maxPlayers = 4,
   date,
   time,
+  endTime,
   durationHours = 1,
   pricePerHour,
   equipmentList = [],
-  platformFee = 5000,
-  promoCode = "PADELJAKARTA",
-  discountAmount = 0,
+  totalPrice,
 }: CheckoutSummaryProps) {
   // 1. Kalkulasi biaya
   const courtRentalTotal = pricePerHour * durationHours;
-  const equipmentTotal = equipmentList.reduce(
-    (sum, item) => sum + item.qty * item.pricePerUnit,
-    0
-  );
-  const grandTotal = courtRentalTotal + equipmentTotal + platformFee - discountAmount;
 
   return (
     <div className="flex flex-col gap-4">
@@ -156,7 +150,7 @@ export function CheckoutSummary({
           </div>
           <div className="flex items-center gap-2.5">
             <Clock className="h-4 w-4 text-emerald-600 shrink-0" />
-            <span>{formatTimeSlot(time, durationHours)}</span>
+            <span>{formatTimeSlot(time, endTime, durationHours)}</span>
           </div>
           {equipmentList.length > 0 && (
             <div className="flex items-start gap-2.5 pt-0.5">
@@ -189,21 +183,6 @@ export function CheckoutSummary({
               </span>
             </div>
           ))}
-
-          <div className="flex justify-between text-slate-600">
-            <span>Platform Service Fee</span>
-            <span className="font-medium text-slate-900">{formatRupiah(platformFee)}</span>
-          </div>
-
-          {promoCode && (
-            <div className="flex justify-between items-center text-emerald-700 font-medium">
-              <span className="flex items-center gap-1">
-                <Tag className="h-3 w-3" />
-                Promo Code: {promoCode}
-              </span>
-              <span>- {formatRupiah(discountAmount)}</span>
-            </div>
-          )}
         </div>
 
         {/* Total Akhir */}
@@ -215,7 +194,7 @@ export function CheckoutSummary({
             <p className="text-[11px] text-slate-400">All statutory taxes included</p>
           </div>
           <span className="text-2xl font-bold text-emerald-800">
-            {formatRupiah(grandTotal)}
+            {formatRupiah(totalPrice)}
           </span>
         </div>
 

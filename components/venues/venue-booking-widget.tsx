@@ -1,5 +1,6 @@
 // Widget booking di sidebar halaman venue: pilih disiplin, lapangan, tanggal,
-// durasi & jam, lalu hitung harga sesi dan arahkan ke halaman /book.
+// lalu arahkan ke halaman /book. Slot jam yang sebenarnya hanya dimuat di
+// halaman /book supaya selalu sesuai jadwal terbaru dari database.
 
 "use client";
 
@@ -16,31 +17,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatRupiah } from "@/lib/format-rupiah";
-import type { TimeSlotOption } from "@/lib/time-slots";
-import type { SportDiscipline, TimeSlotPrice } from "@/lib/venue-detail";
+import type { SportDiscipline } from "@/lib/venue-detail";
 import { cn } from "@/lib/utils";
 
-// Data tombol tanggal statis, ditaruh di luar komponen agar tidak dibuat ulang
+// Data tombol tanggal, ditaruh di luar komponen agar tidak dibuat ulang
 // setiap render.
-function buildNextDays(count = 4){
-  const days = []
+function buildNextDays(count = 4) {
+  const days = [];
   const now = new Date();
 
-  for (let i = 0; i < count ; i++){
+  for (let i = 0; i < count; i++) {
     const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
     const iso = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-      2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
-    
+      2,
+      "0",
+    )}-${String(date.getDate()).padStart(2, "0")}`;
+
     days.push({
       iso,
-      label:i === 0 
-        ? "TODAY"
-        : date.toLocaleDateString("en-us",{weekday:"short"})
+      label:
+        i === 0
+          ? "TODAY"
+          : date
+              .toLocaleDateString("en-us", { weekday: "short" })
               .toUpperCase(),
       day: String(date.getDate()).padStart(2, "0"),
-      display: `${
-        i === 0 ? "Today, " : ""
-      }${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
+      display: `${i === 0 ? "Today, " : ""}${date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })}`,
     });
   }
   return days;
@@ -52,8 +57,6 @@ interface VenueBookingWidgetProps {
   basePricePerHour: number;
   disciplines: SportDiscipline[];
   sessionDurations: string[];
-  popularSlots: TimeSlotPrice[];
-  timeSlots: TimeSlotOption[];
   facilityFeeNote: string;
   conciergeName: string;
   venueSlug: string;
@@ -65,34 +68,24 @@ export function VenueBookingWidget({
   basePricePerHour,
   disciplines,
   sessionDurations,
-  popularSlots,
-  timeSlots,
   facilityFeeNote,
   conciergeName,
   venueSlug,
 }: VenueBookingWidgetProps) {
-  const days = useMemo(()=> buildNextDays(), [])
+  const days = useMemo(() => buildNextDays(), []);
 
   const [sportSlug, setSportSlug] = useState(disciplines[0]?.slug ?? "");
-  
+
   const activeSport =
     disciplines.find((d) => d.slug === sportSlug) ?? disciplines[0];
-
 
   const [courtId, setCourtId] = useState(activeSport?.courts[0]?.id ?? "");
   const [dateIndex, setDateIndex] = useState(0);
 
   const [duration, setDuration] = useState(sessionDurations[0] ?? "1 Hour");
 
-  const [selectedSlot, setSelectedSlot] = useState(popularSlots[0]?.time ?? "");
-  const [selectedTime, setSelectedTime] = useState(
-    timeSlots.find((t) => !t.booked)?.time ?? "",
-  );
-
-  const selectedSlotData = popularSlots.find((s)=> s.time === selectedSlot)
-
   const activeCourt =
-    activeSport?.courts.find((c) => c.id === courtId) ?? activeSport.courts[0];
+    activeSport?.courts.find((c) => c.id === courtId) ?? activeSport?.courts[0];
   const hourlyPrice = activeCourt?.pricePerHour ?? basePricePerHour;
 
   // "1.5 Hours" -> 1.5 ("|| 1" untuk nilai NaN dianggap 1 jam)
@@ -108,8 +101,7 @@ export function VenueBookingWidget({
     setSportSlug(slug);
     const nextSport = disciplines.find((d) => d.slug === slug);
     const firstCourt = nextSport?.courts[0];
-    if(firstCourt) setCourtId(firstCourt.id)
-    
+    if (firstCourt) setCourtId(firstCourt.id);
   };
 
   return (
@@ -183,7 +175,9 @@ export function VenueBookingWidget({
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold">Select Session Date</p>
-          <span className="text-[11px] text-emerald-700">{days[dateIndex].display}</span>
+          <span className="text-[11px] text-emerald-700">
+            {days[dateIndex].display}
+          </span>
         </div>
         <div className="grid grid-cols-4 gap-2">
           {days.map((d, i) => {
@@ -209,91 +203,27 @@ export function VenueBookingWidget({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold">Session Duration</p>
-          <Select value={duration} onValueChange={(v) => setDuration(v ?? "")}>
-            <SelectTrigger className="h-10 w-full bg-slate-50 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {sessionDurations.map((d) => (
-                <SelectItem key={d} value={d}>
-                  {d}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold">Select Time</p>
-          <Select
-            value={selectedTime}
-            onValueChange={(v) => setSelectedTime(v ?? "")}
-          >
-            <SelectTrigger className="h-10 w-full bg-slate-50 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {timeSlots.map((t) => (
-                <SelectItem
-                  key={t.time}
-                  value={t.time}
-                  disabled={t.booked}
-                  className={cn(
-                    t.booked && "text-red-400 line-through data-disabled:opacity-100",
-                  )}
-                >
-                  {t.time}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-
-      {popularSlots.length > 0 && (
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold">Popular Slots Tonight</p>
-          
-            {selectedSlotData?.spotsLeft !== undefined && (
-               <span className="text-[11px] text-muted-foreground">
-                {selectedSlotData.spotsLeft} spots left
-              </span>
-            )}
-
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {popularSlots.map((slot) => {
-            const isSelected = slot.time === selectedSlot;
-            return (
-              <button
-                key={slot.time}
-                aria-pressed={isSelected}
-                type="button"
-                onClick={() => {
-                  setSelectedSlot(slot.time);
-                  const match = timeSlots.find(
-                    (t) => t.time.startsWith(slot.time) && !t.booked,
-                  );
-                  if (match) setSelectedTime(match.time);
-                }}
-                className={cn(
-                  "rounded-md px-2 py-2 text-xs font-medium transition",
-                  isSelected
-                    ? "bg-emerald-700 text-white"
-                    : "bg-sky-50 hover:bg-sky-100",
-                )}
-              >
-                {slot.time}
-              </button>
-            );
-          })}
-        </div>
+        <p className="text-xs font-semibold">Session Duration</p>
+        <Select value={duration} onValueChange={(v) => setDuration(v ?? "")}>
+          <SelectTrigger className="h-10 w-full bg-slate-50 text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {sessionDurations.map((d) => (
+              <SelectItem key={d} value={d}>
+                {d}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-        )}
+
+      <p className="rounded-lg bg-sky-50 px-3 py-2 text-[11px] text-sky-800">
+        Jam yang tersedia akan dimuat langsung di halaman booking sesuai jadwal
+        terbaru.
+      </p>
+
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">Current Court Rate</span>
         <span className="font-semibold text-emerald-700">
@@ -326,7 +256,6 @@ export function VenueBookingWidget({
         nativeButton={false}
         render={
           <Link
-          
             href={`/venues/${venueSlug}/book?sport=${sportSlug}&court=${courtId}&date=${days[dateIndex].iso}&duration=${encodeURIComponent(duration)}`}
             className="h-11 w-full gap-1.5 bg-emerald-700 font-medium hover:bg-emerald-800"
           >

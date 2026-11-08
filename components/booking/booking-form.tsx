@@ -21,7 +21,6 @@ type BookingFormProps = {
   pricePerHour: number;
   duration?: string;
   venueName: string;
-  venueSlug: string;
   courtId: string;
   courtLabel: string;
 };
@@ -39,7 +38,6 @@ export function BookingForm({
   initialDate,
   duration,
   venueName,
-  venueSlug,
   courtId,
   courtLabel,
 }: BookingFormProps) {
@@ -119,6 +117,11 @@ export function BookingForm({
           durationHours={durationHours} // [TAMBAH]
           loading={loadingSlots}
           error={slotError}
+          emptyMessage={
+            selectedDate
+              ? "Tidak ada slot untuk tanggal ini, coba pilih tanggal lain."
+              : "Pilih tanggal dulu untuk melihat slot yang tersedia."
+          }
         />
         <EquipmentPicker
           items={equipmentItems}
@@ -130,7 +133,6 @@ export function BookingForm({
       <div className="lg:sticky lg:top-6">
         <BookingSummary
           venueName={venueName}
-          venueSlug={venueSlug}
           courtId={courtId}
           courtLabel={courtLabel}
           pricePerHour={pricePerHour}

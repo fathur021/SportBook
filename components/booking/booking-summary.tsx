@@ -8,7 +8,6 @@ import { useState } from "react";
 
 type BookingSummaryProps = {
   venueName: string;
-  venueSlug: string;
   courtId: string;
   courtLabel: string;
   pricePerHour: number;
@@ -30,7 +29,6 @@ const formatDateKey = (key: string) => {
 
 export function BookingSummary({
   venueName,
-  venueSlug,
   courtId,
   courtLabel,
   pricePerHour,
@@ -74,6 +72,10 @@ export function BookingSummary({
           playDate: selectedDate,
           startTime,
           durationHour: durationHours,
+          equipments: selectedEquipment.map(({ item, qty }) => ({
+            equipmentId: item.id,
+            quantity: qty,
+          })),
         }),
       });
       const json = await res.json();
@@ -89,17 +91,7 @@ export function BookingSummary({
         return;
       }
 
-      const params = new URLSearchParams({
-        venue: venueSlug,
-        court: courtId,
-        date: selectedDate,
-        time: startTime,
-        duration: duration ?? "1",
-        bookingId,
-      });
-      selectedEquipment.forEach(({ item, qty }) => {
-        params.append("equipment", `${item.id}:${qty}`);
-      });
+      const params = new URLSearchParams({ bookingId });
       router.push(`/checkout?${params.toString()}`);
     } catch {
       alert("Terjadi kesalahan saat membuat booking");

@@ -56,7 +56,6 @@ export function PaymentMethodCard({
       const res = await fetch(`/bookings/${bookingId}/pay`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ amount: grandTotal }),
       });
       //2. ambil json dari response
       const json = (await res.json()) as {

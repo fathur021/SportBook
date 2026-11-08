@@ -1,80 +1,70 @@
+import { headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
+import Script from "next/script";
+
 import { ReservationTimer } from "@/components/checkout/reservation-timer";
-import { CheckoutSummary, SelectedEquipment } from "@/components/checkout/checkout-summary";
+import {
+  CheckoutSummary,
+  type SelectedEquipment,
+} from "@/components/checkout/checkout-summary";
 import { Container } from "@/components/layout/container";
 import { VenueBreadcrumb } from "@/components/venues/venue-breadcrumb";
-import { getVenueDetail } from "@/lib/venue-detail";
-import { getVenueEquipment } from "@/lib/equipment";
 import { ContactDetailsCard } from "@/components/checkout/contact-details-card";
 import { PaymentMethodCard } from "@/components/checkout/payment-method-card";
-import { UserProfile } from "@/lib/user";
-import Script from "next/script";
+import { auth } from "@/lib/auth";
+import { getBookingReceiptService } from "@/modules/bookings/booking.service";
+
 const HOLD_MS = 10 * 60 * 1000; // 10 menit
 
 const firstParam = (value: string | string[] | undefined) =>
   typeof value === "string" ? value : "";
 
-export default async function CheckoutPage({ searchParams }: PageProps<"/checkout">) {
+export default async function CheckoutPage({
+  searchParams,
+}: PageProps<"/checkout">) {
   const sp = await searchParams;
-  const venueSlug = firstParam(sp.venue);
-  const courtId = firstParam(sp.court);
-  const duration = parseFloat(firstParam(sp.duration)) || 1;
-  const date = firstParam(sp.date);
-  const time = firstParam(sp.time);
   const bookingId = firstParam(sp.bookingId);
-  // Ambil detail data venue & lapangan
-  const venue = getVenueDetail(venueSlug);
-  const discipline = venue?.disciplines.find((d) =>
-    d.courts.some((c) => c.id === courtId)
-  );
-  const court = discipline?.courts.find((c) => c.id === courtId);
 
-  // Parse equipment dari searchParams (format: id:qty)
-  const equipmentParam = sp.equipment;
-  const rawEquipment = Array.isArray(equipmentParam)
-    ? equipmentParam
-    : equipmentParam ? [equipmentParam] : [];
+  // Checkout hanya bisa dibuka dari booking yang sudah dibuat.
+  if (!bookingId) redirect("/mybooking");
 
-  const venueEquipmentList = getVenueEquipment(venueSlug);
-  const equipmentList: SelectedEquipment[] = rawEquipment.map((entry) => {
-    const [id, qtyStr] = entry.split(":");
-    const found = venueEquipmentList.find((e) => e.id === id);
-    return {
-      name: found?.name ?? id,
-      qty: parseInt(qtyStr) || 1,
-      pricePerUnit: found?.pricePerUnit ?? 0,
-    };
+  // Halaman ini membaca sesi dan booking asli dari database.
+  const session = await auth.api.getSession({
+    headers: await headers(),
   });
+  if (!session) {
+    redirect(`/login?next=/checkout?bookingId=${bookingId}`);
+  }
 
-  const bookParams = new URLSearchParams();
-  if (discipline) bookParams.set("sport", discipline.slug);
-  if (courtId) bookParams.set("court", courtId);
-  if (duration) bookParams.set("duration", duration.toString());
-  const bookQuery = bookParams.toString();
-
-  const breadcrumbItems = [
-    { label: "Venues", href: "/venues" },
-    ...(venue
-      ? [
-          { label: venue.breadcrumb[1] ?? "" },
-          { label: venue.name, href: `/venues/${venue.slug}` },
-          {
-            label: "Book",
-            href: `/venues/${venue.slug}/book${bookQuery ? `?${bookQuery}` : ""}`,
-          },
-        ]
-      : []),
-    { label: "Checkout" },
-  ];
-
-  const pricePerHour = court?.pricePerHour ?? 220000;
-  const platformFee = 5000;
-  const discountAmount = 0;
-  const courtRentalTotal = pricePerHour * duration;
-  const equipmentTotal = equipmentList.reduce(
-    (sum, item) => sum + item.qty * item.pricePerUnit,
-    0
+  const booking = await getBookingReceiptService(
+    { bookingId },
+    session.user.id,
+    session.user.role === "ADMIN",
   );
-  const grandTotal = courtRentalTotal + equipmentTotal + platformFee - discountAmount;
+  if (!booking) notFound();
+
+  const venue = booking.court.venue;
+
+  const equipmentList: SelectedEquipment[] = booking.equipments.map((item) => ({
+    name: item.name,
+    qty: item.quantity,
+    pricePerUnit: item.price,
+  }));
+
+  const courtSpecs = [
+    booking.court.surface,
+    booking.court.isIndoor ? "Indoor" : "Outdoor",
+  ].filter((spec): spec is string => Boolean(spec));
+
+  const expiresAt = new Date(booking.createdAt).getTime() + HOLD_MS;
+
+  const contactUser = {
+    id: session.user.id,
+    fullName: session.user.name,
+    email: session.user.email,
+    phone: "-",
+    defaultNote: booking.notes ?? "",
+  };
 
   return (
     <>
@@ -85,46 +75,54 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
         strategy="afterInteractive"
       />
       <Container className="flex flex-col gap-6 py-6 max-w-5xl">
-      <VenueBreadcrumb items={breadcrumbItems} />
+        <VenueBreadcrumb
+          items={[
+            { label: "Venues", href: "/venues" },
+            { label: venue.name, href: `/venues/${venue.slug}` },
+            { label: "Checkout" },
+          ]}
+        />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Kolom Kiri: Reservation Timer & Form Identitas/Pembayaran */}
-        <div className="lg:col-span-7 flex flex-col gap-6">
-          {/* Server component dirender ulang tiap request, jadi Date.now() di sini aman */}
-          <ReservationTimer
-            // eslint-disable-next-line react-hooks/purity
-            expiresAt={Date.now() + HOLD_MS}
-            totalMs={HOLD_MS}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Kolom Kiri: Reservation Timer & Form Identitas/Pembayaran */}
+          <div className="lg:col-span-7 flex flex-col gap-6">
+            <ReservationTimer
+              expiresAt={expiresAt}
+              totalMs={HOLD_MS}
+            />
 
-          <ContactDetailsCard user={UserProfile} />
+            <ContactDetailsCard user={contactUser} />
 
-          <PaymentMethodCard
-          venueName={venue?.name ?? "Gelora Padel"}
-          grandTotal={grandTotal}
-          bookingId={bookingId}    // ← TAMBAH INI
-/>
+            <PaymentMethodCard
+              venueName={venue.name}
+              grandTotal={booking.totalPrice}
+              bookingId={booking.id}
+            />
+          </div>
+
+          {/* Kolom Kanan: Checkout Summary */}
+          <div className="lg:col-span-5 lg:sticky lg:top-6">
+            <CheckoutSummary
+              venueName={venue.name}
+              venueAddress={venue.address}
+              sportLabel={booking.court.sport}
+              courtName={booking.court.name}
+              courtImage={
+                booking.court.image ?? venue.coverImage ?? "/hero.webp"
+              }
+              courtSpecs={courtSpecs.length > 0 ? courtSpecs : undefined}
+              maxPlayers={booking.court.maxPlayers ?? undefined}
+              date={booking.playDate}
+              time={booking.startTime}
+              endTime={booking.endTime}
+              durationHours={booking.durationHour}
+              pricePerHour={booking.pricePerHour}
+              equipmentList={equipmentList}
+              totalPrice={booking.totalPrice}
+            />
+          </div>
         </div>
-
-        {/* Kolom Kanan: Checkout Summary (sejajar tepat di samping Reservation Timer) */}
-        <div className="lg:col-span-5 lg:sticky lg:top-6">
-          <CheckoutSummary
-            venueName={venue?.name ?? "Venue"}
-            venueAddress={venue?.address ?? "Jakarta"}
-            sportLabel={discipline?.label?.split(" ")[0] ?? "Padel"}
-            courtName={court?.label ?? "Court"}
-            courtImage={court?.image ?? (venue?.images?.[court?.imageIndex ?? 0]?.src ?? "/hero.webp")}
-            courtSpecs={court?.specs}
-            maxPlayers={court?.maxPlayers}
-            date={date}
-            time={time}
-            durationHours={duration}
-            pricePerHour={court?.pricePerHour ?? 220000}
-            equipmentList={equipmentList}
-          />
-        </div>
-      </div>
-    </Container>
+      </Container>
     </>
   );
 }

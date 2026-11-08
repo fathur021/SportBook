@@ -17,6 +17,7 @@ type SelectTimeSlotProps = {
   durationHours?: number; // [TAMBAH]
   loading?: boolean; // [TAMBAH]
   error?: string; // [TAMBAH]
+  emptyMessage?: string;
 };
 
 // [TAMBAH] Cek apakah mulai di slot ini muat untuk seluruh durasi.
@@ -46,6 +47,7 @@ export function SelectTimeSlot({
   durationHours = 1, // [TAMBAH]
   loading = false, // [TAMBAH]
   error, // [TAMBAH]
+  emptyMessage = "Slot jam belum tersedia untuk venue ini, silakan hubungi venue.",
 }: SelectTimeSlotProps) {
   const bands = getTimeSlotBands(slots);
   // [TAMBAH] Pastikan durasi minimal 1 jam dan bilangan bulat.
@@ -69,7 +71,7 @@ export function SelectTimeSlot({
         </p>
       ) : bands.length === 0 ? (
         <p className="mt-4 rounded-lg bg-blue-50 px-4 py-3 text-sm text-muted-foreground">
-          Slot jam belum tersedia untuk venue ini, silakan hubungi venue.
+          {emptyMessage}
         </p>
       ) : (
         <div className="mt-6 flex flex-col gap-6">

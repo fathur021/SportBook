@@ -5,6 +5,7 @@ import {
   findBookingConflictList,
   findBookingsByUserId,
   findCourtById,
+  findEquipmentsForBooking,
   insertBooking,
   runInTransaction,
   updateBookingStatusById,
@@ -31,6 +32,20 @@ export class SlotUnavailableError extends Error {
   constructor() {
     super("Slot waktu tersebut sudah di pesan, silahkan pilih jam lain");
     this.name = "SlotUnavailableError";
+  }
+}
+// Error HTTP 409: equipment tidak ada, non-aktif, atau bukan milik venue ini
+export class EquipmentUnavailableError extends Error {
+  constructor() {
+    super("Equipment tidak ditemukan atau sedang tidak tersedia");
+    this.name = "EquipmentUnavailableError";
+  }
+}
+// Error HTTP 409: stok equipment tidak mencukupi jumlah yang diminta
+export class EquipmentStockError extends Error {
+  constructor(name: string) {
+    super(`Stok ${name} tidak mencukupi`);
+    this.name = "EquipmentStockError";
   }
 }
 // Error HTTP 400: rentang jam main berada di luar jam operasional venue
@@ -162,33 +177,32 @@ export async function createBookingService(
   userId: string,
   input: CreateBookingInput,
 ) {
-  const endTime = addHour(input.startTime, input.durationHour); //hitung jam selesai
-  // tolak jika jam mulai/ akhit melewati jam buka
+  const endTime = addHour(input.startTime, input.durationHour);
+
   if (
     input.startTime < formatHour(OPEN_HOUR) ||
     endTime > formatHour(CLOSE_HOUR)
   ) {
     throw new InvalidOperatingHourError();
   }
-  //todal jika tanggal mainnya sudah lewat
+
   if (input.playDate < todayDateString()) {
     throw new PastDateError();
   }
-  // Jalankan semua operasi berikut dalam SATU transaksi: sukses semua atau gagal semua
+
   return runInTransaction(async (tx) => {
-    //ambil court di dalam transaksi
     const court = await findCourtById(tx, input.courtId);
-    //gagal kalau lanpangan tidak ada
+
     if (!court || !court.isActive || !court.venue.isActive) {
       throw new CourtNotFoundError();
     }
-    // Baca ulang slot terkunci DI DALAM transaksi yang sama (agar aman dari tarik-menarik data)
+
     const conflicts = await findBookingConflictList(
       tx,
       input.courtId,
       input.playDate,
     );
-    // Cek apakah rentang jam yang diminta bentrok dengan booking yang sudah ada
+
     const hasOverlap = conflicts.some((existing) =>
       isTimeOverlap(
         input.startTime,
@@ -198,23 +212,84 @@ export async function createBookingService(
       ),
     );
 
-    //jika bentrok, error 409- karena masih dalam transaksi dn data tidak masuk ke database
     if (hasOverlap) {
       throw new SlotUnavailableError();
     }
-    const totalPrice = court.pricePerHour * input.durationHour;
+
+    const equipmentData: {
+      equipmentId: string;
+      name: string;
+      price: number;
+      quantity: number;
+      subtotal: number;
+    }[] = [];
+
+    const requestedEquipments = input.equipments ?? [];
+
+    if (requestedEquipments.length > 0) {
+      const quantityByEquipment = new Map<string, number>();
+
+      for (const item of requestedEquipments) {
+        quantityByEquipment.set(
+          item.equipmentId,
+          (quantityByEquipment.get(item.equipmentId) ?? 0) + item.quantity,
+        );
+      }
+
+      const equipmentIds = [...quantityByEquipment.keys()];
+
+      const equipmentRows = await findEquipmentsForBooking(
+        tx,
+        court.venue.id,
+        equipmentIds,
+      );
+
+      if (equipmentRows.length !== equipmentIds.length) {
+        throw new EquipmentUnavailableError();
+      }
+
+      for (const equipmentId of equipmentIds) {
+        const equipment = equipmentRows.find((row) => row.id === equipmentId);
+        const quantity = quantityByEquipment.get(equipmentId) ?? 0;
+
+        if (!equipment || !equipment.isActive) {
+          throw new EquipmentUnavailableError();
+        }
+
+        if (equipment.stock < quantity) {
+          throw new EquipmentStockError(equipment.name);
+        }
+
+        equipmentData.push({
+          equipmentId: equipment.id,
+          name: equipment.name,
+          price: equipment.price,
+          quantity,
+          subtotal: equipment.price * quantity,
+        });
+      }
+    }
+
+    const equipmentTotal = equipmentData.reduce(
+      (sum, item) => sum + item.subtotal,
+      0,
+    );
+
+    const totalPrice =
+      court.pricePerHour * input.durationHour + equipmentTotal;
 
     return insertBooking(tx, {
       orderCode: generateOrderCode(),
-      courtId: input.courtId, // lapangan yang disewa
-      userId, // ID user yang sedang login
-      playDate: input.playDate, // tanggal main
-      startTime: input.startTime, // jam mulai
-      endTime, // jam selesai (hasil perhitungan)
-      durationHour: input.durationHour, // lama sewa
-      pricePerHour: court.pricePerHour, // salinan harga saat itu
-      totalPrice, // total harga
-      notes: input.notes ?? null, // catatan opsional (null bila tidak dikirim)
+      courtId: input.courtId,
+      userId,
+      playDate: input.playDate,
+      startTime: input.startTime,
+      endTime,
+      durationHour: input.durationHour,
+      pricePerHour: court.pricePerHour,
+      totalPrice,
+      notes: input.notes ?? null,
+      equipments: equipmentData,
     });
   });
 }
@@ -327,18 +402,19 @@ export async function getCourtAvailabilityRangeService(
 
 //8. Ambil detail booking untuk halaman tiket/receipt (checkout/success)
 export async function getBookingReceiptService(
-  identifier: { orderCode?: string; paymentId?: string },
+  identifier: { orderCode?: string; paymentId?: string, bookingId?:string },
   userId: string,
   isAdmin: boolean,
 ) {
   let booking = null;
 
-  if (identifier.orderCode) {
+  if (identifier.bookingId) {
+    booking = await findBookingById(identifier.bookingId);
+  } else if (identifier.orderCode) {
     booking = await findBookingByOrderCode(identifier.orderCode);
   } else if (identifier.paymentId) {
     booking = await findBookingByPaymentId(identifier.paymentId);
   }
-
   if (!booking) {
     return null;
   }

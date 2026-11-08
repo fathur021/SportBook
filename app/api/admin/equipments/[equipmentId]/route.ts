@@ -1,6 +1,7 @@
 import {
   deactivateEquipmentController,
   updateEquipmentController,
+  deleteEquipmentController
 } from "@/modules/equipment/equipment.controller";
 
 export async function PATCH(
@@ -16,5 +17,5 @@ export async function DELETE(
   { params }: { params: Promise<{ equipmentId: string }> },
 ): Promise<Response> {
   const { equipmentId } = await params;
-  return deactivateEquipmentController(request, equipmentId);
+  return deleteEquipmentController(request, equipmentId);
 }

@@ -77,6 +77,11 @@ export type Verification = Prisma.VerificationModel
  */
 export type Equipment = Prisma.EquipmentModel
 /**
+ * Model BookingEquipment
+ * 
+ */
+export type BookingEquipment = Prisma.BookingEquipmentModel
+/**
  * Model Booking
  * 
  */

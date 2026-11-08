@@ -253,6 +253,7 @@ export type EquipmentWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Equipment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Equipment"> | Date | string
   venue?: Prisma.XOR<Prisma.VenueScalarRelationFilter, Prisma.VenueWhereInput>
+  bookingEquipments?: Prisma.BookingEquipmentListRelationFilter
 }
 
 export type EquipmentOrderByWithRelationInput = {
@@ -266,6 +267,7 @@ export type EquipmentOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   venue?: Prisma.VenueOrderByWithRelationInput
+  bookingEquipments?: Prisma.BookingEquipmentOrderByRelationAggregateInput
 }
 
 export type EquipmentWhereUniqueInput = Prisma.AtLeast<{
@@ -282,6 +284,7 @@ export type EquipmentWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Equipment"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Equipment"> | Date | string
   venue?: Prisma.XOR<Prisma.VenueScalarRelationFilter, Prisma.VenueWhereInput>
+  bookingEquipments?: Prisma.BookingEquipmentListRelationFilter
 }, "id">
 
 export type EquipmentOrderByWithAggregationInput = {
@@ -326,6 +329,7 @@ export type EquipmentCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   venue: Prisma.VenueCreateNestedOneWithoutEquipmentInput
+  bookingEquipments?: Prisma.BookingEquipmentCreateNestedManyWithoutEquipmentInput
 }
 
 export type EquipmentUncheckedCreateInput = {
@@ -338,6 +342,7 @@ export type EquipmentUncheckedCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  bookingEquipments?: Prisma.BookingEquipmentUncheckedCreateNestedManyWithoutEquipmentInput
 }
 
 export type EquipmentUpdateInput = {
@@ -350,6 +355,7 @@ export type EquipmentUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   venue?: Prisma.VenueUpdateOneRequiredWithoutEquipmentNestedInput
+  bookingEquipments?: Prisma.BookingEquipmentUpdateManyWithoutEquipmentNestedInput
 }
 
 export type EquipmentUncheckedUpdateInput = {
@@ -362,6 +368,7 @@ export type EquipmentUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookingEquipments?: Prisma.BookingEquipmentUncheckedUpdateManyWithoutEquipmentNestedInput
 }
 
 export type EquipmentCreateManyInput = {
@@ -455,6 +462,11 @@ export type EquipmentSumOrderByAggregateInput = {
   stock?: Prisma.SortOrder
 }
 
+export type EquipmentNullableScalarRelationFilter = {
+  is?: Prisma.EquipmentWhereInput | null
+  isNot?: Prisma.EquipmentWhereInput | null
+}
+
 export type EquipmentCreateNestedManyWithoutVenueInput = {
   create?: Prisma.XOR<Prisma.EquipmentCreateWithoutVenueInput, Prisma.EquipmentUncheckedCreateWithoutVenueInput> | Prisma.EquipmentCreateWithoutVenueInput[] | Prisma.EquipmentUncheckedCreateWithoutVenueInput[]
   connectOrCreate?: Prisma.EquipmentCreateOrConnectWithoutVenueInput | Prisma.EquipmentCreateOrConnectWithoutVenueInput[]
@@ -497,6 +509,22 @@ export type EquipmentUncheckedUpdateManyWithoutVenueNestedInput = {
   deleteMany?: Prisma.EquipmentScalarWhereInput | Prisma.EquipmentScalarWhereInput[]
 }
 
+export type EquipmentCreateNestedOneWithoutBookingEquipmentsInput = {
+  create?: Prisma.XOR<Prisma.EquipmentCreateWithoutBookingEquipmentsInput, Prisma.EquipmentUncheckedCreateWithoutBookingEquipmentsInput>
+  connectOrCreate?: Prisma.EquipmentCreateOrConnectWithoutBookingEquipmentsInput
+  connect?: Prisma.EquipmentWhereUniqueInput
+}
+
+export type EquipmentUpdateOneWithoutBookingEquipmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.EquipmentCreateWithoutBookingEquipmentsInput, Prisma.EquipmentUncheckedCreateWithoutBookingEquipmentsInput>
+  connectOrCreate?: Prisma.EquipmentCreateOrConnectWithoutBookingEquipmentsInput
+  upsert?: Prisma.EquipmentUpsertWithoutBookingEquipmentsInput
+  disconnect?: Prisma.EquipmentWhereInput | boolean
+  delete?: Prisma.EquipmentWhereInput | boolean
+  connect?: Prisma.EquipmentWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.EquipmentUpdateToOneWithWhereWithoutBookingEquipmentsInput, Prisma.EquipmentUpdateWithoutBookingEquipmentsInput>, Prisma.EquipmentUncheckedUpdateWithoutBookingEquipmentsInput>
+}
+
 export type EquipmentCreateWithoutVenueInput = {
   id?: string
   name: string
@@ -506,6 +534,7 @@ export type EquipmentCreateWithoutVenueInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  bookingEquipments?: Prisma.BookingEquipmentCreateNestedManyWithoutEquipmentInput
 }
 
 export type EquipmentUncheckedCreateWithoutVenueInput = {
@@ -517,6 +546,7 @@ export type EquipmentUncheckedCreateWithoutVenueInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  bookingEquipments?: Prisma.BookingEquipmentUncheckedCreateNestedManyWithoutEquipmentInput
 }
 
 export type EquipmentCreateOrConnectWithoutVenueInput = {
@@ -560,6 +590,70 @@ export type EquipmentScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Equipment"> | Date | string
 }
 
+export type EquipmentCreateWithoutBookingEquipmentsInput = {
+  id?: string
+  name: string
+  price: number
+  stock?: number
+  category?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  venue: Prisma.VenueCreateNestedOneWithoutEquipmentInput
+}
+
+export type EquipmentUncheckedCreateWithoutBookingEquipmentsInput = {
+  id?: string
+  venueId: string
+  name: string
+  price: number
+  stock?: number
+  category?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type EquipmentCreateOrConnectWithoutBookingEquipmentsInput = {
+  where: Prisma.EquipmentWhereUniqueInput
+  create: Prisma.XOR<Prisma.EquipmentCreateWithoutBookingEquipmentsInput, Prisma.EquipmentUncheckedCreateWithoutBookingEquipmentsInput>
+}
+
+export type EquipmentUpsertWithoutBookingEquipmentsInput = {
+  update: Prisma.XOR<Prisma.EquipmentUpdateWithoutBookingEquipmentsInput, Prisma.EquipmentUncheckedUpdateWithoutBookingEquipmentsInput>
+  create: Prisma.XOR<Prisma.EquipmentCreateWithoutBookingEquipmentsInput, Prisma.EquipmentUncheckedCreateWithoutBookingEquipmentsInput>
+  where?: Prisma.EquipmentWhereInput
+}
+
+export type EquipmentUpdateToOneWithWhereWithoutBookingEquipmentsInput = {
+  where?: Prisma.EquipmentWhereInput
+  data: Prisma.XOR<Prisma.EquipmentUpdateWithoutBookingEquipmentsInput, Prisma.EquipmentUncheckedUpdateWithoutBookingEquipmentsInput>
+}
+
+export type EquipmentUpdateWithoutBookingEquipmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  price?: Prisma.IntFieldUpdateOperationsInput | number
+  stock?: Prisma.IntFieldUpdateOperationsInput | number
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  venue?: Prisma.VenueUpdateOneRequiredWithoutEquipmentNestedInput
+}
+
+export type EquipmentUncheckedUpdateWithoutBookingEquipmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  venueId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  price?: Prisma.IntFieldUpdateOperationsInput | number
+  stock?: Prisma.IntFieldUpdateOperationsInput | number
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type EquipmentCreateManyVenueInput = {
   id?: string
   name: string
@@ -580,6 +674,7 @@ export type EquipmentUpdateWithoutVenueInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookingEquipments?: Prisma.BookingEquipmentUpdateManyWithoutEquipmentNestedInput
 }
 
 export type EquipmentUncheckedUpdateWithoutVenueInput = {
@@ -591,6 +686,7 @@ export type EquipmentUncheckedUpdateWithoutVenueInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookingEquipments?: Prisma.BookingEquipmentUncheckedUpdateManyWithoutEquipmentNestedInput
 }
 
 export type EquipmentUncheckedUpdateManyWithoutVenueInput = {
@@ -605,6 +701,35 @@ export type EquipmentUncheckedUpdateManyWithoutVenueInput = {
 }
 
 
+/**
+ * Count Type EquipmentCountOutputType
+ */
+
+export type EquipmentCountOutputType = {
+  bookingEquipments: number
+}
+
+export type EquipmentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  bookingEquipments?: boolean | EquipmentCountOutputTypeCountBookingEquipmentsArgs
+}
+
+/**
+ * EquipmentCountOutputType without action
+ */
+export type EquipmentCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EquipmentCountOutputType
+   */
+  select?: Prisma.EquipmentCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * EquipmentCountOutputType without action
+ */
+export type EquipmentCountOutputTypeCountBookingEquipmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.BookingEquipmentWhereInput
+}
+
 
 export type EquipmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -617,6 +742,8 @@ export type EquipmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   createdAt?: boolean
   updatedAt?: boolean
   venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
+  bookingEquipments?: boolean | Prisma.Equipment$bookingEquipmentsArgs<ExtArgs>
+  _count?: boolean | Prisma.EquipmentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["equipment"]>
 
 export type EquipmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -660,6 +787,8 @@ export type EquipmentSelectScalar = {
 export type EquipmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "venueId" | "name" | "price" | "stock" | "category" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["equipment"]>
 export type EquipmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
+  bookingEquipments?: boolean | Prisma.Equipment$bookingEquipmentsArgs<ExtArgs>
+  _count?: boolean | Prisma.EquipmentCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EquipmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   venue?: boolean | Prisma.VenueDefaultArgs<ExtArgs>
@@ -672,6 +801,7 @@ export type $EquipmentPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   name: "Equipment"
   objects: {
     venue: Prisma.$VenuePayload<ExtArgs>
+    bookingEquipments: Prisma.$BookingEquipmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1078,6 +1208,7 @@ readonly fields: EquipmentFieldRefs;
 export interface Prisma__EquipmentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   venue<T extends Prisma.VenueDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VenueDefaultArgs<ExtArgs>>): Prisma.Prisma__VenueClient<runtime.Types.Result.GetResult<Prisma.$VenuePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  bookingEquipments<T extends Prisma.Equipment$bookingEquipmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Equipment$bookingEquipmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BookingEquipmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1514,6 +1645,30 @@ export type EquipmentDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Limit how many Equipment to delete.
    */
   limit?: number
+}
+
+/**
+ * Equipment.bookingEquipments
+ */
+export type Equipment$bookingEquipmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the BookingEquipment
+   */
+  select?: Prisma.BookingEquipmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the BookingEquipment
+   */
+  omit?: Prisma.BookingEquipmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BookingEquipmentInclude<ExtArgs> | null
+  where?: Prisma.BookingEquipmentWhereInput
+  orderBy?: Prisma.BookingEquipmentOrderByWithRelationInput | Prisma.BookingEquipmentOrderByWithRelationInput[]
+  cursor?: Prisma.BookingEquipmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.BookingEquipmentScalarFieldEnum | Prisma.BookingEquipmentScalarFieldEnum[]
 }
 
 /**

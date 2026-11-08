@@ -3,13 +3,13 @@ import { VenueBreadcrumb } from "@/components/venues/venue-breadcrumb";
 import { BookingHeader } from "@/components/booking/booking-header";
 import { BookingForm } from "@/components/booking/booking-form";
 import { getCourtAvailability } from "@/lib/availability";
-import { getVenueEquipment } from "@/lib/equipment";
-import { getTimeSlots } from "@/lib/time-slots";
+import { toEquipmentItems } from "@/lib/equipment-mapper";
 import { toVenueDetail } from "@/lib/venue-detail-mapper";
 import { getPublicVenueBySlug } from "@/modules/venues/venue.service";
 import { notFound } from "next/navigation";
 import { toTimeSlotOptions } from "@/lib/availability-slots";
 import { getAvailabilityService } from "@/modules/bookings/booking.service";
+import { listActiveEquipmentsByVenueSlugService } from "@/modules/equipment/equipment.service";
 
 type BookPageProps = PageProps<"/venues/[slug]/book">;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -36,11 +36,17 @@ const BookPage = async ({ params, searchParams }: BookPageProps) => {
 
   const availability = await getCourtAvailability(court.id);
 
+  // Slot hanya bisa dimuat kalau tanggal sudah dipilih.
   const timeSlots = initialDate
     ? toTimeSlotOptions(
         (await getAvailabilityService(court.id, initialDate)).slots,
       )
-    : getTimeSlots(venue.slug);
+    : [];
+
+  // Equipment publik diambil dari database (aktif dan masih ada stok).
+  const equipmentItems = toEquipmentItems(
+    await listActiveEquipmentsByVenueSlugService(slug),
+  );
 
   const pricePerHour = court.pricePerHour ?? venue.pricePerHour;
 
@@ -66,11 +72,10 @@ const BookPage = async ({ params, searchParams }: BookPageProps) => {
         availability={availability}
         timeSlots={timeSlots}
         initialDate={initialDate}
-        equipmentItems={getVenueEquipment(venue.slug)}
+        equipmentItems={equipmentItems}
         pricePerHour={pricePerHour}
         duration={typeof duration === "string" ? duration : undefined}
         venueName={venue.name}
-        venueSlug={venue.slug}
         courtId={court.id}
         courtLabel={court.label}
       />

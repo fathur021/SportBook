@@ -9,6 +9,7 @@ import {
   EquipmentNotFoundError,
   createEquipmentService,
   deactivateEquipmentService,
+  deleteEquipmentService,
   listEquipmentsByVenueSlugService,
   updateEquipmentService,
 } from "./equipment.service";
@@ -56,7 +57,10 @@ export async function createEquipmentController(
 
     const slugResult = venueSlugSchema.safeParse(rawSlug);
     if (!slugResult.success) {
-      return Response.json({ error: "Slug venue tidak valid" }, { status: 400 });
+      return Response.json(
+        { error: "Slug venue tidak valid" },
+        { status: 400 },
+      );
     }
 
     let body: unknown;
@@ -202,6 +206,40 @@ export async function deactivateEquipmentController(
     console.error("Gagal menonaktifkan peralatan:", error);
     return Response.json(
       { error: "Gagal menonaktifkan peralatan" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function deleteEquipmentController(
+  request: Request,
+  rawEquipmentId: string,
+): Promise<Response> {
+  try {
+    const authorization = await requireAdmin(request);
+    if (!authorization.ok) {
+      return Response.json(
+        { error: authorization.error },
+        { status: authorization.status },
+      );
+    }
+    const idResult = equipmentIdSchema.safeParse(rawEquipmentId)
+    if(!idResult.success){
+      return Response.json(
+        {error:"ID equipment tidak valid"},
+        {status:400}
+      )
+    }
+
+    await deleteEquipmentService(idResult.data);
+    return Response.json({ success: true });
+  } catch (error) {
+    if (error instanceof EquipmentNotFoundError) {
+      return Response.json({ error: error.message }, { status: 404 });
+    }
+    console.error("Gagal menghapus peralatan:", error);
+    return Response.json(
+      { error: "Gagal menghapus peralatan" },
       { status: 500 },
     );
   }

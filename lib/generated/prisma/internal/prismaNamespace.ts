@@ -404,6 +404,7 @@ export const ModelName = {
   Account: 'Account',
   Verification: 'Verification',
   Equipment: 'Equipment',
+  BookingEquipment: 'BookingEquipment',
   Booking: 'Booking',
   Payment: 'Payment'
 } as const
@@ -421,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "venue" | "court" | "user" | "session" | "account" | "verification" | "equipment" | "booking" | "payment"
+    modelProps: "venue" | "court" | "user" | "session" | "account" | "verification" | "equipment" | "bookingEquipment" | "booking" | "payment"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -943,6 +944,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BookingEquipment: {
+      payload: Prisma.$BookingEquipmentPayload<ExtArgs>
+      fields: Prisma.BookingEquipmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BookingEquipmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEquipmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BookingEquipmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEquipmentPayload>
+        }
+        findFirst: {
+          args: Prisma.BookingEquipmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEquipmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BookingEquipmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEquipmentPayload>
+        }
+        findMany: {
+          args: Prisma.BookingEquipmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEquipmentPayload>[]
+        }
+        create: {
+          args: Prisma.BookingEquipmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEquipmentPayload>
+        }
+        createMany: {
+          args: Prisma.BookingEquipmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BookingEquipmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEquipmentPayload>[]
+        }
+        delete: {
+          args: Prisma.BookingEquipmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEquipmentPayload>
+        }
+        update: {
+          args: Prisma.BookingEquipmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEquipmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.BookingEquipmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BookingEquipmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BookingEquipmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEquipmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.BookingEquipmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BookingEquipmentPayload>
+        }
+        aggregate: {
+          args: Prisma.BookingEquipmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBookingEquipment>
+        }
+        groupBy: {
+          args: Prisma.BookingEquipmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BookingEquipmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BookingEquipmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BookingEquipmentCountAggregateOutputType> | number
+        }
+      }
+    }
     Booking: {
       payload: Prisma.$BookingPayload<ExtArgs>
       fields: Prisma.BookingFieldRefs
@@ -1243,6 +1318,20 @@ export const EquipmentScalarFieldEnum = {
 export type EquipmentScalarFieldEnum = (typeof EquipmentScalarFieldEnum)[keyof typeof EquipmentScalarFieldEnum]
 
 
+export const BookingEquipmentScalarFieldEnum = {
+  id: 'id',
+  bookingId: 'bookingId',
+  equipmentId: 'equipmentId',
+  name: 'name',
+  price: 'price',
+  quantity: 'quantity',
+  subtotal: 'subtotal',
+  createdAt: 'createdAt'
+} as const
+
+export type BookingEquipmentScalarFieldEnum = (typeof BookingEquipmentScalarFieldEnum)[keyof typeof BookingEquipmentScalarFieldEnum]
+
+
 export const BookingScalarFieldEnum = {
   id: 'id',
   orderCode: 'orderCode',
@@ -1530,6 +1619,7 @@ export type GlobalOmitConfig = {
   account?: Prisma.AccountOmit
   verification?: Prisma.VerificationOmit
   equipment?: Prisma.EquipmentOmit
+  bookingEquipment?: Prisma.BookingEquipmentOmit
   booking?: Prisma.BookingOmit
   payment?: Prisma.PaymentOmit
 }

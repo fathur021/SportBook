@@ -20,22 +20,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getVenueEquipment } from "@/lib/equipment";
 import { formatRupiah } from "@/lib/format-rupiah";
-import { venueListings } from "@/lib/listings";
 import { EquipmentFormDialog } from "@/components/admin/Eqipment-form-dialod";
+import { EquipmentRowActions } from "@/components/admin/Equipment-row-actions";
+import { listEquipmentsByVenueSlugService } from "@/modules/equipment/equipment.service";
+import { listAdminVenues } from "@/modules/venues/venue.service";
 
 export default async function AdminVenueEquipmentsPage(
   props: PageProps<"/admin/equipments/[slug]">,
 ) {
   const { slug } = await props.params;
-  const venue = venueListings.find((item) => item.slug === slug);
+
+  // Cari venue dari database, lalu ambil equipment milik venue tersebut.
+  const venues = await listAdminVenues();
+  const venue = venues.find((item) => item.slug === slug);
 
   if (!venue) {
     notFound();
   }
 
-  const equipment = getVenueEquipment(venue.slug);
+  const equipment = await listEquipmentsByVenueSlugService(venue.slug);
+  const sports = [...new Set(venue.courts.map((court) => court.sport))];
 
   return (
     <div className="space-y-6">
@@ -54,7 +59,9 @@ export default async function AdminVenueEquipmentsPage(
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             {venue.name}
           </h1>
-          <Badge variant="secondary">{venue.sportTag}</Badge>
+          <Badge variant="secondary">
+            {sports.length > 0 ? sports.join(", ") : "-"}
+          </Badge>
         </div>
         <p className="text-sm text-slate-500">{venue.address}</p>
       </div>
@@ -84,9 +91,11 @@ export default async function AdminVenueEquipmentsPage(
                 <TableHead className="min-w-[220px] pl-4">
                   Nama Peralatan
                 </TableHead>
-                <TableHead className="min-w-[240px]">Deskripsi</TableHead>
+                <TableHead className="min-w-[160px]">Kategori</TableHead>
                 <TableHead className="w-[160px]">Harga</TableHead>
-                <TableHead className="w-[180px] pr-4">Satuan</TableHead>
+                <TableHead className="w-[100px]">Stok</TableHead>
+                <TableHead className="w-[120px]">Status</TableHead>
+                <TableHead className="w-[180px] pr-4 text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -97,21 +106,38 @@ export default async function AdminVenueEquipmentsPage(
                     <TableCell className="pl-4 font-semibold text-slate-900">
                       {item.name}
                     </TableCell>
-                    <TableCell className="whitespace-normal text-muted-foreground">
-                      {item.description ?? "-"}
+                    <TableCell className="text-muted-foreground">
+                      {item.category ?? "-"}
                     </TableCell>
                     <TableCell className="font-semibold text-slate-900">
-                      {formatRupiah(item.pricePerUnit)}
+                      {formatRupiah(item.price)}
                     </TableCell>
-                    <TableCell className="pr-4 text-muted-foreground">
-                      {item.unit ?? "-"}
+                    <TableCell className="text-muted-foreground">
+                      {item.stock}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                        className={
+                          item.isActive
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-slate-100 text-slate-500"
+                        }
+                      >
+                        {item.isActive ? "Aktif" : "Nonaktif"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="pr-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <EquipmentRowActions item={item} />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
+                    colSpan={6}
                     className="h-24 text-center text-muted-foreground"
                   >
                     <span className="inline-flex items-center gap-2">

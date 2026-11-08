@@ -9,43 +9,61 @@ const timeFormatRegex = /^([01]\d|2[0-3]):00$/;
 
 //skema validasi ID booking (dipakai di endpoint cancel)
 export const bookingIdSchema = z
+  .string()
+  .trim()
+  .min(1, "Booking ID tidak boleh kosong");
+
+//Skema validasi query string untuk endpoint availability
+//contoh : GET /api/courts/xxx/availability?date=2026-11-05
+export const availabilityQuerySchema = z.object({
+  date: z
     .string()
     .trim()
-    .min(1,"Booking ID tidak boleh kosong")
-//Skema validasi query string untuk endpoint availability
-//consoh : GET /api/courts/xxx/availability?date=2026-11-05
-export const availabilityQuerySchema = z.object({
-    date : z
-        .string()
-        .trim()
-        .regex(dateFormatRegex,"Format tanggal harus YYY-MM-DD")
-})
+    .regex(dateFormatRegex, "Format tanggal harus YYYY-MM-DD"),
+});
+
+// Satu baris equipment yang dipilih user saat booking.
+const bookingEquipmentSchema = z.object({
+  equipmentId: z.string().trim().min(1, "Equipment ID tidak boleh kosong"),
+  quantity: z
+    .number({ error: "Jumlah equipment harus berupa angka" })
+    .int("Jumlah equipment harus bilangan bulat")
+    .min(1, "Jumlah equipment minimal 1")
+    .max(99, "Jumlah equipment maksimal 99"),
+});
 
 export const createBookingSchema = z.object({
-    courtId : z
-        .string()
-        .trim()
-        .min(1,"Court ID tidak boleh kosong"),
-    //hari main
-    playDate : z
-        .string()
-        .trim()
-        .regex(dateFormatRegex,"Format tanggal harus YYYY-MM-DD"),
-    startTime: z
-        .string()
-        .trim()
-        .regex(timeFormatRegex),
-    durationHour: z
-        .number({error: "Durasi harus berupa angka"})
-        .int()
-        .min(1,"Durasi minimal 1 jam")
-        .max(24,"maxsimal 24 jam"),
-    
-    notes : z.string().trim().max(255).optional().nullable()
-})
+  courtId: z.string().trim().min(1, "Court ID tidak boleh kosong"),
+  //hari main
+  playDate: z
+    .string()
+    .trim()
+    .regex(dateFormatRegex, "Format tanggal harus YYYY-MM-DD"),
+  startTime: z.string().trim().regex(timeFormatRegex),
+  durationHour: z
+    .number({ error: "Durasi harus berupa angka" })
+    .int()
+    .min(1, "Durasi minimal 1 jam")
+    .max(24, "maxsimal 24 jam"),
+
+  notes: z.string().trim().max(255).optional().nullable(),
+
+  // Equipment opsional. Kalau tidak dikirim, dianggap tidak ada equipment.
+  equipments: z
+    .array(bookingEquipmentSchema)
+    .max(20, "Maksimal 20 jenis equipment")
+    .optional()
+    .default([]),
+});
 
 // untuk admin, skema validasi query string untuk endpoint list booking
-export const BOOKING_STATUSES = ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"] as const;
+export const BOOKING_STATUSES = [
+  "PENDING",
+  "CONFIRMED",
+  "CANCELLED",
+  "COMPLETED",
+] as const;
+
 export const adminBookingQuerySchema = z.object({
   // Filter berdasarkan status — boleh tidak dikirim (= tampilkan semua)
   status: z.enum(BOOKING_STATUSES).optional(),
@@ -63,4 +81,4 @@ export const updateBookingStatusSchema = z.object({
   status: z.enum(BOOKING_STATUSES, { error: "Status tidak valid" }),
 });
 
-export type CreateBookingInput = z.infer<typeof createBookingSchema>
+export type CreateBookingInput = z.infer<typeof createBookingSchema>;
