@@ -69,3 +69,13 @@ export function deactivateCourtById(id: string) {
     select: courtSelect, // Mengembalikan data hasil pembaruan
   });
 }
+
+// 6. Menghapus lapangan secara permanen dari database (Hard Delete)
+export function deleteCourtById(id: string) {
+  // Query Prisma delete untuk menghapus baris data secara permanen
+  // Karena relasi Booking menggunakan onDelete: Cascade,
+  // booking terkait akan otomatis terhapus bersama court ini
+  return prisma.court.delete({
+    where: { id }, // Menargetkan baris berdasarkan ID unik lapangan
+  });
+}

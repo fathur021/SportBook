@@ -53,13 +53,50 @@ export const createCourtSchema = z.object({
     .optional(),
 });
 
-// Skema validasi untuk update lapangan (Update / PATCH)
-export const updateCourtSchema = createCourtSchema
-  .partial() // Menjadikan semua properti dari createCourtSchema menjadi opsional (boleh kirim salah satu saja)
-  .refine(
-    (data) => Object.keys(data).length > 0, // Memastikan objek tidak kosong {}
-    "Minimal satu field harus diisi", // Pesan jika pengguna mengirimkan objek kosong tanpa perubahan
-  );
+// // Skema validasi untuk update lapangan (Update / PATCH)
+// export const updateCourtSchema = createCourtSchema
+//   .partial() // Menjadikan semua properti dari createCourtSchema menjadi opsional (boleh kirim salah satu saja)
+//   .refine(
+//     (data) => Object.keys(data).length > 0, // Memastikan objek tidak kosong {}
+//     "Minimal satu field harus diisi", // Pesan jika pengguna mengirimkan objek kosong tanpa perubahan
+//   );
+
+export const updateCourtSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Nama lapangan minimal 2 karakter")
+    .max(100, "Nama lapangan maksimal 100 karakter")
+    .optional(), // ← opsional agar bisa update sebagian data
+  sport: z
+    .string()
+    .trim()
+    .min(2, "Cabang olahraga minimal 2 karakter")
+    .max(50, "Cabang olahraga maksimal 50 karakter")
+    .optional(),
+  surface: z.string().trim().max(100).nullable().optional(),
+  isIndoor: z.boolean().optional(),
+  pricePerHour: z
+    .number({ error: "Harga per jam harus berupa angka" })
+    .int("Harga per jam harus bilangan bulat")
+    .positive("Harga per jam harus lebih dari 0")
+    .min(10000, "Harga sewa minimal Rp 10.000")
+    .optional(),
+  image: z.string().trim().max(1000).nullable().optional(),
+  maxPlayers: z
+    .number()
+    .int("Kapasitas pemain harus bilangan bulat")
+    .positive("Kapasitas pemain harus lebih dari 0")
+    .max(100, "Kapasitas maksimal 100 pemain")
+    .nullable()
+    .optional(),
+  // [+] FIELD BARU: untuk toggle status aktif/non-aktif
+  isActive: z.boolean().optional(),
+}).refine(
+  (data) => Object.keys(data).length > 0,
+  "Minimal satu field harus diisi"
+);
+
 
 // Inferensi tipe data TypeScript otomatis dari skema Zod untuk create
 export type CreateCourtInput = z.infer<typeof createCourtSchema>;

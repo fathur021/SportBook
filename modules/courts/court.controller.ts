@@ -12,6 +12,7 @@ import {
   CourtNotFoundError,
   createCourtService,
   deactivateCourtService,
+  deleteCourtService,
   listCourtsByVenueSlugService,
   updateCourtService,
 } from "./court.service";
@@ -230,6 +231,46 @@ export async function deactivateCourtController(
     console.error("Gagal menonaktifkan lapangan:", error);
     return Response.json(
       { error: "Gagal menonaktifkan lapangan" },
+      { status: 500 },
+    );
+  }
+}
+
+// 5. Controller: Menghapus lapangan secara permanen / Hard Delete (Khusus Admin)
+export async function deleteCourtController(
+  request: Request, // Objek Request HTTP
+  rawCourtId: string, // ID lapangan dari URL
+): Promise<Response> {
+  try {
+    // Autentikasi: Hanya admin yang boleh menghapus lapangan secara permanen
+    const authorization = await requireAdmin(request);
+    if (!authorization.ok) {
+      return Response.json(
+        { error: authorization.error },
+        { status: authorization.status },
+      );
+    }
+
+    // Validasi parameter ID lapangan
+    const idResult = courtIdSchema.safeParse(rawCourtId);
+    if (!idResult.success) {
+      return Response.json({ error: "ID lapangan tidak valid" }, { status: 400 });
+    }
+
+    // Eksekusi service untuk menghapus lapangan secara permanen dari database
+    await deleteCourtService(idResult.data);
+    // Kembalikan HTTP 200 OK dengan pesan sukses
+    return Response.json({ success: true });
+  } catch (error) {
+    // Tangani jika lapangan tidak ditemukan (HTTP 404)
+    if (error instanceof CourtNotFoundError) {
+      return Response.json({ error: error.message }, { status: 404 });
+    }
+
+    // Tangani error server lainnya (HTTP 500)
+    console.error("Gagal menghapus lapangan:", error);
+    return Response.json(
+      { error: "Gagal menghapus lapangan" },
       { status: 500 },
     );
   }

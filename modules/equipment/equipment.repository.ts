@@ -84,15 +84,9 @@ export function deactivateEquipmentById(id: string) {
   });
 }
 
-// Hard delete equipment — putuskan relasi BookingEquipment dulu, baru hapus equipment
-export async function deleteEquipmentById(id: string) {
-  // Langkah 1: Set equipmentId = NULL di semua BookingEquipment yang masih merujuk equipment ini
-  await prisma.bookingEquipment.updateMany({
-    where: { equipmentId: id },
-    data: { equipmentId: null },
-  });
-  // Langkah 2: Hapus equipment itu sendiri
-  await prisma.equipment.delete({
+// Hard delete equipment — relasi BookingEquipment otomatis di-set NULL oleh database
+export function deleteEquipmentById(id: string) {
+  return prisma.equipment.delete({
     where: { id },
   });
 }

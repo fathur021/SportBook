@@ -4,6 +4,7 @@ import { Prisma } from "@/lib/generated/prisma/client";
 import {
   createCourt,
   deactivateCourtById,
+  deleteCourtById,
   findCourtsByVenueId,
   findVenueBySlug,
   updateCourtById,
@@ -102,6 +103,24 @@ export async function deactivateCourtService(courtId: string) {
   try {
     // Eksekusi pengubahan isActive menjadi false di repository
     return await deactivateCourtById(courtId);
+  } catch (error) {
+    // Jika record lapangan dengan ID tersebut tidak ditemukan di database
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      throw new CourtNotFoundError();
+    }
+    // Lempar error jika ada masalah lain
+    throw error;
+  }
+}
+
+// 5. Service: Menghapus lapangan secara permanen (Hard Delete)
+export async function deleteCourtService(courtId: string) {
+  try {
+    // Eksekusi penghapusan data court dari repository
+    return await deleteCourtById(courtId);
   } catch (error) {
     // Jika record lapangan dengan ID tersebut tidak ditemukan di database
     if (

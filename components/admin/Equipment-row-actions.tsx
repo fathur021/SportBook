@@ -102,7 +102,7 @@ export function EquipmentRowActions({ item }: { item: EquipmentItem }) {
   
   async function handleDelete(){
     if(!confirm(`Yakin ingin menghapus "${item.name}" secara permanen?`)) return;
-    if(!confirm(`PERINGATAN: Tinfakan ini tidak bisa di batalkan!`)) return;
+    if(!confirm(`PERINGATAN: Tindakan ini tidak bisa dibatalkan!`)) return;
 
     setLoading(true);
     try {

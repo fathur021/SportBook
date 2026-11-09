@@ -1,7 +1,7 @@
-// Mengimpor handler fungsi controller untuk update dan deactivate courts
+// Mengimpor handler fungsi controller untuk update dan delete courts
 import {
   updateCourtController,
-  deactivateCourtController,
+  deleteCourtController,
 } from "@/modules/courts/court.controller";
 
 // Handler HTTP PATCH: Memperbarui data lapangan
@@ -14,12 +14,12 @@ export async function PATCH(
   return updateCourtController(request, courtId); // Menyerahkan request dan courtId ke controller
 }
 
-// Handler HTTP DELETE: Menonaktifkan lapangan (Soft Delete)
+// Handler HTTP DELETE: Menghapus lapangan secara permanen (Hard Delete)
 // Endpoint: DELETE /api/admin/venues/[slug]/courts/[courtId]
 export async function DELETE(
   request: Request, // Objek HTTP Request
   { params }: { params: Promise<{ slug: string; courtId: string }> }, // Next.js dynamic params
 ): Promise<Response> {
   const { courtId } = await params; // Ekstrak nilai courtId dari URL
-  return deactivateCourtController(request, courtId); // Menyerahkan request dan courtId ke controller
+  return deleteCourtController(request, courtId); // Menyerahkan request dan courtId ke controller hard delete
 }

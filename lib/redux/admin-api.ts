@@ -188,11 +188,23 @@ const adminApi = createApi({
       invalidatesTags: (_r, _e, { slug }) => [{ type: "AdminCourt", id: slug }],
     }),
 
-    deactivateCourt: build.mutation<void, { slug: string; courtId: string }>({
+    deleteCourt: build.mutation<void, { slug: string; courtId: string }>({
       query: ({ slug, courtId }) => ({
         url: `/api/admin/venues/${slug}/courts/${courtId}`,
         method: "DELETE",
       }),
+      invalidatesTags: (_r, _e, { slug }) => [{ type: "AdminCourt", id: slug }],
+    }),
+
+    toggleCourt: build.mutation<
+    AdminCourt, 
+    {slug:string; courtId:string; isActive:boolean}>({
+      query:({slug,courtId,isActive}) => ({
+        url: `/api/admin/venues/${slug}/courts/${courtId}`,
+        method: "PATCH", 
+        body: { isActive },
+      }),
+      transformResponse: (res: { data: AdminCourt }) => res.data,
       invalidatesTags: (_r, _e, { slug }) => [{ type: "AdminCourt", id: slug }],
     }),
 
@@ -235,7 +247,8 @@ export const {
   useGetVenueCourtsQuery,
   useCreateCourtMutation,
   useUpdateCourtMutation,
-  useDeactivateCourtMutation,
+  useDeleteCourtMutation,
+  useToggleCourtMutation,
   useGetAdminBookingsQuery,
   useUpdateBookingStatusMutation,
 } = adminApi;
