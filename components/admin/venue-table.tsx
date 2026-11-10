@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Eye, Pencil, Trash2, Star } from "lucide-react";
+import { Eye, Star, LayoutGrid } from "lucide-react";
 import { formatRupiah } from "@/lib/format-rupiah";
 import { cn } from "@/lib/utils";
 import {
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { VenueRowActions } from "@/components/admin/Venue-row-actions";
 import { useGetAdminVenuesQuery } from "@/lib/redux/admin-api";
 
 export function VenueTable() {
@@ -59,7 +60,8 @@ export function VenueTable() {
             <TableHead>Spesifikasi</TableHead>
             <TableHead>Harga Sewa / Jam</TableHead>
             <TableHead>Rating</TableHead>
-            <TableHead className="text-right w-[140px]">Aksi</TableHead>
+            <TableHead className="w-[120px]">Status</TableHead>
+            <TableHead className="text-right w-[220px]">Aksi</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -123,6 +125,22 @@ export function VenueTable() {
                 </div>
               </TableCell>
 
+              {/* Kolom Status — badge dinamis berdasarkan isActive */}
+              <TableCell>
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    "font-medium",
+                    venue.isActive
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                      : "bg-red-50 text-red-700 border-red-200",
+                  )}
+                >
+                  {venue.isActive ? "Aktif" : "Non-aktif"}
+                </Badge>
+              </TableCell>
+
+              {/* Kolom Aksi — tombol lihat, kelola lapangan, edit, toggle, delete */}
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-1.5">
                   <Link
@@ -142,18 +160,11 @@ export function VenueTable() {
                       buttonVariants({ variant: "outline", size: "icon" }),
                       "h-8 w-8 border-slate-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200",
                     )}
-                    title="Kelola Lapangan / Edit"
+                    title="Kelola Lapangan"
                   >
-                    <Pencil className="h-4 w-4" />
+                    <LayoutGrid className="h-4 w-4" />
                   </Link>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8 border-slate-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200"
-                    title="Hapus"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <VenueRowActions item={venue} />
                 </div>
               </TableCell>
             </TableRow>

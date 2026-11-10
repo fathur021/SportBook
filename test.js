@@ -1,800 +1,611 @@
 // ============================================================================
-// PANDUAN: HALAMAN KELOLA BOOKING (Admin)
+// PANDUAN: FITUR EDIT, TOGGLE, DAN DELETE UNTUK VENUE
 // ============================================================================
-// File ini berisi panduan lengkap untuk membuat halaman kelola booking.
-// Setiap bagian memiliki penjelasan di atas, lalu kode lengkap di bawahnya.
-// Nanti Anda yang ketik sendiri agar lebih paham!
-//
-// Penanda yang digunakan:
-// [+] = Kode yang ditambahkan (baru)
-// [~] = Kode yang diedit (diubah)
-// [-] = Kode yang dihapus
-// ← = Penjelasan singkat di sebelah kode
-// ============================================================================
-
-// ============================================================================
-// BAGIAN 1: HALAMAN ADMIN BOOKING
-// ============================================================================
-// File: app/admin/bookings/page.tsx
 //
 // PENJELASAN:
-// Halaman ini adalah pintu masuk untuk admin melihat semua booking.
-// Mirip dengan halaman equipment dan court yang sudah kita buat.
+// Sama seperti equipment dan court, venue butuh 3 fitur di kolom Aksi:
+// 1. Edit — dialog form untuk ubah data venue
+// 2. Toggle — switch untuk aktif/non-aktif venue
+// 3. Delete — tombol untuk hapus venue (soft delete)
 //
-// Struktur halaman:
-// 1. Header — tombol Kembali + judul + badge jumlah booking
-// 2. Card — berisi filter (tanggal & status) + tabel booking
+// Perbedaan dengan equipment/court:
+// - Venue menggunakan Redux RTK Query (sama seperti court)
+// - Venue menggunakan slug sebagai identifier, bukan ID
+// - Venue punya relasi dengan Court (onDelete: Cascade)
+// - Delete venue = soft delete (isActive: false), bukan hard delete
 //
-// Data diambil dari Redux query: useGetAdminBookingsQuery
-// Filter bisa berdasarkan tanggal main (playDate) dan status booking.
+// Backend yang sudah ada:
+// - Repository: deactivateVenueBySlug() ✅
+// - Service: deactivateVenueService() ✅
+// - Controller: deactivateVenueController() ✅
+// - API Route: DELETE /api/admin/venues/[slug] ✅
+// - Redux: useDeactivateVenueMutation ✅
+// - Redux: useUpdateVenueMutation ✅
 //
-// Analogi:
-// Bayangkan halaman ini seperti dashboard kasir restoran —
-// bisa melihat semua pesanan, filter berdasarkan tanggal atau status
-// (masih menunggu, sudah dimasak, sudah selesai).
+// Yang perlu diperbaiki/ditambahkan:
+// 1. venue.schema.ts — tambah isActive di updateVenueSchema
+// 2. admin-api.ts — tambah isActive di AdminVenue + UpdateVenueBody
+// 3. admin-api.ts — tambah mutation toggleVenue
+// 4. Venue-row-actions.tsx — komponen baru (edit, toggle, delete)
+// 5. venue-table.tsx — ganti tombol placeholder dengan VenueRowActions
 
-// [+] FILE BARU — Buat file ini di folder app/admin/bookings/
+// ============================================================================
+// BAGIAN 1: SCHEMA VALIDASI — Tambah isActive
+// ============================================================================
+// File: modules/venues/venue.schema.ts
+//
+// PENJELASAN:
+// Sama seperti equipment dan court, updateVenueSchema saat ini menggunakan
+// .partial() yang hanya mengenal field di createVenueSchema. Karena createVenueSchema
+// tidak punya isActive, maka .partial() juga tidak bisa menambahkannya.
+//
+// Solusi: Ganti jadi z.object() eksplisit dan tambah isActive sebagai field opsional.
 
-"use client"; // ← butuh state untuk filter
+// [~] EDIT — Ganti baris 48-54 (updateVenueSchema)
+
+export const updateVenueSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Nama venue minimal 2 karakter")
+    .max(120, "Nama venue maksimal 120 karakter")
+    .optional(),
+  description: z.string().trim().max(2000).nullable().optional(),
+  address: z.string().trim().min(5, "Alamat minimal 5 karakter").max(255).optional(),
+  city: z
+    .string()
+    .trim()
+    .min(2, "Nama kota minimal 2 karakter")
+    .max(100, "Nama kota maksimal 100 karakter")
+    .optional(),
+  phone: z.string().trim().max(30).nullable().optional(),
+  email: z
+    .string()
+    .trim()
+    .email("Format email tidak valid")
+    .or(z.literal(""))
+    .nullable()
+    .optional()
+    .transform((val) => (val ? val : null)),
+  timeZone: z.string().trim().min(1).max(100).optional(),
+  coverImage: z.string().trim().max(2048).nullable().optional(),
+  facilities: z.array(z.string().trim()).optional(),
+  // [+] FIELD BARU: untuk toggle status aktif/non-aktif
+  isActive: z.boolean().optional(),
+}).refine(
+  (data) => Object.keys(data).length > 0,
+  "Minimal satu field harus diisi",
+);
+
+// ============================================================================
+// BAGIAN 2: REDUX — Tambah isActive di Interface
+// ============================================================================
+// File: lib/redux/admin-api.ts
+//
+// PENJELASAN:
+// AdminVenue interface harus punya isActive agar komponen frontend bisa
+// membaca status aktif/non-aktif dari data Redux.
+// UpdateVenueBody juga harus punya isActive agar bisa kirim PATCH request
+// untuk toggle status.
+
+// [~] EDIT — Tambah isActive di AdminVenue (sekitar baris 54-66)
+
+export interface AdminVenue {
+  id: string;
+  slug: string;
+  name: string;
+  description?: string | null;
+  address: string;
+  city: string;
+  phone?: string | null;
+  email?: string | null;
+  coverImage?: string | null;
+  facilities: string[];
+  // [+] TAMBAHKAN:
+  isActive?: boolean;
+  courts: AdminCourt[];
+}
+
+// [~] EDIT — Tambah isActive di UpdateVenueBody (sekitar baris 90-99)
+
+export interface UpdateVenueBody {
+  name?: string;
+  address?: string;
+  city?: string;
+  description?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  coverImage?: string | null;
+  facilities?: string[];
+  // [+] TAMBAHKAN:
+  isActive?: boolean;
+}
+
+// ============================================================================
+// BAGIAN 3: REDUX — Tambah mutation toggleVenue
+// ============================================================================
+// File: lib/redux/admin-api.ts
+//
+// PENJELASAN:
+// Mutation ini mengirim PATCH request ke API dengan body { isActive: boolean }
+// untuk mengubah status aktif/non-aktif venue. Sama seperti toggleCourt.
+// Endpoint yang dipanggil: PATCH /api/admin/venues/[slug]
+// Controller yang menangani: updateVenueController (sudah bisa terima isActive)
+
+// [+] TAMBAHKAN — Setelah mutation deactivateVenue (sekitar baris 157)
+
+toggleVenue: build.mutation<
+  AdminVenue,
+  { slug: string; isActive: boolean }
+>({
+  query: ({ slug, isActive }) => ({
+    url: `/api/admin/venues/${slug}`,
+    method: "PATCH",
+    body: { isActive },
+  }),
+  transformResponse: (res: { data: AdminVenue }) => res.data,
+  invalidatesTags: ["AdminVenue"],
+}),
+
+// [+] TAMBAHKAN — Export hook (sekitar baris 241-254)
+
+useToggleVenueMutation,
+
+// ============================================================================
+// BAGIAN 4: KOMPONEN BARU — Venue Row Actions
+// ============================================================================
+// File: components/admin/Venue-row-actions.tsx
+//
+// PENJELASAN:
+// Komponen ini berisi 3 fitur dalam 1 fungsi dengan 1 return:
+// 1. Dialog Edit — form untuk ubah data venue
+// 2. Switch Toggle — switch untuk aktif/non-aktif
+// 3. Tombol Delete — soft delete venue
+//
+// Struktur: 1 fungsi utama, 3 fungsi anak di dalamnya, 1 return.
+// Menggunakan Redux mutation, bukan fetch() langsung.
+// @base-ui/react tidak support asChild, jadi styling disalin manual.
+
+// [+] FILE BARU — Buat file ini di folder components/admin/
+
+"use client";
 
 import { useState } from "react";
-import { ArrowLeft, CalendarDays, ClipboardList } from "lucide-react"; // ← ikon
-import Link from "next/link";
+import type { FormEvent } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"; // ← card layout
-import { Button } from "@/components/ui/button"; // ← tombol
-import { Badge } from "@/components/ui/badge"; // ← badge jumlah
-import { BookingTable } from "@/components/admin/booking-table"; // ← tabel booking (bagian 2)
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Pencil, Trash2 } from "lucide-react";
+
+import type { AdminVenue } from "@/lib/redux/admin-api";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"; // ← dropdown filter status
-import { Input } from "@/components/ui/input"; // ← input tanggal
-import { useGetAdminBookingsQuery } from "@/lib/redux/admin-api"; // ← Redux query
+  useUpdateVenueMutation,
+  useToggleVenueMutation,
+  useDeactivateVenueMutation,
+} from "@/lib/redux/admin-api";
 
-export default function AdminBookingsPage() {
-  // [+] State untuk filter
-  const [playDate, setPlayDate] = useState(""); // ← tanggal main
-  const [status, setStatus] = useState(""); // ← status booking
+// Tipe data venue yang diterima dari tabel
+type VenueItem = {
+  id: string;
+  slug: string;
+  name: string;
+  address: string;
+  city: string;
+  phone?: string | null;
+  email?: string | null;
+  coverImage?: string | null;
+  description?: string | null;
+  facilities?: string[];
+  isActive?: boolean;
+};
 
-  // [+] Bangun parameter query hanya jika ada filter
-  const queryParam =
-    playDate || status
-      ? { playDate: playDate || undefined, status: status || undefined }
-      : undefined;
+export function VenueRowActions({ item }: { item: VenueItem }) {
+  // [+] State untuk dialog edit
+  const [open, setOpen] = useState(false);
+  // [+] State untuk switch toggle
+  const [active, setActive] = useState(item.isActive ?? true);
+  // [+] State loading
+  const [loading, setLoading] = useState(false);
 
-  // [+] Ambil data booking dari API via Redux
-  const { data: bookings, isLoading, isError } =
-    useGetAdminBookingsQuery(queryParam);
+  // [+] Redux mutations
+  const [updateVenue] = useUpdateVenueMutation();
+  const [toggleVenue] = useToggleVenueMutation();
+  const [deactivateVenue] = useDeactivateVenueMutation();
 
-  // [+] Hitung jumlah booking per status (untuk badge)
-  const pendingCount = bookings?.filter((b) => b.status === "PENDING").length ?? 0;
-  const confirmedCount = bookings?.filter((b) => b.status === "CONFIRMED").length ?? 0;
+  // Fungsi submit form edit venue
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
 
-  // [+] Loading state
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="-ml-2 mb-2"
-            nativeButton={false}
-            render={<Link href="/admin/venues" />}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Kembali
-          </Button>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Kelola Booking
-          </h1>
-        </div>
-        <Card>
-          <CardContent className="p-8">
-            <div className="text-center text-sm text-slate-500">
-              Memuat data booking...
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    const form = event.currentTarget; // ← tanpa kurung, ini properti
+    const formData = new FormData(form);
+
+    // Kumpulkan data dari form
+    const data = {
+      name: String(formData.get("name") ?? "").trim(),
+      address: String(formData.get("address") ?? "").trim(),
+      city: String(formData.get("city") ?? "").trim(),
+      phone: String(formData.get("phone") ?? "").trim() || null,
+      email: String(formData.get("email") ?? "").trim() || null,
+      description: String(formData.get("description") ?? "").trim() || null,
+      coverImage: String(formData.get("coverImage") ?? "").trim() || null,
+    };
+
+    try {
+      // Kirim PATCH request via Redux
+      await updateVenue({
+        slug: item.slug,
+        body: data,
+      }).unwrap();
+
+      // Reset form dan tutup dialog
+      form.reset();
+      setOpen(false);
+    } catch (err: any) {
+      // Tampilkan error dari server
+      const serverMsg = err?.data?.error || "Gagal memperbarui venue";
+      alert(serverMsg);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  // [+] Error state
-  if (isError) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="-ml-2 mb-2"
-            nativeButton={false}
-            render={<Link href="/admin/venues" />}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Kembali
-          </Button>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Kelola Booking
-          </h1>
-        </div>
-        <Card>
-          <CardContent className="p-8">
-            <div className="text-center text-sm text-red-500">
-              Gagal memuat data booking. Coba muat ulang halaman.
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+  // Fungsi toggle switch aktif/non-aktif
+  async function handleToggle() {
+    const newStatus = !active;
+    setActive(newStatus); // ← optimistic UI: langsung ubah tampilan
+
+    try {
+      // Kirim PATCH request via Redux
+      await toggleVenue({
+        slug: item.slug,
+        isActive: newStatus,
+      }).unwrap();
+    } catch (err: any) {
+      // Rollback jika API gagal
+      setActive(!newStatus);
+      const serverMsg = err?.data?.error || "Gagal mengubah status venue";
+      alert(serverMsg);
+    }
   }
 
-  // [+] Main content
+  // Fungsi delete venue (soft delete)
+  async function handleDelete() {
+    // Konfirmasi sebelum hapus
+    if (!confirm(`Yakin ingin menonaktifkan "${item.name}"?`)) return;
+
+    setLoading(true);
+    try {
+      // Kirim DELETE request via Redux
+      await deactivateVenue(item.slug).unwrap();
+    } catch (err: any) {
+      const serverMsg = err?.data?.error || "Gagal menonaktifkan venue";
+      alert(serverMsg);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Header: Judul + Badge */}
-      <div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="-ml-2 mb-2"
-          nativeButton={false}
-          render={<Link href="/admin/venues" />}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Kembali
-        </Button>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Kelola Booking
-          </h1>
-          {/* Badge: jumlah booking pending */}
-          {pendingCount > 0 && (
-            <Badge variant="secondary" className="bg-amber-50 text-amber-700">
-              {pendingCount} Menunggu
-            </Badge>
-          )}
-          {/* Badge: jumlah booking confirmed */}
-          {confirmedCount > 0 && (
-            <Badge variant="secondary" className="bg-emerald-50 text-emerald-700">
-              {confirmedCount} Dikonfirmasi
-            </Badge>
-          )}
-        </div>
-        <p className="text-sm text-slate-500 mt-1">
-          Kelola semua pemesanan lapangan dari semua venue.
-        </p>
-      </div>
+    <div className="flex items-center gap-1">
+      {/* ============================================ */}
+      {/* 1. DIALOG EDIT VENUE                        */}
+      {/* ============================================ */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        {/* Trigger tombol Edit */}
+        <DialogTrigger className="group/button inline-flex shrink-0 items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 gap-1.5 hover:bg-secondary/50 px-2.5 py-1.5">
+          <Pencil data-icon="inline-start" size={14} />
+          Edit
+        </DialogTrigger>
 
-      {/* Card: Filter + Tabel */}
-      <Card className="py-0">
-        <CardHeader className="border-b py-4">
-          <CardTitle>Daftar Booking</CardTitle>
-          <CardDescription>
-            Semua pemesanan yang masuk ke sistem.
-          </CardDescription>
-        </CardHeader>
+        {/* Isi dialog */}
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Venue</DialogTitle>
+            <DialogDescription>
+              Perbarui detail venue olahraga.
+            </DialogDescription>
+          </DialogHeader>
 
-        <CardContent className="p-4">
-          {/* Baris filter: Tanggal + Status */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              {/* Filter: Tanggal Main */}
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-slate-400" />
+          {/* Form edit dengan 7 field */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Field: Nama venue */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-venue-name">Nama venue *</Label>
+              <Input
+                id="edit-venue-name"
+                name="name"
+                placeholder="Sport Arena Jakarta"
+                defaultValue={item.name}
+                required
+              />
+            </div>
+
+            {/* Field: Alamat */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-venue-address">Alamat *</Label>
+              <Input
+                id="edit-venue-address"
+                name="address"
+                placeholder="Jl. Sudirman No. 123"
+                defaultValue={item.address}
+                required
+              />
+            </div>
+
+            {/* Field: Kota */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-venue-city">Kota *</Label>
+              <Input
+                id="edit-venue-city"
+                name="city"
+                placeholder="Jakarta"
+                defaultValue={item.city}
+                required
+              />
+            </div>
+
+            {/* Field: Telepon dan Email (2 kolom) */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-venue-phone">Telepon</Label>
                 <Input
-                  type="date"
-                  value={playDate}
-                  onChange={(e) => setPlayDate(e.target.value)}
-                  placeholder="Filter tanggal"
-                  className="w-40"
+                  id="edit-venue-phone"
+                  name="phone"
+                  placeholder="08123456789"
+                  defaultValue={item.phone ?? ""}
                 />
               </div>
-
-              {/* Filter: Status */}
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Semua status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">Semua status</SelectItem>
-                  <SelectItem value="PENDING">Menunggu</SelectItem>
-                  <SelectItem value="CONFIRMED">Dikonfirmasi</SelectItem>
-                  <SelectItem value="COMPLETED">Selesai</SelectItem>
-                  <SelectItem value="CANCELLED">Dibatalkan</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-venue-email">Email</Label>
+                <Input
+                  id="edit-venue-email"
+                  name="email"
+                  type="email"
+                  placeholder="venue@email.com"
+                  defaultValue={item.email ?? ""}
+                />
+              </div>
             </div>
 
-            {/* Tombol reset filter */}
-            {(playDate || status) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setPlayDate("");
-                  setStatus("");
-                }}
-              >
-                Reset Filter
-              </Button>
-            )}
-          </div>
+            {/* Field: Deskripsi */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-venue-description">Deskripsi</Label>
+              <Textarea
+                id="edit-venue-description"
+                name="description"
+                placeholder="Deskripsi singkat venue..."
+                defaultValue={item.description ?? ""}
+                rows={3}
+              />
+            </div>
 
-          {/* Tabel Booking */}
-          <BookingTable bookings={bookings ?? []} />
-        </CardContent>
-      </Card>
+            {/* Field: Cover Image URL */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-venue-cover">URL Gambar Cover</Label>
+              <Input
+                id="edit-venue-cover"
+                name="coverImage"
+                placeholder="https://..."
+                defaultValue={item.coverImage ?? ""}
+              />
+            </div>
+
+            {/* Tombol di bawah dialog */}
+            <DialogFooter>
+              <DialogClose asChild={false}>
+                <button type="button" className="group/button inline-flex shrink-0 items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 gap-1.5 border border-slate-200 hover:bg-slate-100 px-4 py-2">
+                  Batal
+                </button>
+              </DialogClose>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="bg-emerald-600 text-white hover:bg-emerald-700"
+              >
+                {loading ? "Menyimpan..." : "Perbarui Venue"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============================================ */}
+      {/* 2. SWITCH TOGGLE AKTIF/NON-AKTIF           */}
+      {/* ============================================ */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-slate-500">
+          {active ? "Aktif" : "Non-aktif"}
+        </span>
+        <Switch
+          size="sm"
+          checked={active}
+          onCheckedChange={handleToggle}
+        />
+      </div>
+
+      {/* ============================================ */}
+      {/* 3. TOMBOL DELETE (SOFT DELETE)              */}
+      {/* ============================================ */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleDelete}
+        disabled={loading}
+        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+      >
+        <Trash2 data-icon="inline-start" size={14} />
+        Hapus
+      </Button>
     </div>
   );
 }
 
 // ============================================================================
-// BAGIAN 2: TABEL BOOKING
+// BAGIAN 5: EDIT VENUE TABLE — Ganti tombol placeholder
 // ============================================================================
-// File: components/admin/booking-table.tsx
+// File: components/admin/venue-table.tsx
 //
 // PENJELASAN:
-// Komponen ini menampilkan tabel booking dengan 9 kolom:
-// 1. Kode Order — kode unik booking
-// 2. Pelanggan — nama dan email user
-// 3. Venue & Court — nama venue dan lapangan
-// 4. Tanggal & Waktu — tanggal main + jam
-// 5. Durasi — lama booking dalam jam
-// 6. Total Harga — harga total
-// 7. Status — badge warna sesuai status
-// 8. Pembayaran — status pembayaran
-// 9. Aksi — dropdown ubah status
-//
-// Analogi:
-// Seperti tabel pesanan di restoran — setiap baris adalah satu pesanan
-// dengan info pelanggan, menu, waktu, dan status.
+// Ganti tombol Edit (link ke halaman lain) dan tombol Hapus (placeholder)
+// dengan komponen VenueRowActions yang sudah dibuat.
+// Tambah kolom Status untuk badge aktif/non-aktif.
 
-// [+] FILE BARU — Buat file ini di folder components/admin/
+// [+] TAMBAHKAN import di bagian atas
 
-"use client";
+import { VenueRowActions } from "@/components/admin/Venue-row-actions";
 
-import { formatRupiah } from "@/lib/format-rupiah"; // ← format harga ke Rupiah
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"; // ← komponen tabel
-import { Badge } from "@/components/ui/badge"; // ← badge status
-import { BookingRowActions } from "@/components/admin/booking-row-actions"; // ← bagian 3
-import type { AdminBooking } from "@/lib/redux/admin-api"; // ← tipe data booking
-import { CalendarDays, Clock, User, MapPin, ClipboardList } from "lucide-react"; // ← ikon
+// [~] EDIT — Ganti TableHeader (sekitar baris 56-63)
 
-export function BookingTable({ bookings }: { bookings: AdminBooking[] }) {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="min-w-[120px] pl-4">Kode Order</TableHead>
-          <TableHead className="min-w-[140px]">Pelanggan</TableHead>
-          <TableHead className="min-w-[160px]">Venue & Court</TableHead>
-          <TableHead className="min-w-[140px]">Tanggal & Waktu</TableHead>
-          <TableHead className="w-[80px]">Durasi</TableHead>
-          <TableHead className="w-[140px]">Total</TableHead>
-          <TableHead className="w-[120px]">Status</TableHead>
-          <TableHead className="w-[120px]">Pembayaran</TableHead>
-          <TableHead className="w-[160px] pr-4 text-right">Aksi</TableHead>
-        </TableRow>
-      </TableHeader>
+<TableHeader className="bg-slate-50">
+  <TableRow>
+    <TableHead className="w-[280px]">Venue & Lokasi</TableHead>
+    <TableHead>Cabang Olahraga</TableHead>
+    <TableHead>Spesifikasi</TableHead>
+    <TableHead>Harga Sewa / Jam</TableHead>
+    {/* [+] TAMBAHKAN kolom Status */}
+    <TableHead className="w-[120px]">Status</TableHead>
+    <TableHead className="text-right w-[260px]">Aksi</TableHead>
+  </TableRow>
+</TableHeader>
 
-      <TableBody>
-        {bookings && bookings.length > 0 ? (
-          // ← jika ada data, tampilkan baris
-          bookings.map((booking) => (
-            <TableRow
-              key={booking.id}
-              className="align-middle hover:bg-slate-50/70"
-            >
-              {/* Kolom 1: Kode Order */}
-              <TableCell className="py-3 pl-4">
-                <span className="font-mono text-sm font-semibold text-slate-900">
-                  {booking.orderCode}
-                </span>
-              </TableCell>
+// [~] EDIT — Ganti setiap baris data (sekitar baris 118-158)
 
-              {/* Kolom 2: Pelanggan */}
-              <TableCell className="py-3">
-                <div className="space-y-1">
-                  <p className="flex items-center gap-1.5 text-sm font-medium text-slate-900">
-                    <User className="h-3.5 w-3.5 text-slate-400" />
-                    {booking.user?.name ?? "-"} {/* ← ?. karena user bisa undefined */}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {booking.user?.email ?? "-"}
-                  </p>
-                </div>
-              </TableCell>
+{/* [+] TAMBAHKAN cell Status sebelum Aksi */}
+<TableCell>
+  <span
+    className={cn(
+      "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold",
+      venue.isActive
+        ? "bg-emerald-50 text-emerald-700"
+        : "bg-red-50 text-red-700",
+    )}
+  >
+    {venue.isActive ? "Aktif" : "Non-aktif"}
+  </span>
+</TableCell>
 
-              {/* Kolom 3: Venue & Court */}
-              <TableCell className="py-3">
-                <div className="space-y-1">
-                  <p className="flex items-center gap-1.5 text-sm font-medium text-slate-900">
-                    <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                    {booking.court?.venue?.name ?? "-"} {/* ← nested, ?. wajib */}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {booking.court?.name ?? "-"}
-                  </p>
-                </div>
-              </TableCell>
-
-              {/* Kolom 4: Tanggal & Waktu */}
-              <TableCell className="py-3">
-                <div className="space-y-1">
-                  <p className="flex items-center gap-1.5 text-sm text-slate-700">
-                    <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
-                    {formatDate(booking.playDate)}
-                  </p>
-                  <p className="flex items-center gap-1.5 text-xs text-slate-500">
-                    <Clock className="h-3 w-3" />
-                    {booking.startTime} - {booking.endTime}
-                  </p>
-                </div>
-              </TableCell>
-
-              {/* Kolom 5: Durasi */}
-              <TableCell className="py-3">
-                <span className="text-sm font-medium text-slate-700">
-                  {booking.durationHour} jam
-                </span>
-              </TableCell>
-
-              {/* Kolom 6: Total Harga */}
-              <TableCell className="py-3">
-                <span className="whitespace-nowrap font-semibold text-slate-900">
-                  {formatRupiah(booking.totalPrice)}
-                </span>
-              </TableCell>
-
-              {/* Kolom 7: Status Booking */}
-              <TableCell className="py-3">
-                <Badge
-                  variant="secondary"
-                  className={getStatusBadgeClass(booking.status)}
-                >
-                  {getStatusLabel(booking.status)}
-                </Badge>
-              </TableCell>
-
-              {/* Kolom 8: Status Pembayaran */}
-              <TableCell className="py-3">
-                {booking.payment ? (
-                  <Badge
-                    variant="secondary"
-                    className={getPaymentBadgeClass(booking.payment.status)}
-                  >
-                    {getPaymentLabel(booking.payment.status)}
-                  </Badge>
-                ) : (
-                  <span className="text-xs text-slate-400">Belum bayar</span>
-                )}
-              </TableCell>
-
-              {/* Kolom 9: Aksi */}
-              <TableCell className="py-3 pr-4 text-right">
-                <div className="flex items-center justify-end gap-1">
-                  <BookingRowActions booking={booking} />
-                </div>
-              </TableCell>
-            </TableRow>
-          ))
-        ) : (
-          // ← jika tidak ada data, tampilkan empty state
-          <TableRow>
-            <TableCell
-              colSpan={9}
-              className="h-24 text-center text-muted-foreground"
-            >
-              <span className="inline-flex items-center gap-2">
-                <ClipboardList className="size-4" />
-                Belum ada booking yang terdaftar.
-              </span>
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
-  );
-}
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-// Format tanggal dari string "YYYY-MM-DD" ke format Indonesia
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr + "T00:00:00"); // ← tambah waktu agar tidak UTC shift
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-// Warna badge berdasarkan status booking
-function getStatusBadgeClass(status: string): string {
-  switch (status) {
-    case "PENDING":
-      return "bg-amber-50 text-amber-700"; // ← kuning
-    case "CONFIRMED":
-      return "bg-blue-50 text-blue-700"; // ← biru
-    case "COMPLETED":
-      return "bg-emerald-50 text-emerald-700"; // ← hijau
-    case "CANCELLED":
-      return "bg-red-50 text-red-700"; // ← merah
-    default:
-      return "bg-slate-100 text-slate-500";
-  }
-}
-
-// Label status booking dalam Bahasa Indonesia
-function getStatusLabel(status: string): string {
-  switch (status) {
-    case "PENDING":
-      return "Menunggu";
-    case "CONFIRMED":
-      return "Dikonfirmasi";
-    case "COMPLETED":
-      return "Selesai";
-    case "CANCELLED":
-      return "Dibatalkan";
-    default:
-      return status;
-  }
-}
-
-// Warna badge berdasarkan status pembayaran
-function getPaymentBadgeClass(status: string): string {
-  switch (status) {
-    case "PAID":
-      return "bg-emerald-50 text-emerald-700"; // ← hijau
-    case "PENDING":
-      return "bg-amber-50 text-amber-700"; // ← kuning
-    case "FAILED":
-      return "bg-red-50 text-red-700"; // ← merah
-    default:
-      return "bg-slate-100 text-slate-500";
-  }
-}
-
-// Label status pembayaran dalam Bahasa Indonesia
-function getPaymentLabel(status: string): string {
-  switch (status) {
-    case "PAID":
-      return "Lunas";
-    case "PENDING":
-      return "Menunggu";
-    case "FAILED":
-      return "Gagal";
-    default:
-      return status;
-  }
-}
+<TableCell className="text-right">
+  <div className="flex items-center justify-end gap-1">
+    {/* [+] Ganti tombol placeholder dengan VenueRowActions */}
+    <VenueRowActions
+      item={{
+        id: venue.id,
+        slug: venue.slug,
+        name: venue.name,
+        address: venue.address,
+        city: venue.city,
+        phone: venue.phone,
+        email: venue.email,
+        coverImage: venue.coverImage,
+        description: venue.description,
+        facilities: venue.facilities,
+        isActive: venue.isActive,
+      }}
+    />
+  </div>
+</TableCell>
 
 // ============================================================================
-// BAGIAN 3: ROW ACTIONS — DROPDOWN UBAH STATUS
+// BAGIAN 6: UPDATE colSpan DI EMPTY STATE
 // ============================================================================
-// File: components/admin/booking-row-actions.tsx
+// File: components/admin/venue-table.tsx
 //
 // PENJELASAN:
-// Komponen ini berisi dropdown untuk mengubah status booking.
-// Menggunakan Select dari @base-ui/react (bukan Radix UI).
-//
-// Alur kerja:
-// 1. Admin klik dropdown → pilih status baru
-// 2. Kirim PATCH request ke API via Redux mutation
-// 3. Jika berhasil → tabel otomatis refresh (invalidatesTags)
-// 4. Jika gagal → tampilkan alert error
-//
-// Status yang bisa dipilih:
-// - PENDING → CONFIRMED (konfirmasi booking)
-// - CONFIRMED → COMPLETED (tandai selesai)
-// - PENDING/CONFIRMED → CANCELLED (batalkan booking)
-//
-// Analogi:
-// Seperti tombol di kasir restoran — bisa mengubah status pesanan
-// dari "menunggu" ke "diproses" ke "selesai".
-
-// [+] FILE BARU — Buat file ini di folder components/admin/
-
-"use client";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"; // ← dropdown
-import type { AdminBooking } from "@/lib/redux/admin-api";
-import { useUpdateBookingStatusMutation } from "@/lib/redux/admin-api"; // ← Redux mutation
-
-export function BookingRowActions({ booking }: { booking: AdminBooking }) {
-  // [+] Redux mutation untuk update status
-  const [updateStatus, { isLoading }] = useUpdateBookingStatusMutation();
-
-  // Fungsi saat admin pilih status baru dari dropdown
-  async function handleStatusChange(newStatus: string) {
-    // Kirim PATCH request ke API
-    updateStatus({ bookingId: booking.id, status: newStatus })
-      .unwrap()
-      .then(() => {
-        // Jika berhasil, Redux otomatis refresh data (invalidatesTags)
-        // Tidak perlu reload halaman!
-      })
-      .catch((error) => {
-        // Jika gagal, tampilkan pesan error
-        alert(error.error || "Gagal mengubah status booking");
-      });
-  }
-
-  // [+] Tentukan status mana yang bisa dipilih
-  // Berdasarkan aturan perpindahan status:
-  // PENDING → CONFIRMED atau CANCELLED
-  // CONFIRMED → COMPLETED atau CANCELLED
-  // COMPLETED → tidak bisa diubah
-  // CANCELLED → tidak bisa diubah
-  const availableStatuses = getAvailableStatuses(booking.status);
-
-  // Jika status sudah final, tampilkan teks saja
-  if (booking.status === "COMPLETED" || booking.status === "CANCELLED") {
-    return null; // ← tidak perlu dropdown
-  }
-
-  return (
-    <Select
-      value={booking.status}
-      onValueChange={handleStatusChange}
-      disabled={isLoading}
-    >
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Ubah status" />
-      </SelectTrigger>
-      <SelectContent>
-        {/* Status saat ini */}
-        <SelectItem value={booking.status}>
-          {getStatusLabel(booking.status)} (saat ini)
-        </SelectItem>
-
-        {/* Status yang bisa dipilih */}
-        {availableStatuses.map((status) => (
-          <SelectItem key={status} value={status}>
-            {getStatusLabel(status)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
-
-// Tentukan status mana yang bisa dipilih berdasarkan status saat ini
-function getAvailableStatuses(currentStatus: string): string[] {
-  switch (currentStatus) {
-    case "PENDING":
-      return ["CONFIRMED", "CANCELLED"]; // ← bisa konfirmasi atau batalkan
-    case "CONFIRMED":
-      return ["COMPLETED", "CANCELLED"]; // ← bisa selesai atau batalkan
-    case "COMPLETED":
-      return []; // ← sudah final, tidak bisa diubah
-    case "CANCELLED":
-      return []; // ← sudah final, tidak bisa diubah
-    default:
-      return [];
-  }
-}
-
-// Label status dalam Bahasa Indonesia
-function getStatusLabel(status: string): string {
-  switch (status) {
-    case "PENDING":
-      return "Menunggu";
-    case "CONFIRMED":
-      return "Dikonfirmasi";
-    case "COMPLETED":
-      return "Selesai";
-    case "CANCELLED":
-      return "Dibatalkan";
-    default:
-      return status;
-  }
-}
+// Karena sekarang ada 6 kolom (dari 5), colSpan di empty state harus
+// disesuaikan. Tapi venue-table.tsx menggunakan div kosong, bukan tabel
+// dengan colSpan, jadi tidak perlu diubah.
 
 // ============================================================================
-// BAGIAN 4: API ROUTE UNTUK UPDATE STATUS (SUDAH ADA)
+// ALUR KERJA
 // ============================================================================
 //
-// PENJELASAN:
-// API route untuk update status booking SUDAH ADA dan tidak perlu dibuat ulang!
+// Edit:
+// 1. Klik tombol "Edit" → Dialog terbuka dengan form terisi data existing
+// 2. User ubah data → klik "Perbarui Venue"
+// 3. Form kirim PATCH via Redux mutation (updateVenue)
+// 4. Redux invalidate tag → data tabel refresh otomatis
 //
-// File yang sudah ada:
-// 1. app/api/admin/booking/[bookingId]/status/route.ts ← API route
-// 2. modules/bookings/booking.controller.ts ← updateBookingStatusController
-// 3. modules/bookings/booking.service.ts ← updateBookingStatusService
-// 4. lib/redux/admin-api.ts ← updateBookingStatus mutation
+// Toggle:
+// 1. Klik switch → langsung berubah (optimistic UI)
+// 2. Kirim PATCH via Redux mutation (toggleVenue) dengan { isActive }
+// 3. Redux invalidate tag → data tabel refresh otomatis
+// 4. Jika API gagal → switch rollback ke posisi semula
 //
-// Alur kerja:
-// Frontend → Redux mutation → PATCH /api/admin/booking/{id}/status
-// → Controller → Service → Repository → Database
-//
-// Tidak perlu membuat apa-apa di backend untuk fitur ini! ✅
-
-// ============================================================================
-// BAGIAN 5: REDUX API (SUDAH ADA)
-// ============================================================================
-//
-// PENJELASAN:
-// Redux API untuk booking SUDAH LENGKAP! Tidak perlu menambahkan apa-apa.
-//
-// Yang sudah ada di lib/redux/admin-api.ts:
-//
-// 1. Interface AdminBooking (baris 15-52)
-//    - id, orderCode, playDate, startTime, endTime
-//    - durationHour, pricePerHour, totalPrice, status
-//    - court (nested: venue, name, sport)
-//    - user (nested: name, email)
-//    - payment (nested: status, method, paidAt)
-//
-// 2. Query: getAdminBookings (baris 211-224)
-//    - GET /api/admin/booking?playDate=&status=
-//    - Filter opsional: playDate dan/atau status
-//    - providesTags: ["AdminBooking"]
-//
-// 3. Mutation: updateBookingStatus (baris 226-237)
-//    - PATCH /api/admin/booking/{bookingId}/status
-//    - Body: { status: string }
-//    - invalidatesTags: ["AdminBooking"] ← auto refresh!
-//
-// 4. Export hooks (baris 252-253)
-//    - useGetAdminBookingsQuery
-//    - useUpdateBookingStatusMutation
-//
-// Tidak perlu mengubah apa-apa di Redux API! ✅
-
-// ============================================================================
-// ALUR KERJA LENGKAP
-// ============================================================================
-//
-// 1. Admin buka halaman /admin/bookings
-// 2. Halaman memuat semua booking via Redux query
-// 3. Admin bisa filter berdasarkan tanggal dan/atau status
-// 4. Tabel menampilkan semua booking dengan info lengkap
-// 5. Admin klik dropdown di kolom Aksi
-// 6. Admin pilih status baru (Misal: Menunggu → Dikonfirmasi)
-// 7. Redux mutation kirim PATCH ke API
-// 8. API validasi → update database
-// 9. Redux invalidatesTags → data otomatis refresh
-// 10. Tabel menampilkan status baru tanpa reload halaman
-//
-// Analogi:
-// Seperti dashboard admin e-commerce — admin bisa melihat semua
-// pesanan, filter berdasarkan tanggal atau status, dan mengubah
-// status pesanan dari "menunggu" ke "dikirim" ke "selesai".
+// Delete:
+// 1. Klik tombol "Hapus" → muncul konfirmasi
+// 2. User klik OK → kirim DELETE via Redux mutation (deactivateVenue)
+// 3. Redux invalidate tag → venue hilang dari tabel
+// 4. Ini soft delete: venue.set isActive = false, bukan hapus dari database
 
 // ============================================================================
 // PERBEDAAN DENGAN EQUIPMENT & COURT
 // ============================================================================
 //
-// | Aspek          | Equipment       | Court           | Booking         |
-// |----------------|-----------------|-----------------|-----------------|
-// | Data source    | fetch() + router| Redux RTK Query | Redux RTK Query |
-// | Refresh        | router.refresh()| invalidatesTags | invalidatesTags |
-// | Aksi utama     | Edit + Toggle   | Edit + Toggle   | Ubah Status     |
-// | Delete         | Hard delete     | Hard delete     | Tidak ada       |
-// | Filter         | Tidak ada       | Tidak ada       | Tanggal + Status|
-// | Nested data    | Tidak ada       | Tidak ada       | Court, User, Payment |
-//
-// Catatan:
-// - Booking tidak punya fitur delete — hanya ubah status ke CANCELLED
-// - Booking punya nested data (court, user, payment) yang perlu diakses
-//   dengan optional chaining (booking.court?.venue?.name)
-// - Filter menggunakan Redux query parameters, bukan state lokal
+// | Aspek        | Equipment      | Court          | Venue          |
+// |--------------|----------------|----------------|----------------|
+// | Identifier   | ID             | ID + slug      | Slug           |
+// | HTTP Request | fetch()        | Redux mutation | Redux mutation |
+// | Data Refresh | router.refresh | invalidatesTags| invalidatesTags|
+// | Delete       | Hard delete    | Hard delete    | Soft delete    |
+// | Konfirmasi   | 2x             | 2x             | 1x             |
+// | Relasi       | BookingEquipment| Booking       | Court (Cascade)|
 
 // ============================================================================
 // CATATAN PENTING
 // ============================================================================
 //
-// 1. @base-ui/react tidak mendukung asChild
-//    - SelectTrigger sudah membuat elemen sendiri
-//    - Tidak perlu membungkus dengan Button
+// 1. @base-ui/react tidak support asChild
+//    - DialogTrigger dan DialogClose tidak bisa dibungkus <Button>
+//    - Styling harus disalin manual ke className
 //
-// 2. Optional chaining (?.) WAJIB digunakan
-//    - booking.user?.name ← user bisa undefined
-//    - booking.court?.venue?.name ← nested, bisa undefined
-//    - booking.payment?.status ← payment bisa null
+// 2. Venue menggunakan slug, bukan ID
+//    - Semua API endpoint menggunakan slug: /api/admin/venues/[slug]
+//    - Redux mutation menerima slug, bukan id
 //
-// 3. Status transition rules
-//    - PENDING → CONFIRMED atau CANCELLED
-//    - CONFIRMED → COMPLETED atau CANCELLED
-//    - COMPLETED → tidak bisa diubah (final)
-//    - CANCELLED → tidak bisa diubah (final)
-//    - Backend sudah validasi, frontend hanya menyembunyikan opsi
+// 3. Soft delete, bukan hard delete
+//    - DELETE endpoint memanggil deactivateVenueController
+//    - Hanya mengubah isActive: false, tidak menghapus dari database
+//    - Court terkait TIDAK terhapus (tidak ada cascade untuk isActive)
 //
-// 4. Tanggal format
-//    - playDate disimpan sebagai string "YYYY-MM-DD"
-//    - Gunakan new Date(dateStr + "T00:00:00") agar tidak UTC shift
-//    - Format ke Bahasa Indonesia: toLocaleDateString("id-ID")
+// 4. Relasi dengan Court
+//    - Venue punya relasi Court[] dengan onDelete: Cascade
+//    - Tapi soft delete tidak memicu cascade, hanya set isActive: false
+//    - Court masih ada di database meskipun venue non-aktif
+//
+// 5. Optimistic UI
+//    - Switch toggle langsung berubah sebelum API respond
+//    - Jika API gagal, switch rollback ke posisi semula
+//    - Redux invalidatesTags memastikan data selalu fresh
+
+// ============================================================================
+// KUNCI PENANDA
+// ============================================================================
+// [+] = Kode yang ditambahkan (baru)
+// [~] = Kode yang diedit (diubah)
+// [-] = Kode yang dihapus
+// ←   = Penjelasan singkat di sebelah kode
 
 // ============================================================================
 // RINGKASAN LANGKAH
 // ============================================================================
 //
-// Langkah 1: Buat file app/admin/bookings/page.tsx
-//   - Copy kode dari BAGIAN 1
-//   - Ini adalah halaman utama admin booking
-//
-// Langkah 2: Buat file components/admin/booking-table.tsx
-//   - Copy kode dari BAGIAN 2
-//   - Ini adalah komponen tabel booking
-//
-// Langkah 3: Buat file components/admin/booking-row-actions.tsx
-//   - Copy kode dari BAGIAN 3
-//   - Ini adalah dropdown ubah status
-//
-// Langkah 4: Backend sudah lengkap! ✅
-//   - API route, controller, service, repository sudah ada
-//   - Redux API sudah ada
-//   - Tidak perlu membuat apa-apa lagi
-//
-// Langkah 5: Test
-//   - Buka /admin/bookings
-//   - Coba filter berdasarkan tanggal
-//   - Coba filter berdasarkan status
-//   - Coba ubah status booking
-//   - Pastikan tabel auto-refresh tanpa reload
-
-// ============================================================================
-// TIPS MENULIS KODE
-// ============================================================================
-//
-// 1. Ketik per baris, jangan copy-paste seluruh blok
-//    - Baca komentarnya dulu ←
-//    - Pahami apa yang dilakukan baris tersebut
-//    - Baru ketik kodenya
-//
-// 2. Perhatikan optional chaining (?.)
-//    - booking.user?.name ← BUKAN booking.user.name
-//    - Karena user bisa undefined, tanpa ? akan error
-//
-// 3. Gunakan formatRupiah untuk harga
-//    - formatRupiah(booking.totalPrice) ← bukan booking.totalPrice langsung
-//    - Agar tampil "Rp 150.000" bukan "150000"
-//
-// 4. Badge warna sesuai status
-//    - PENDING = kuning (amber)
-//    - CONFIRMED = biru (blue)
-//    - COMPLETED = hijau (emerald)
-//    - CANCELLED = merah (red)
-//
-// 5. Empty state
-//    - Jika bookings.length === 0 → tampilkan pesan
-//    - colSpan={9} ← sesuai jumlah kolom tabel
-
-// ============================================================================
-// SELESAI! 🎉
-// ============================================================================
-// Setelah ketiga file dibuat, halaman kelola booking sudah siap digunakan.
-// Backend sudah lengkap, tinggal implementasi frontend saja.
-// Selamat mencoba! 🚀
+// 1. Edit venue.schema.ts — ganti updateVenueSchema jadi z.object() + isActive
+// 2. Edit admin-api.ts — tambah isActive di AdminVenue dan UpdateVenueBody
+// 3. Edit admin-api.ts — tambah mutation toggleVenue + export hook
+// 4. Buat Venue-row-actions.tsx — komponen baru (edit, toggle, delete)
+// 5. Edit venue-table.tsx — import dan gunakan VenueRowActions
+// 6. Edit venue-table.tsx — tambah kolom Status + badge dinamis

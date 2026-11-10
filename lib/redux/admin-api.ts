@@ -62,6 +62,7 @@ export interface AdminVenue {
   email?: string | null;
   coverImage?: string | null;
   facilities: string[];
+  isActive?: boolean;
   courts: AdminCourt[];
 }
 
@@ -96,6 +97,7 @@ export interface UpdateVenueBody {
   email?: string | null;
   coverImage?: string | null;
   facilities?: string[];
+  isActive?: boolean;
 }
 
 export interface UpdateCourtBody {
@@ -153,6 +155,19 @@ const adminApi = createApi({
         url: `/api/admin/venues/${slug}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["AdminVenue"],
+    }),
+
+    toggleVenue: build.mutation<
+      AdminVenue,
+      { slug: string; isActive: boolean }
+    >({
+      query: ({ slug, isActive }) => ({
+        url: `/api/admin/venues/${slug}`,
+        method: "PATCH",
+        body: { isActive },
+      }),
+      transformResponse: (res: { data: AdminVenue }) => res.data,
       invalidatesTags: ["AdminVenue"],
     }),
 
@@ -244,6 +259,7 @@ export const {
   useCreateVenueMutation,
   useUpdateVenueMutation,
   useDeactivateVenueMutation,
+  useToggleVenueMutation,
   useGetVenueCourtsQuery,
   useCreateCourtMutation,
   useUpdateCourtMutation,

@@ -1,118 +1,204 @@
-"use client";
+"use client"; // ← butuh state untuk filter
 
 import { useState } from "react";
-
-import { BookingSummary } from "@/components/admin/booking-summary";
+import { ArrowLeft, CalendarDays, ClipboardList } from "lucide-react"; // ← ikon
+import Link from "next/link";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { INITIAL_BOOKINGS, type BookingItem } from "@/lib/mock-bookings";
-import { formatRupiah } from "@/lib/format-rupiah";
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"; // ← card layout
+import { Button } from "@/components/ui/button"; // ← tombol
+import { Badge } from "@/components/ui/badge"; // ← badge jumlah
+import { BookingTable } from "@/components/admin/booking-table"; // ← tabel booking (bagian 2)
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"; // ← dropdown filter status
+import { Input } from "@/components/ui/input"; // ← input tanggal
+import { useGetAdminBookingsQuery } from "@/lib/redux/admin-api"; // ← Redux query
 
-const statusStyles: Record<BookingItem["status"], string> = {
-  upcoming: "border-blue-200 bg-blue-50 text-blue-700",
-  completed: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  cancelled: "border-rose-200 bg-rose-50 text-rose-700",
-};
+export default function AdminBookingsPage() {
+  // [+] State untuk filter
+  const [playDate, setPlayDate] = useState(""); // ← tanggal main
+  const [status, setStatus] = useState<string>(""); // ← status booking, tipe eksplisit
 
-const statusLabels: Record<BookingItem["status"], string> = {
-  upcoming: "Akan datang",
-  completed: "Selesai",
-  cancelled: "Dibatalkan",
-};
+  // [+] Bangun parameter query hanya jika ada filter
+  const queryParam =
+    playDate || status
+      ? { playDate: playDate || undefined, status: status || undefined }
+      : undefined;
 
-export default function AdminBookingPage() {
-  const [selectedBooking, setSelectedBooking] = useState<BookingItem | null>(
-    INITIAL_BOOKINGS[0] ?? null,
-  );
+  // [+] Ambil data booking dari API via Redux
+  const { data: bookings, isLoading, isError } =
+    useGetAdminBookingsQuery(queryParam);
 
+  // [+] Hitung jumlah booking per status (untuk badge)
+  const pendingCount = bookings?.filter((b) => b.status === "PENDING").length ?? 0;
+  const confirmedCount = bookings?.filter((b) => b.status === "CONFIRMED").length ?? 0;
+
+  // [+] Loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-2 mb-2"
+            nativeButton={false}
+            render={<Link href="/admin/venues" />}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Kembali
+          </Button>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Kelola Booking
+          </h1>
+        </div>
+        <Card>
+          <CardContent className="p-8">
+            <div className="text-center text-sm text-slate-500">
+              Memuat data booking...
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // [+] Error state
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-2 mb-2"
+            nativeButton={false}
+            render={<Link href="/admin/venues" />}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Kembali
+          </Button>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Kelola Booking
+          </h1>
+        </div>
+        <Card>
+          <CardContent className="p-8">
+            <div className="text-center text-sm text-red-500">
+              Gagal memuat data booking. Coba muat ulang halaman.
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // [+] Main content
   return (
-    <main className="space-y-6">
+    <div className="space-y-6">
+      {/* Header: Judul + Badge */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          Kelola Booking
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Pantau jadwal dan rincian booking venue.
+        <Button
+          variant="ghost"
+          size="sm"
+          className="-ml-2 mb-2"
+          nativeButton={false}
+          render={<Link href="/admin/venues" />}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Kembali
+        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Kelola Booking
+          </h1>
+          {/* Badge: jumlah booking pending */}
+          {pendingCount > 0 && (
+            <Badge variant="secondary" className="bg-amber-50 text-amber-700">
+              {pendingCount} Menunggu
+            </Badge>
+          )}
+          {/* Badge: jumlah booking confirmed */}
+          {confirmedCount > 0 && (
+            <Badge variant="secondary" className="bg-emerald-50 text-emerald-700">
+              {confirmedCount} Dikonfirmasi
+            </Badge>
+          )}
+        </div>
+        <p className="text-sm text-slate-500 mt-1">
+          Kelola semua pemesanan lapangan dari semua venue.
         </p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(300px,0.8fr)]">
-        <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-            <div>
-              <h2 className="font-semibold text-slate-900">Daftar Booking</h2>
-              <p className="mt-0.5 text-sm text-slate-500">
-                {INITIAL_BOOKINGS.length} booking
-              </p>
+      {/* Card: Filter + Tabel */}
+      <Card className="py-0">
+        <CardHeader className="border-b py-4">
+          <CardTitle>Daftar Booking</CardTitle>
+          <CardDescription>
+            Semua pemesanan yang masuk ke sistem.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="p-4">
+          {/* Baris filter: Tanggal + Status */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              {/* Filter: Tanggal Main */}
+              <div className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-slate-400" />
+                <Input
+                  type="date"
+                  value={playDate}
+                  onChange={(e) => setPlayDate(e.target.value)}
+                  placeholder="Filter tanggal"
+                  className="w-40"
+                />
+              </div>
+
+              {/* Filter: Status */}
+              <Select value={status} onValueChange={(val) => setStatus(val ?? "")}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Semua status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Semua status</SelectItem>
+                  <SelectItem value="PENDING">Menunggu</SelectItem>
+                  <SelectItem value="CONFIRMED">Dikonfirmasi</SelectItem>
+                  <SelectItem value="COMPLETED">Selesai</SelectItem>
+                  <SelectItem value="CANCELLED">Dibatalkan</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
+            {/* Tombol reset filter */}
+            {(playDate || status) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setPlayDate("");
+                  setStatus("");
+                }}
+              >
+                Reset Filter
+              </Button>
+            )}
           </div>
 
-          <Table>
-            <TableHeader className="bg-slate-50">
-              <TableRow>
-                <TableHead className="min-w-[150px] pl-5">Booking</TableHead>
-                <TableHead className="min-w-[220px]">Venue &amp; Jadwal</TableHead>
-                <TableHead className="min-w-[130px]">Total</TableHead>
-                <TableHead className="pr-5">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {INITIAL_BOOKINGS.map((booking) => {
-                const isSelected = selectedBooking?.id === booking.id;
-
-                return (
-                  <TableRow
-                    key={booking.id}
-                    aria-selected={isSelected}
-                    onClick={() => setSelectedBooking(booking)}
-                    className={`cursor-pointer ${isSelected ? "bg-emerald-50/70 hover:bg-emerald-50" : "hover:bg-slate-50/70"}`}
-                  >
-                    <TableCell className="py-4 pl-5">
-                      <p className="font-semibold text-slate-900">
-                        {booking.orderId}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        ID: {booking.id}
-                      </p>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      <p className="font-medium text-slate-900">
-                        {booking.venueName}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {booking.courtLabel} · {booking.date}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        {booking.timeSlot} · {booking.durationHours} jam
-                      </p>
-                    </TableCell>
-                    <TableCell className="py-4 font-semibold text-slate-900">
-                      {formatRupiah(booking.totalPrice)}
-                    </TableCell>
-                    <TableCell className="py-4 pr-5">
-                      <Badge
-                        variant="outline"
-                        className={statusStyles[booking.status]}
-                      >
-                        {statusLabels[booking.status]}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </section>
-
-        <BookingSummary booking={selectedBooking} />
-      </div>
-    </main>
+          {/* Tabel Booking */}
+          <BookingTable bookings={bookings ?? []} />
+        </CardContent>
+      </Card>
+    </div>
   );
 }
