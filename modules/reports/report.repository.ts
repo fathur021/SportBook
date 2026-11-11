@@ -30,32 +30,34 @@ const reportBookingSelect = {
 
 function paidBookingWhere({
   venueSlug,
-  playDateFrom,
+  paidAtFrom,
 }: {
   venueSlug?: string;
-  playDateFrom: string | null;
+  paidAtFrom: Date | null;
 }) {
   return {
     status: { not: "CANCELLED" },
     payment: {
       is: {
         status: "PAID",
+        // Filter periode memakai paidAt (tanggal pembayaran),
+        // bukan playDate (tanggal main).
+        ...(paidAtFrom ? { paidAt: { gte: paidAtFrom } } : {}),
       },
     },
-    ...(playDateFrom ? { playDate: { gte: playDateFrom } } : {}),
     ...(venueSlug ? { court: { venue: { slug: venueSlug } } } : {}),
   } satisfies Prisma.BookingWhereInput;
 }
 
 export function findPaidBookingsForReport({
   venueSlug,
-  playDateFrom,
+  paidAtFrom,
 }: {
   venueSlug?: string;
-  playDateFrom: string | null;
+  paidAtFrom: Date | null;
 }) {
   return prisma.booking.findMany({
-    where: paidBookingWhere({ venueSlug, playDateFrom }),
+    where: paidBookingWhere({ venueSlug, paidAtFrom }),
     orderBy: {
       payment: {
         paidAt: "desc",
@@ -67,15 +69,15 @@ export function findPaidBookingsForReport({
 
 export function findRecentPaidBookingsForReport({
   venueSlug,
-  playDateFrom,
+  paidAtFrom,
   take = 20,
 }: {
   venueSlug?: string;
-  playDateFrom: string | null;
+  paidAtFrom: Date | null;
   take?: number;
 }) {
   return prisma.booking.findMany({
-    where: paidBookingWhere({ venueSlug, playDateFrom }),
+    where: paidBookingWhere({ venueSlug, paidAtFrom }),
     orderBy: {
       payment: {
         paidAt: "desc",

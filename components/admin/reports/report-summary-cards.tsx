@@ -1,31 +1,31 @@
 import { formatRupiah } from "@/lib/format-rupiah";
 
 type ReportSummaryCardsProps = {
-  bookingValue: number;
-  bookingCount: number;
-  cancelledCount: number;
+  revenue: number;
+  paidTransactionCount: number;
+  cancelledBookingCount: number;
 };
-
 const cards = [
   {
-    key: "value",
-    label: "Nilai Booking Non-Batal",
+    key: "revenue",
+    label: "Pendapatan Lunas",
     note: (props: ReportSummaryCardsProps) =>
-      `${props.bookingCount} booking tidak dibatalkan`,
-    value: (props: ReportSummaryCardsProps) => formatRupiah(props.bookingValue),
+      `${props.paidTransactionCount} transaksi sudah dibayar`,
+    value: (props: ReportSummaryCardsProps) => formatRupiah(props.revenue),
   },
   {
-    key: "bookings",
-    label: "Total Booking",
+    key: "transactions",
+    label: "Transaksi Lunas",
     note: () => "Sesuai filter yang dipilih",
     value: (props: ReportSummaryCardsProps) =>
-      String(props.bookingCount + props.cancelledCount),
+      String(props.paidTransactionCount),
   },
   {
     key: "cancelled",
     label: "Booking Dibatalkan",
-    note: () => "Tidak dihitung dalam nilai booking",
-    value: (props: ReportSummaryCardsProps) => String(props.cancelledCount),
+    note: () => "Dihitung dari tanggal main",
+    value: (props: ReportSummaryCardsProps) =>
+      String(props.cancelledBookingCount),
   },
 ];
 

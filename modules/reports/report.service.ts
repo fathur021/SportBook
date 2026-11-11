@@ -16,20 +16,24 @@ function toDateKey(date: Date) {
 }
 
 export async function getReportService(query: ReportQuery) {
-  const playDateFrom =
+  // Pendapatan memakai tanggal pembayaran (paidAt),
+  // sedangkan booking batal memakai tanggal main (playDate).
+  const paidAtFrom =
     query.period === "all"
       ? null
-      : toDateKey(new Date(Date.now() - Number(query.period) * DAY_IN_MS));
+      : new Date(Date.now() - Number(query.period) * DAY_IN_MS);
+
+  const playDateFrom = paidAtFrom ? toDateKey(paidAtFrom) : null;
 
   const [paidBookings, recentPaidBookings, cancelledBookingCount] =
     await Promise.all([
       findPaidBookingsForReport({
         venueSlug: query.venueSlug,
-        playDateFrom,
+        paidAtFrom,
       }),
       findRecentPaidBookingsForReport({
         venueSlug: query.venueSlug,
-        playDateFrom,
+        paidAtFrom,
       }),
       countCancelledBookings({
         venueSlug: query.venueSlug,

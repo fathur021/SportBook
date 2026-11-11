@@ -1,13 +1,15 @@
+import type { ReportPeriod } from "@/lib/redux/admin-api";
+
 type VenueOption = {
   slug: string;
   name: string;
 };
 
 type ReportFiltersProps = {
-  selectedPeriod: string;
+  selectedPeriod: ReportPeriod;
   selectedVenue: string;
   venues: VenueOption[];
-  onPeriodChange: (period: string) => void;
+  onPeriodChange: (period: ReportPeriod) => void;
   onVenueChange: (venue: string) => void;
 };
 
@@ -24,7 +26,9 @@ export function ReportFilters({
         Periode
         <select
           value={selectedPeriod}
-          onChange={(event) => onPeriodChange(event.target.value)}
+          onChange={(event) =>
+            onPeriodChange(event.target.value as ReportPeriod)
+          }
           className="block h-9 min-w-36 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-emerald-600"
         >
           <option value="all">Semua waktu</option>

@@ -2,7 +2,7 @@ import { requireAdmin } from "../auth/auth.guard";
 import { reportQuerySchema } from "./report.schema";
 import { getReportService } from "./report.service";
 
-export async function getReportConsttoler(request: Request): Promise<Response> {
+export async function getReportController(request: Request): Promise<Response> {
   try {
     const authorization = await requireAdmin(request);
     if (!authorization.ok) {

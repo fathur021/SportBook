@@ -10,6 +10,7 @@ import {
   Clock,
   Dumbbell,
   BarChart3,
+  Users,
   Settings,
   ArrowLeft,
   LogOut,
@@ -35,6 +36,7 @@ const MENU_GROUPS = [
     groupLabel: "ANALITIK & SISTEM",
     items: [
       { label: "Laporan Keuangan", href: "/admin/reports", icon: BarChart3 },
+      { label: "Kelola User", href: "/admin/users", icon: Users },
       { label: "Pengaturan", href: "/admin/settings", icon: Settings },
     ],
   },

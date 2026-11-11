@@ -100,6 +100,21 @@ export interface UpdateVenueBody {
   isActive?: boolean;
 }
 
+export type ReportPeriod = "all" | "30" | "90";
+export interface AdminReportTransaction {
+  id: string;
+  orderCode: string;
+  playDate: string;
+  startTime: string;
+  endTime: string;
+  venueName: string;
+  courtName: string;
+  amount: number;
+  method: string | null;
+  paidAt: string | null;
+  bookingStatus: string;
+}
+
 export interface UpdateCourtBody {
   name?: string;
   sport?: string;
@@ -109,11 +124,40 @@ export interface UpdateCourtBody {
   image?: string | null;
   maxPlayers?: number | null;
 }
+export interface AdminReportVenueTotal {
+  venueName: string;
+  total: number;
+  transactionCount: number;
+}
+export interface AdminReport {
+  revenue: number;
+  paidTransactionCount: number;
+  cancelledBookingCount: number;
+  venues: AdminReportVenueTotal[];
+  transactions: AdminReportTransaction[];
+}
+export type AdminUserRole = "ADMIN" | "USER";
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: AdminUserRole;
+  emailVerified: boolean;
+  joinedAt: string;
+  bookingsCount: number;
+  lastActiveAt: string | null;
+}
 
 const adminApi = createApi({
   reducerPath: "adminApi",
   baseQuery: fetchBaseQuery({ baseUrl: "/", credentials: "include" }),
-  tagTypes: ["AdminVenue", "AdminCourt", "AdminBooking"],
+  tagTypes: [
+    "AdminVenue",
+    "AdminCourt",
+    "AdminBooking",
+    "AdminReport",
+    "AdminUser",
+  ],
   endpoints: (build) => ({
     getAdminVenues: build.query<AdminVenue[], void>({
       query: () => "/api/admin/venues",
@@ -212,11 +256,12 @@ const adminApi = createApi({
     }),
 
     toggleCourt: build.mutation<
-    AdminCourt, 
-    {slug:string; courtId:string; isActive:boolean}>({
-      query:({slug,courtId,isActive}) => ({
+      AdminCourt,
+      { slug: string; courtId: string; isActive: boolean }
+    >({
+      query: ({ slug, courtId, isActive }) => ({
         url: `/api/admin/venues/${slug}/courts/${courtId}`,
-        method: "PATCH", 
+        method: "PATCH",
         body: { isActive },
       }),
       transformResponse: (res: { data: AdminCourt }) => res.data,
@@ -238,6 +283,50 @@ const adminApi = createApi({
       providesTags: ["AdminBooking"],
     }),
 
+    getAdminReport: build.query<
+      AdminReport,
+      { venueSlug?: string; period?: ReportPeriod }
+    >({
+      query: ({ venueSlug, period }) => {
+        const searchParams = new URLSearchParams();
+
+        if (venueSlug) searchParams.set("venueSlug", venueSlug);
+        if (period) searchParams.set("period", period);
+        const qs = searchParams.toString();
+        return `/api/admin/reports${qs ? `?${qs}` : ""}`;
+      },
+      transformResponse: (res: { data: AdminReport }) => res.data,
+      providesTags: ["AdminReport"],
+    }),
+
+    getAdminUsers: build.query<
+      AdminUser[],
+      { search?: string; role?: AdminUserRole } | void
+    >({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params?.search) searchParams.set("search", params.search);
+        if (params?.role) searchParams.set("role", params.role);
+        const qs = searchParams.toString();
+        return `/api/admin/users${qs ? `?${qs}` : ""}`;
+      },
+      transformResponse: (res: { data: AdminUser[] }) => res.data,
+      providesTags: ["AdminUser"],
+    }),
+
+    updateUserRole: build.mutation<
+      AdminUser,
+      { userId: string; role: AdminUserRole }
+    >({
+      query: ({ userId, role }) => ({
+        url: `/api/admin/users/${userId}`,
+        method: "PATCH",
+        body: { role },
+      }),
+      transformResponse: (res: { data: AdminUser }) => res.data,
+      // Setelah berhasil, daftar user otomatis diambil ulang
+      invalidatesTags: ["AdminUser"],
+    }),
     updateBookingStatus: build.mutation<
       AdminBooking,
       { bookingId: string; status: string }
@@ -248,7 +337,9 @@ const adminApi = createApi({
         body: { status },
       }),
       transformResponse: (res: { data: AdminBooking }) => res.data,
-      invalidatesTags: ["AdminBooking"],
+      // Laporan juga ikut diperbarui karena perubahan status
+      // memengaruhi jumlah booking yang dibatalkan.
+      invalidatesTags: ["AdminBooking", "AdminReport"],
     }),
   }),
 });
@@ -267,6 +358,9 @@ export const {
   useToggleCourtMutation,
   useGetAdminBookingsQuery,
   useUpdateBookingStatusMutation,
+  useGetAdminReportQuery,
+  useGetAdminUsersQuery,
+  useUpdateUserRoleMutation,
 } = adminApi;
 
 export default adminApi;

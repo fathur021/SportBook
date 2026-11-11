@@ -1,90 +1,38 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { RecentTransactionsTable } from "@/components/admin/reports/recent-transactions-table";
 import { ReportFilters } from "@/components/admin/reports/report-filters";
 import { ReportSummaryCards } from "@/components/admin/reports/report-summary-cards";
 import { VenueBookingTotals } from "@/components/admin/reports/venue-booking-totals";
-import { INITIAL_BOOKINGS } from "@/lib/mock-bookings";
-
-const monthNumbers: Record<string, number> = {
-  Jan: 0,
-  Feb: 1,
-  Mar: 2,
-  Apr: 3,
-  Mei: 4,
-  Jun: 5,
-  Jul: 6,
-  Agu: 7,
-  Sep: 8,
-  Okt: 9,
-  Nov: 10,
-  Des: 11,
-};
-
-function parseBookingDate(dateLabel: string): Date | null {
-  const dateParts = dateLabel.split(", ").at(-1)?.split(" ");
-  if (!dateParts || dateParts.length !== 3) return null;
-
-  const [day, month, year] = dateParts;
-  const monthNumber = monthNumbers[month];
-  if (monthNumber === undefined) return null;
-
-  return new Date(Number(year), monthNumber, Number(day));
-}
-    
+import {
+  useGetAdminReportQuery,
+  useGetAdminVenuesQuery,
+  type ReportPeriod,
+} from "@/lib/redux/admin-api";
 
 export default function AdminReportsPage() {
+  // "all" berarti semua venue, selain itu berisi slug venue
   const [selectedVenue, setSelectedVenue] = useState("all");
-  const [selectedPeriod, setSelectedPeriod] = useState("all");
 
-  const venueOptions = Array.from(
-    new Map(
-      INITIAL_BOOKINGS.map((booking) => [booking.venueSlug, booking.venueName]),
-    ),
-    ([slug, name]) => ({ slug, name }),
-  );
+  // Periode laporan: all, 30 hari, atau 90 hari
+  const [selectedPeriod, setSelectedPeriod] = useState<ReportPeriod>("all");
 
-  const filteredBookings = useMemo(() => {
-    const cutoff =
-      selectedPeriod === "all"
-        ? null
-        : new Date(Date.now() - Number(selectedPeriod) * 24 * 60 * 60 * 1000);
+  // Daftar venue untuk pilihan filter
+  const { data: venues } = useGetAdminVenuesQuery();
 
-    return INITIAL_BOOKINGS.filter((booking) => {
-      if (selectedVenue !== "all" && booking.venueSlug !== selectedVenue) {
-        return false;
-      }
+  // Data laporan diambil dari API setiap filter berubah.
+  // RTK Query otomatis fetch ulang karena argumennya berubah.
+  const { data: report, isLoading, isError } = useGetAdminReportQuery({
+    venueSlug: selectedVenue === "all" ? undefined : selectedVenue,
+    period: selectedPeriod,
+  });
 
-      if (cutoff) {
-        const bookingDate = parseBookingDate(booking.date);
-        if (!bookingDate || bookingDate < cutoff) return false;
-      }
-
-      return true;
-    });
-  }, [selectedPeriod, selectedVenue]);
-
-  const nonCancelledBookings = filteredBookings.filter(
-    (booking) => booking.status !== "cancelled",
-  );
-  const bookingValue = nonCancelledBookings.reduce(
-    (total, booking) => total + booking.totalPrice,
-    0,
-  );
-  const cancelledCount = filteredBookings.length - nonCancelledBookings.length;
-
-  const venueTotals = Array.from(
-    nonCancelledBookings.reduce((totals, booking) => {
-      totals.set(
-        booking.venueName,
-        (totals.get(booking.venueName) ?? 0) + booking.totalPrice,
-      );
-      return totals;
-    }, new Map<string, number>()),
-    ([venueName, total]) => ({ venueName, total }),
-  ).sort((a, b) => b.total - a.total);
+  const venueOptions = (venues ?? []).map((venue) => ({
+    slug: venue.slug,
+    name: venue.name,
+  }));
 
   return (
     <main className="space-y-6">
@@ -94,7 +42,7 @@ export default function AdminReportsPage() {
             Laporan Keuangan
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Ringkasan nilai booking dan transaksi per venue.
+            Ringkasan pendapatan dari pembayaran yang sudah lunas.
           </p>
         </div>
 
@@ -107,21 +55,35 @@ export default function AdminReportsPage() {
         />
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-        Data mock belum memiliki status pembayaran. Nilai di bawah ini adalah
-        total booking yang tidak dibatalkan, belum merupakan verifikasi uang
-        yang sudah diterima.
-      </div>
+      {/* Tampilkan loading saat data pertama kali diambil */}
+      {isLoading ? (
+        <div className="rounded-xl border border-slate-200 bg-white px-5 py-8 text-center text-sm text-slate-500">
+          Memuat laporan keuangan...
+        </div>
+      ) : isError || !report ? (
+        // Tampilkan error kalau API gagal atau data kosong
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-5 py-8 text-center text-sm text-rose-700">
+          Gagal memuat laporan keuangan. Coba muat ulang halaman.
+        </div>
+      ) : (
+        <>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            Angka pendapatan hanya menghitung pembayaran berstatus lunas.
+            Periode dihitung dari tanggal pembayaran, sedangkan booking
+            dibatalkan dihitung dari tanggal main.
+          </div>
 
-      <ReportSummaryCards
-        bookingValue={bookingValue}
-        bookingCount={nonCancelledBookings.length}
-        cancelledCount={cancelledCount}
-      />
+          <ReportSummaryCards
+            revenue={report.revenue}
+            paidTransactionCount={report.paidTransactionCount}
+            cancelledBookingCount={report.cancelledBookingCount}
+          />
 
-      <VenueBookingTotals venues={venueTotals} />
+          <VenueBookingTotals venues={report.venues} />
 
-      <RecentTransactionsTable bookings={filteredBookings} />
+          <RecentTransactionsTable transactions={report.transactions} />
+        </>
+      )}
     </main>
   );
 }
