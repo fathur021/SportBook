@@ -4,7 +4,7 @@ export function SettingsSaveBar() {
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
       <p className="text-xs text-slate-500">
-        Perubahan belum disimpan. Tombol ini belum terhubung ke database.
+        Mode tampilan: perubahan belum tersimpan ke database.
       </p>
 
       <div className="flex items-center gap-2">

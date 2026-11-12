@@ -8,7 +8,12 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -21,14 +26,8 @@ import { Switch } from "@/components/ui/switch";
 import {
   CANCELLATION_POLICY_OPTIONS,
   DEFAULT_BOOKING_RULES,
-  PAYMENT_WINDOW_OPTIONS,
   SESSION_DURATION_OPTIONS,
 } from "@/lib/settings";
-
-const paymentWindowOptions = PAYMENT_WINDOW_OPTIONS.map((option) => ({
-  value: option,
-  label: option,
-}));
 
 export function BookingRulesSection() {
   const rules = DEFAULT_BOOKING_RULES;
@@ -36,8 +35,8 @@ export function BookingRulesSection() {
   return (
     <SettingsSection
       icon={CalendarClock}
-      title="Aturan Booking & Harga"
-      description="Durasi sesi, harga, dan kebijakan pembatalan."
+      title="Aturan Booking"
+      description="Aturan dasar yang dipakai saat pelanggan memesan lapangan."
     >
       <FieldGroup>
         <Field>
@@ -65,100 +64,31 @@ export function BookingRulesSection() {
           </FieldDescription>
         </Field>
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field>
-            <FieldLabel
-              htmlFor="peak-price"
-              className="text-xs font-semibold text-slate-700"
-            >
-              Harga peak / jam
-            </FieldLabel>
-            <InputGroup className="h-9 bg-white">
-              <InputGroupAddon>
-                <InputGroupText className="text-xs font-semibold text-slate-400">
-                  Rp
-                </InputGroupText>
-              </InputGroupAddon>
-              <InputGroupInput
-                id="peak-price"
-                type="number"
-                min={0}
-                step={5000}
-                defaultValue={rules.peakPrice}
-              />
-            </InputGroup>
-          </Field>
-
-          <Field>
-            <FieldLabel
-              htmlFor="off-peak-price"
-              className="text-xs font-semibold text-slate-700"
-            >
-              Harga off-peak / jam
-            </FieldLabel>
-            <InputGroup className="h-9 bg-white">
-              <InputGroupAddon>
-                <InputGroupText className="text-xs font-semibold text-slate-400">
-                  Rp
-                </InputGroupText>
-              </InputGroupAddon>
-              <InputGroupInput
-                id="off-peak-price"
-                type="number"
-                min={0}
-                step={5000}
-                defaultValue={rules.offPeakPrice}
-              />
-            </InputGroup>
-          </Field>
-
-          <Field>
-            <FieldLabel
-              htmlFor="facility-fee"
-              className="text-xs font-semibold text-slate-700"
-            >
-              Biaya fasilitas
-            </FieldLabel>
-            <InputGroup className="h-9 bg-white">
-              <InputGroupAddon>
-                <InputGroupText className="text-xs font-semibold text-slate-400">
-                  Rp
-                </InputGroupText>
-              </InputGroupAddon>
-              <InputGroupInput
-                id="facility-fee"
-                type="number"
-                min={0}
-                step={5000}
-                defaultValue={rules.facilityFee}
-              />
-            </InputGroup>
-          </Field>
-        </div>
-
         <div className="grid gap-4 sm:grid-cols-2">
           <Field>
             <FieldLabel
-              htmlFor="payment-window"
+              htmlFor="max-advance-days"
               className="text-xs font-semibold text-slate-700"
             >
-              Batas waktu pembayaran
+              Batas booking ke depan
             </FieldLabel>
-            <Select
-              items={paymentWindowOptions}
-              defaultValue={rules.paymentWindow}
-            >
-              <SelectTrigger id="payment-window" className="h-9 w-full bg-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {paymentWindowOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <InputGroup className="h-9 bg-white">
+              <InputGroupInput
+                id="max-advance-days"
+                type="number"
+                min={1}
+                max={365}
+                defaultValue={rules.maxAdvanceDays}
+              />
+              <InputGroupAddon align="inline-end">
+                <InputGroupText className="text-xs font-semibold text-slate-400">
+                  hari
+                </InputGroupText>
+              </InputGroupAddon>
+            </InputGroup>
+            <FieldDescription className="text-xs text-slate-500">
+              Pelanggan tidak bisa memesan lebih jauh dari batas ini.
+            </FieldDescription>
           </Field>
 
           <Field>
@@ -186,6 +116,9 @@ export function BookingRulesSection() {
                 ))}
               </SelectContent>
             </Select>
+            <FieldDescription className="text-xs text-slate-500">
+              Belum dipakai di proses pembatalan saat ini.
+            </FieldDescription>
           </Field>
         </div>
 

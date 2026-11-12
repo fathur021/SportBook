@@ -5,67 +5,19 @@
 // database / API tanpa perlu mengubah komponen tampilannya.
 // ---------------------------------------------------------------------------
 
-// ----- Profil venue ----- //
-
-export type VenueProfile = {
-  name: string;
-  sport: string;
-  phone: string;
-  email: string;
-  address: string;
-  openTime: string;
-  closeTime: string;
-  timezone: string;
-};
-
-export const SPORT_OPTIONS = [
-  "Padel",
-  "Futsal",
-  "Badminton",
-  "Basketball",
-  "Tennis",
-  "Volleyball",
-  "Table Tennis",
-  "Squash",
-];
-
-export const TIMEZONE_OPTIONS = [
-  "WIB (GMT+7)",
-  "WITA (GMT+8)",
-  "WIT (GMT+9)",
-];
-
-export const DEFAULT_VENUE_PROFILE: VenueProfile = {
-  name: "Smash Padel Club Kemang",
-  sport: "Padel",
-  phone: "+62 812 3456 7890",
-  email: "hello@smashpadel.id",
-  address:
-    "Jl. Kemang Timur No. 48, Bangka, Mampang Prapatan, Jakarta Selatan",
-  openTime: "06:30",
-  closeTime: "23:30",
-  timezone: "WIB (GMT+7)",
-};
-
-// ----- Aturan booking & harga ----- //
+// ----- Aturan booking ----- //
 
 export type SessionDurationOption = {
   id: string;
   label: string;
+  hours: number;
   enabled: boolean;
 };
 
 export const SESSION_DURATION_OPTIONS: SessionDurationOption[] = [
-  { id: "1-hour", label: "1 Jam", enabled: true },
-  { id: "1-5-hour", label: "1,5 Jam", enabled: true },
-  { id: "2-hour", label: "2 Jam", enabled: false },
-];
-
-export const PAYMENT_WINDOW_OPTIONS = [
-  "15 menit",
-  "30 menit",
-  "45 menit",
-  "60 menit",
+  { id: "1-hour", label: "1 Jam", hours: 1, enabled: true },
+  { id: "1-5-hour", label: "1,5 Jam", hours: 1.5, enabled: true },
+  { id: "2-hour", label: "2 Jam", hours: 2, enabled: false },
 ];
 
 export const CANCELLATION_POLICY_OPTIONS = [
@@ -75,71 +27,55 @@ export const CANCELLATION_POLICY_OPTIONS = [
 ];
 
 export type BookingRules = {
-  peakPrice: number;
-  offPeakPrice: number;
-  facilityFee: number;
-  paymentWindow: string;
-  cancellationPolicy: string;
   allowSameDayBooking: boolean;
+  maxAdvanceDays: number;
+  cancellationPolicy: string;
 };
 
 export const DEFAULT_BOOKING_RULES: BookingRules = {
-  peakPrice: 260000,
-  offPeakPrice: 180000,
-  facilityFee: 0,
-  paymentWindow: "30 menit",
-  cancellationPolicy: "free-until-h1",
   allowSameDayBooking: true,
+  maxAdvanceDays: 30,
+  cancellationPolicy: "free-until-h1",
+};
+
+// ----- Jam operasional ----- //
+
+export const TIMEZONE_OPTIONS = [
+  "WIB (GMT+7)",
+  "WITA (GMT+8)",
+  "WIT (GMT+9)",
+];
+
+export type OperatingHours = {
+  openTime: string;
+  closeTime: string;
+  timeZone: string;
+};
+
+export const DEFAULT_OPERATING_HOURS: OperatingHours = {
+  openTime: "07:00",
+  closeTime: "23:00",
+  timeZone: "WIB (GMT+7)",
 };
 
 // ----- Pembayaran ----- //
 
-export type PaymentMethod = {
-  id: string;
-  label: string;
-  description: string;
-  enabled: boolean;
-};
-
-export const PAYMENT_METHOD_OPTIONS: PaymentMethod[] = [
-  {
-    id: "bank-transfer",
-    label: "Transfer Bank",
-    description: "BCA, Mandiri, BNI, dan BRI",
-    enabled: true,
-  },
-  {
-    id: "qris",
-    label: "QRIS",
-    description: "Semua aplikasi pembayaran dan e-wallet",
-    enabled: true,
-  },
-  {
-    id: "card",
-    label: "Kartu Kredit / Debit",
-    description: "Visa dan Mastercard",
-    enabled: false,
-  },
-  {
-    id: "pay-at-venue",
-    label: "Bayar di Tempat",
-    description: "Tunai di resepsionis venue",
-    enabled: true,
-  },
+export const PAYMENT_WINDOW_OPTIONS = [
+  { value: "10", label: "10 menit" },
+  { value: "15", label: "15 menit" },
+  { value: "30", label: "30 menit" },
+  { value: "45", label: "45 menit" },
+  { value: "60", label: "60 menit" },
 ];
 
 export type PaymentSettings = {
-  bankName: string;
-  accountNumber: string;
-  accountHolder: string;
-  downPaymentPercent: number;
+  paymentWindow: string;
   taxPercent: number;
+  downPaymentPercent: number;
 };
 
 export const DEFAULT_PAYMENT_SETTINGS: PaymentSettings = {
-  bankName: "Bank Central Asia (BCA)",
-  accountNumber: "1234567890",
-  accountHolder: "PT SportBook Nusantara",
-  downPaymentPercent: 50,
+  paymentWindow: "10",
   taxPercent: 11,
+  downPaymentPercent: 50,
 };

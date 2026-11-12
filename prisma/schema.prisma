@@ -191,3 +191,25 @@ model Payment {
 
   booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }
+
+// Satu baris pengaturan global untuk seluruh aplikasi.
+model Setting {
+  
+  id                  String   @id @default("global")
+
+  
+  minSessionHours     Int      @default(1)
+  maxSessionHours     Int      @default(3)
+
+ 
+  openTime            String   @default("07:00")
+  closeTime           String   @default("23:00")
+
+  
+  allowSameDayBooking Boolean  @default(true)
+  maxAdvanceDays      Int      @default(30)
+  cancellationPolicy  String   @default("free-until-h1")
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
