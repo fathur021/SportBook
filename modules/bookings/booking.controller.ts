@@ -21,6 +21,8 @@ import {
   EquipmentUnavailableError,
   getAvailabilityService,
   InvalidOperatingHourError,
+  InvalidSessionDurationError,
+  BookingDateNotAllowedError,
   listMyBookingService,
   PastDateError,
   SlotUnavailableError,
@@ -120,6 +122,15 @@ export async function createBookingController(
     }
     // Jam di luar jam operasional → HTTP 400
     if (error instanceof InvalidOperatingHourError) {
+      return Response.json({ error: error.message }, { status: 400 });
+    }
+    // Durasi di luar batas → 400.
+    if (error instanceof InvalidSessionDurationError) {
+      return Response.json({ error: error.message }, { status: 400 });
+    }
+
+    // Tanggal tidak boleh → 400.
+    if (error instanceof BookingDateNotAllowedError) {
       return Response.json({ error: error.message }, { status: 400 });
     }
     // Tanggal sudah lewat → HTTP 400

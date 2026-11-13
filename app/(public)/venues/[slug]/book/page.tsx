@@ -6,6 +6,7 @@ import { getCourtAvailability } from "@/lib/availability";
 import { toEquipmentItems } from "@/lib/equipment-mapper";
 import { toVenueDetail } from "@/lib/venue-detail-mapper";
 import { getPublicVenueBySlug } from "@/modules/venues/venue.service";
+import { getSettingsService } from "@/modules/settings/settings.service";
 import { notFound } from "next/navigation";
 import { toTimeSlotOptions } from "@/lib/availability-slots";
 import { getAvailabilityService } from "@/modules/bookings/booking.service";
@@ -26,7 +27,8 @@ const BookPage = async ({ params, searchParams }: BookPageProps) => {
   const data = await getPublicVenueBySlug(slug);
   if (!data) notFound();
 
-  const venue = toVenueDetail(data);
+  const settings = await getSettingsService();
+  const venue = toVenueDetail(data, settings);
 
   const discipline =
     venue.disciplines.find((d) => d.slug === sport) ?? venue.disciplines[0];

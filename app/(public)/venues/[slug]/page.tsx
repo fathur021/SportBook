@@ -1,6 +1,7 @@
 // Mengimpor notFound untuk mengarahkan ke halaman 404 jika slug venue tidak ditemukan
 import { notFound } from "next/navigation";
 import { getPublicVenueBySlug } from "@/modules/venues/venue.service";
+import { getSettingsService } from "@/modules/settings/settings.service";
 import { toVenueDetail } from "@/lib/venue-detail-mapper";
 
 // Mengimpor komponen-komponen UI penyusun halaman venue detail
@@ -21,8 +22,11 @@ const page = async (props: PageProps<"/venues/[slug]">) => {
   const data = await getPublicVenueBySlug(slug);
   if (!data) notFound();
 
-  // 2. Ubah data database menjadi bentuk yang dipakai komponen tampilan
-  const venue = toVenueDetail(data);
+  // 2. Ambil pengaturan untuk jam operasional dan daftar durasi
+  const settings = await getSettingsService();
+
+  // 3. Ubah data database menjadi bentuk yang dipakai komponen tampilan
+  const venue = toVenueDetail(data, settings);
 
   return (
     // Container utama agar lebar halaman konsisten dengan halaman lain di website

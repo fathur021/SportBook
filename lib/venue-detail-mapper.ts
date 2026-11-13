@@ -15,10 +15,25 @@ type PublicVenue = NonNullable<
   Awaited<ReturnType<typeof getPublicVenueBySlug>>
 >;
 
-// Jam operasional sementara, disamakan dengan aturan booking di server.
-const OPEN_HOUR = 7;
-const CLOSE_HOUR = 23;
-const openHoursToday = `Open Today: ${String(OPEN_HOUR).padStart(2, "0")}:00 - ${String(CLOSE_HOUR).padStart(2, "0")}:00`;
+// Data pengaturan yang dibutuhkan halaman tampilan.
+export type BookingSettingsForDisplay = {
+  openTime: string;
+  closeTime: string;
+  minSessionHours: number;
+  maxSessionHours: number;
+};
+
+// Membuat daftar durasi yang dibaca widget booking.
+// Contoh: min 1, max 3 -> ["1 Hour", "2 Hours", "3 Hours"].
+function buildSessionDurations(minHours: number, maxHours: number) {
+  const durations: string[] = [];
+
+  for (let hours = minHours; hours <= maxHours; hours++) {
+    durations.push(hours === 1 ? "1 Hour" : `${hours} Hours`);
+  }
+
+  return durations;
+}
 
 // Pilih ikon kartu fasilitas berdasarkan nama fasilitasnya.
 function facilityIcon(name: string): VenueAmenity["icon"] {
@@ -33,7 +48,10 @@ function facilityIcon(name: string): VenueAmenity["icon"] {
   return "court";
 }
 
-export function toVenueDetail(venue: PublicVenue): VenueDetail {
+export function toVenueDetail(
+  venue: PublicVenue,
+  settings: BookingSettingsForDisplay,
+): VenueDetail {
   // 1. Harga termurah sebagai "mulai dari"
   const prices = venue.courts.map((court) => court.pricePerHour);
   const pricePerHour = prices.length > 0 ? Math.min(...prices) : 0;
@@ -93,6 +111,9 @@ export function toVenueDetail(venue: PublicVenue): VenueDetail {
     icon: facilityIcon(name),
   }));
 
+  // Rentang jam operasional dari pengaturan, dipakai di beberapa tempat.
+  const operatingHours = `${settings.openTime} - ${settings.closeTime}`;
+
   return {
     slug: venue.slug,
     name: venue.name,
@@ -105,7 +126,7 @@ export function toVenueDetail(venue: PublicVenue): VenueDetail {
     reviewCount: 0,
     popularSlots: [],
 
-    openingHoursToday: openHoursToday,
+    openingHoursToday: `Open Today: ${operatingHours}`,
     totalPhotos: 1,
     images: [{ src: cover, title: venue.name }],
     description: venue.description ?? "",
@@ -118,21 +139,24 @@ export function toVenueDetail(venue: PublicVenue): VenueDetail {
     facilities: venue.facilities,
     pricePerHour,
     disciplines,
-    sessionDurations: ["1 Hour", "2 Hours"],
+    sessionDurations: buildSessionDurations(
+      settings.minSessionHours,
+      settings.maxSessionHours,
+    ),
     facilityFeeNote: "FREE",
     conciergeName: `${venue.name} concierge`,
     amenities,
     operatingHoursBadge: undefined,
     operatingSchedules: [
-      { days: "Mon - Thu", hours: "07:00 - 23:00", note: "Jam operasional" },
-      { days: "Friday", hours: "07:00 - 23:00", note: "Jam operasional" },
+      { days: "Mon - Thu", hours: operatingHours, note: "Jam operasional" },
+      { days: "Friday", hours: operatingHours, note: "Jam operasional" },
       {
         days: "Saturday",
-        hours: "07:00 - 23:00",
+        hours: operatingHours,
         note: "Jam operasional",
         isHighlighted: true,
       },
-      { days: "Sunday", hours: "07:00 - 23:00", note: "Jam operasional" },
+      { days: "Sunday", hours: operatingHours, note: "Jam operasional" },
     ],
   };
 }

@@ -60,7 +60,8 @@ export const ModelName = {
   Equipment: 'Equipment',
   BookingEquipment: 'BookingEquipment',
   Booking: 'Booking',
-  Payment: 'Payment'
+  Payment: 'Payment',
+  Setting: 'Setting'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -241,6 +242,22 @@ export const PaymentScalarFieldEnum = {
 } as const
 
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const SettingScalarFieldEnum = {
+  id: 'id',
+  minSessionHours: 'minSessionHours',
+  maxSessionHours: 'maxSessionHours',
+  openTime: 'openTime',
+  closeTime: 'closeTime',
+  allowSameDayBooking: 'allowSameDayBooking',
+  maxAdvanceDays: 'maxAdvanceDays',
+  cancellationPolicy: 'cancellationPolicy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SettingScalarFieldEnum = (typeof SettingScalarFieldEnum)[keyof typeof SettingScalarFieldEnum]
 
 
 export const SortOrder = {

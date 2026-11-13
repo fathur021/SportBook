@@ -14,13 +14,9 @@ import {
   findBookingByPaymentId,
 } from "./booking.repository"; // import fungsi query dari repository
 import type { CreateBookingInput } from "./booking.schema"; // mengimport
+import { getSettingsService } from "../settings/settings.service";
 
 // ==Konstanta==
-
-//jam buka
-const OPEN_HOUR = 7;
-//jam tutup
-const CLOSE_HOUR = 23;
 
 // Daftar status yang masih "menahan" slot (booking yang memblokir jadwal)
 const ACTIVE_STATUSES = ["PENDING", "CONFIRMED"];
@@ -48,13 +44,37 @@ export class EquipmentStockError extends Error {
     this.name = "EquipmentStockError";
   }
 }
-// Error HTTP 400: rentang jam main berada di luar jam operasional venue
+// Error saat jam main keluar dari jam operasional.
 export class InvalidOperatingHourError extends Error {
-  constructor() {
-    super("Jam main harus antara 07:00 sampai 23:00");
+  // Terima jam buka dan tutup supaya pesannya dinamis.
+  constructor(openTime: string, closeTime: string) {
+    // Contoh: "Jam main harus di antara 08:00 dan 22:00".
+    super(`Jam main harus di antara ${openTime} dan ${closeTime}`);
+    // Nama error.
     this.name = "InvalidOperatingHourError";
   }
 }
+
+// Error saat durasi di luar batas.
+export class InvalidSessionDurationError extends Error {
+  constructor(minHours: number, maxHours: number) {
+    // Contoh: "Durasi sesi harus antara 2 sampai 4 jam".
+    super(`Durasi sesi harus antara ${minHours} sampai ${maxHours} jam`);
+    // Nama error.
+    this.name = "InvalidSessionDurationError";
+  }
+}
+
+// Error saat tanggal booking tidak diperbolehkan.
+export class BookingDateNotAllowedError extends Error {
+  constructor(message: string) {
+    // Pesan dikirim dari pemanggil.
+    super(message);
+    // Nama error.
+    this.name = "BookingDateNotAllowedError";
+  }
+}
+
 // Error HTTP 400: user mencoba booking tanggal yang sudah lewat
 export class PastDateError extends Error {
   constructor() {
@@ -88,17 +108,49 @@ export class BookingAlreadyFinalizedError extends Error {
 }
 
 // === Helper ===
-//mengubah format jam (HH:00) exc: jam => 19 => (19:00)
-function formatHour(hour: number) {
-  return `${String(hour).padStart(2, "0")}:00`;
+function toMinutes(time: string) {
+  const [hour, minute] = time.split(":").map(Number);
+  return hour * 60 + minute;
 }
-//hitung jam selesai dari jam mulai + durasi exc: (19:00,2) = 21:00
-function addHour(startTime: string, durationHour: number) {
-  const [h, m] = startTime.split(":").map(Number); //pecah "19:00" jadi [19,0]
-  const totalMinutes = h * 60 + m + durationHour * 60; // Hitung total dalam satuan menit: (jam × 60 + menit) + (durasi × 60)
-  const endHour = Math.floor(totalMinutes / 60); // Kembalikan bagian jam dari total menit
-  const endMinute = totalMinutes % 60; //ambil sisa menit
-  return `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
+
+// Mengubah menit menjadi jam.
+function toTime(totalMinutes: number) {
+  // Math.floor membulatkan ke bawah.
+  // 450 / 60 = 7.
+  const hour = Math.floor(totalMinutes / 60);
+
+  // Sisa bagi menghasilkan menit.
+  // 450 % 60 = 30.
+  const minute = totalMinutes % 60;
+
+  // padStart menambah nol di depan supaya selalu dua digit.
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+// Menghitung tanggal beberapa hari setelah hari ini.
+function dateAfterDays(days: number) {
+  // Ambil waktu sekarang.
+  const now = new Date();
+
+  // Buat tanggal baru dengan hari ditambah.
+  // Ini otomatis pindah bulan kalau perlu.
+  const date = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + days,
+  );
+
+  // Ambil tahun.
+  const year = date.getFullYear();
+
+  // Ambil bulan, tambah 1 karena bulan dimulai dari 0.
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+
+  // Ambil tanggal.
+  const day = String(date.getDate()).padStart(2, "0");
+
+  // Gabungkan menjadi "YYYY-MM-DD".
+  return `${year}-${month}-${day}`;
 }
 
 //Mengambil tanggal hari ini dalam format "YYYY-MM-DD" sesuai waktu lokal server
@@ -137,73 +189,177 @@ export async function getAvailabilityService(
   courtId: string,
   playDate: string,
 ) {
+  // Cari lapangan di database.
   const court = await findCourtById(prisma, courtId);
+
+  // Tolak kalau tidak ada atau non-aktif.
+  // Lapangan dianggap tidak ada kalau venue-nya juga non-aktif.
   if (!court || !court.isActive || !court.venue.isActive) {
     throw new CourtNotFoundError();
   }
+
+  // Ambil pengaturan global.
+  const settings = await getSettingsService();
+
+  // Jam buka dalam menit.
+  const openingMinutes = toMinutes(settings.openTime);
+
+  // Jam tutup dalam menit.
+  const closingMinutes = toMinutes(settings.closeTime);
+
+  // Ambil semua booking yang masih aktif pada tanggal itu.
   const existingBookings = await findBookingConflictList(
     prisma,
     courtId,
     playDate,
   );
-  const slots = [];
-  for (let hour = OPEN_HOUR; hour < CLOSE_HOUR; hour++) {
-    const startTime = formatHour(hour);
-    const endTime = formatHour(hour + 1);
 
-    //cek slot ini bentrok dengan salah satu booking yang sudah ada atau tidak
+  // Siapkan wadah slot.
+  const slots = [];
+
+  // Mulai dari jam buka.
+  // Selama slot 1 jam masih muat sebelum jam tutup, teruskan.
+  // Setiap putaran tambah 60 menit.
+  for (
+    let startMinutes = openingMinutes;
+    startMinutes + 60 <= closingMinutes;
+    startMinutes += 60
+  ) {
+    // Jam mulai slot.
+    const startTime = toTime(startMinutes);
+
+    // Jam selesai slot.
+    const endTime = toTime(startMinutes + 60);
+
+    // Cek apakah slot ini bentrok dengan booking lain.
     const isBooked = existingBookings.some((existing) =>
+      // some = true kalau minimal satu booking bentrok.
       isTimeOverlap(startTime, endTime, existing.startTime, existing.endTime),
     );
-    slots.push({
-      startTime,
-      endTime,
-      isBooked,
-    });
+
+    // Simpan slot.
+    slots.push({ startTime, endTime, isBooked });
   }
+
+  // Kembalikan data ke pemanggil.
   return {
     court: {
       id: court.id,
       name: court.name,
       pricePerHour: court.pricePerHour,
     },
-    date: playDate, // tanggal yang diperiksa
-    slots, // daftar slot lengkap,
+    date: playDate,
+    slots,
   };
 }
 
 //2. Buat Booking baru
 export async function createBookingService(
+  // ID user yang sedang login, dikirim dari controller.
   userId: string,
+  // Data booking yang sudah lolos validasi Zod.
   input: CreateBookingInput,
 ) {
-  const endTime = addHour(input.startTime, input.durationHour);
+  // Ambil pengaturan global sekali di awal.
+  // Isinya jam operasional, batas durasi, dan aturan tanggal.
+  const settings = await getSettingsService();
 
+  // Cek apakah durasi terlalu pendek.
+  // < artinya lebih kecil dari batas minimal.
   if (
-    input.startTime < formatHour(OPEN_HOUR) ||
-    endTime > formatHour(CLOSE_HOUR)
+    input.durationHour < settings.minSessionHours ||
+    // || artinya "atau". Cukup salah satu terpenuhi, langsung ditolak.
+    input.durationHour > settings.maxSessionHours
   ) {
-    throw new InvalidOperatingHourError();
+    // Lempar error berisi batas yang berlaku sekarang.
+    throw new InvalidSessionDurationError(
+      settings.minSessionHours,
+      settings.maxSessionHours,
+    );
   }
 
-  if (input.playDate < todayDateString()) {
+  // Ubah jam mulai menjadi menit.
+  // Contoh: "08:00" menjadi 480.
+  const startMinutes = toMinutes(input.startTime);
+
+  // Hitung jam selesai dalam menit.
+  // durationHour x 60 mengubah jam menjadi menit.
+  // Contoh: mulai 480 + 2 x 60 = 600.
+  const endMinutes = startMinutes + input.durationHour * 60;
+
+  // Jam buka dalam menit.
+  const openingMinutes = toMinutes(settings.openTime);
+
+  // Jam tutup dalam menit.
+  const closingMinutes = toMinutes(settings.closeTime);
+
+  // Mulai sebelum jam buka berarti ditolak.
+  // Selesai setelah jam tutup juga ditolak.
+  if (startMinutes < openingMinutes || endMinutes > closingMinutes) {
+    // Pesan error memakai jam sebenarnya dari pengaturan.
+    throw new InvalidOperatingHourError(settings.openTime, settings.closeTime);
+  }
+
+  // Ubah jam selesai kembali ke teks "HH:MM".
+  // Contoh: 600 menjadi "10:00".
+  // Nilai ini yang nanti disimpan ke database.
+  const endTime = toTime(endMinutes);
+
+  // Ambil tanggal hari ini dari server, format "YYYY-MM-DD".
+  const today = todayDateString();
+
+  // Tanggal yang sudah lewat selalu ditolak.
+  // Perbandingan teks tanggal berformat YYYY-MM-DD sama hasilnya
+  // dengan perbandingan tanggal biasa.
+  if (input.playDate < today) {
     throw new PastDateError();
   }
 
+  // Kalau admin mematikan booking hari yang sama,
+  // dan tanggal yang dipilih adalah hari ini, tolak.
+  if (!settings.allowSameDayBooking && input.playDate === today) {
+    throw new BookingDateNotAllowedError(
+      "Booking untuk hari ini sedang tidak dibuka",
+    );
+  }
+
+  // Hitung tanggal paling jauh yang boleh dipesan.
+  // Contoh: hari ini + 30 hari.
+  const lastAllowedDate = dateAfterDays(settings.maxAdvanceDays);
+
+  // Tolak kalau tanggal yang dipilih melewati batas itu.
+  if (input.playDate > lastAllowedDate) {
+    throw new BookingDateNotAllowedError(
+      `Booking hanya bisa dilakukan maksimal ${settings.maxAdvanceDays} hari ke depan`,
+    );
+  }
+
+  // Buka transaksi database.
+  // Semua perintah di dalamnya dianggap satu kesatuan.
+  // Kalau ada satu error, semua perubahan dibatalkan.
   return runInTransaction(async (tx) => {
+    // tx adalah koneksi khusus transaksi, bukan prisma biasa.
+    // Cari lapangan berdasarkan ID.
     const court = await findCourtById(tx, input.courtId);
 
+    // Lapangan harus ada.
+    // Lapangan juga harus aktif.
+    // Venue pemilik lapangan juga harus aktif.
     if (!court || !court.isActive || !court.venue.isActive) {
       throw new CourtNotFoundError();
     }
 
+    // Ambil semua booking aktif pada lapangan dan tanggal yang sama.
     const conflicts = await findBookingConflictList(
       tx,
       input.courtId,
       input.playDate,
     );
 
+    // Cek apakah ada booking lain yang jamnya bertabrakan.
+    // some = bernilai true kalau minimal satu bentrok.
     const hasOverlap = conflicts.some((existing) =>
+      // isTimeOverlap membandingkan dua rentang jam.
       isTimeOverlap(
         input.startTime,
         endTime,
@@ -212,10 +368,13 @@ export async function createBookingService(
       ),
     );
 
+    // Kalau bentrok, batalkan transaksi dan kirim error 409.
     if (hasOverlap) {
       throw new SlotUnavailableError();
     }
 
+    // Siapkan wadah untuk equipment yang dipilih.
+    // Tipe ini harus sama dengan yang diminta insertBooking.
     const equipmentData: {
       equipmentId: string;
       name: string;
@@ -224,71 +383,115 @@ export async function createBookingService(
       subtotal: number;
     }[] = [];
 
+    // Kalau input tidak mengirim equipment, pakai array kosong.
+    // ?? artinya "kalau kiri null/undefined, pakai kanan".
     const requestedEquipments = input.equipments ?? [];
 
+    // Proses equipment hanya kalau ada yang dipilih.
     if (requestedEquipments.length > 0) {
+      // Map dipakai untuk menggabungkan equipment yang sama.
+      // Contoh: dua baris "bola" menjadi satu dengan jumlah 3.
       const quantityByEquipment = new Map<string, number>();
 
+      // Telusuri setiap equipment yang diminta.
       for (const item of requestedEquipments) {
+        // Ambil jumlah lama, kalau belum ada anggap 0.
+        // Lalu tambah dengan jumlah yang diminta sekarang.
         quantityByEquipment.set(
           item.equipmentId,
           (quantityByEquipment.get(item.equipmentId) ?? 0) + item.quantity,
         );
       }
 
+      // Ambil semua ID equipment yang unik.
+      // keys() mengembalikan daftar kunci Map.
+      // [...] mengubahnya menjadi array biasa.
       const equipmentIds = [...quantityByEquipment.keys()];
 
+      // Ambil data equipment dari database.
+      // Hanya equipment milik venue ini yang diambil.
       const equipmentRows = await findEquipmentsForBooking(
         tx,
         court.venue.id,
         equipmentIds,
       );
 
+      // Jumlah data yang ditemukan harus sama dengan jumlah ID yang diminta.
+      // Kalau beda, berarti ada equipment yang tidak ada atau bukan milik venue.
       if (equipmentRows.length !== equipmentIds.length) {
         throw new EquipmentUnavailableError();
       }
 
+      // Telusuri setiap equipment yang diminta.
       for (const equipmentId of equipmentIds) {
+        // Cari baris equipment yang cocok.
         const equipment = equipmentRows.find((row) => row.id === equipmentId);
+
+        // Ambil jumlah yang diminta.
         const quantity = quantityByEquipment.get(equipmentId) ?? 0;
 
+        // Tolak kalau equipment tidak ditemukan atau sedang non-aktif.
         if (!equipment || !equipment.isActive) {
           throw new EquipmentUnavailableError();
         }
 
+        // Tolak kalau stok lebih sedikit dari jumlah yang diminta.
         if (equipment.stock < quantity) {
           throw new EquipmentStockError(equipment.name);
         }
 
+        // Simpan data equipment untuk dimasukkan ke booking.
         equipmentData.push({
+          // ID equipment asli.
           equipmentId: equipment.id,
+          // Nama disalin supaya riwayat booking tetap benar
+          // walaupun nama equipment berubah nanti.
           name: equipment.name,
+          // Harga disalin dengan alasan yang sama.
           price: equipment.price,
+          // Jumlah yang dipesan.
           quantity,
+          // subtotal = harga x jumlah.
           subtotal: equipment.price * quantity,
         });
       }
     }
 
+    // Jumlahkan semua subtotal equipment.
+    // reduce menjalankan penjumlahan untuk setiap item.
+    // Nilai awal 0.
     const equipmentTotal = equipmentData.reduce(
       (sum, item) => sum + item.subtotal,
       0,
     );
 
-    const totalPrice =
-      court.pricePerHour * input.durationHour + equipmentTotal;
+    // Total bayar = harga lapangan per jam x durasi + total equipment.
+    const totalPrice = court.pricePerHour * input.durationHour + equipmentTotal;
 
+    // Simpan booking ke database.
+    // insertBooking mengembalikan data booking yang baru dibuat.
     return insertBooking(tx, {
+      // Kode pesanan unik, contoh SPB-17613423423-K3FA.
       orderCode: generateOrderCode(),
+      // ID lapangan.
       courtId: input.courtId,
+      // Pemilik booking.
       userId,
+      // Tanggal main.
       playDate: input.playDate,
+      // Jam mulai.
       startTime: input.startTime,
+      // Jam selesai hasil perhitungan di atas.
       endTime,
+      // Durasi dalam jam.
       durationHour: input.durationHour,
+      // Harga per jam saat booking dibuat.
       pricePerHour: court.pricePerHour,
+      // Total yang harus dibayar.
       totalPrice,
+      // Catatan, kalau kosong simpan null.
       notes: input.notes ?? null,
+      // Daftar equipment yang dipesan.
       equipments: equipmentData,
     });
   });
@@ -321,40 +524,38 @@ const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   COMPLETED: [], // final, tidak bisa berubah lagi
 };
 
-export class InvalidStatusTransitionError extends Error{
-  constructor(){
-    super("Perubahan status tidak sesuai aturan"),
-    this.name = "invalidStatusTransitionError"
+export class InvalidStatusTransitionError extends Error {
+  constructor() {
+    (super("Perubahan status tidak sesuai aturan"),
+      (this.name = "invalidStatusTransitionError"));
   }
 }
 
 // 5. Daftar semua booking (dengan filter opsional) — khusus admin
-export async function listAllBookingService(
-  filter: {
-    status?: string;
-    playDate?:string;
-  }
-){
+export async function listAllBookingService(filter: {
+  status?: string;
+  playDate?: string;
+}) {
   return findAllBookings(filter);
 }
 
 //6. Ubah status booking (khusus admin)
 export async function updateBookingStatusService(
-  BookingId:string,
-  newStatus:string
-){
+  BookingId: string,
+  newStatus: string,
+) {
   const booking = await findBookingById(BookingId);
-  if(!booking){
+  if (!booking) {
     throw new BookingNotFoundError();
   }
-  const allowed = ALLOWED_TRANSITIONS[booking.status]
-  if(allowed.length === 0){
+  const allowed = ALLOWED_TRANSITIONS[booking.status];
+  if (allowed.length === 0) {
     throw new BookingAlreadyFinalizedError();
   }
-  if(!allowed.includes(newStatus)){
-     throw new InvalidStatusTransitionError();
+  if (!allowed.includes(newStatus)) {
+    throw new InvalidStatusTransitionError();
   }
-  return updateBookingStatusById(BookingId,newStatus);
+  return updateBookingStatusById(BookingId, newStatus);
 }
 
 //7. Slot tersedia per tanggal dalam rentang (untuk calendar view)
@@ -389,7 +590,9 @@ export async function getCourtAvailabilityRangeService(
   for (const date of dates) {
     try {
       const availability = await getAvailabilityService(courtId, date);
-      const availableSlots = availability.slots.filter((s) => !s.isBooked).length;
+      const availableSlots = availability.slots.filter(
+        (s) => !s.isBooked,
+      ).length;
       results.push({ date, slots: availableSlots });
     } catch {
       // Jika error (seharusnya tidak terjadi karena court sudah divalidasi), skip
@@ -402,7 +605,7 @@ export async function getCourtAvailabilityRangeService(
 
 //8. Ambil detail booking untuk halaman tiket/receipt (checkout/success)
 export async function getBookingReceiptService(
-  identifier: { orderCode?: string; paymentId?: string, bookingId?:string },
+  identifier: { orderCode?: string; paymentId?: string; bookingId?: string },
   userId: string,
   isAdmin: boolean,
 ) {
