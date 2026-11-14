@@ -136,6 +136,25 @@ export interface AdminReport {
   venues: AdminReportVenueTotal[];
   transactions: AdminReportTransaction[];
 }
+export interface AdminSettings {
+  id: string;
+  minSessionHours: number;
+  maxSessionHours: number;
+  openTime: string;
+  closeTime: string;
+  paymentWindowMinutes: number;
+  taxPercent: number;
+  allowSameDayBooking: boolean;
+  maxAdvanceDays: number;
+  cancellationPolicy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type UpdateSettingsBody = Partial<
+  Omit<AdminSettings, "id" | "createdAt" | "updatedAt">
+>;
+
 export type AdminUserRole = "ADMIN" | "USER";
 export interface AdminUser {
   id: string;
@@ -157,6 +176,7 @@ const adminApi = createApi({
     "AdminBooking",
     "AdminReport",
     "AdminUser",
+    "AdminSettings",
   ],
   endpoints: (build) => ({
     getAdminVenues: build.query<AdminVenue[], void>({
@@ -327,6 +347,41 @@ const adminApi = createApi({
       // Setelah berhasil, daftar user otomatis diambil ulang
       invalidatesTags: ["AdminUser"],
     }),
+    getAdminSettings: build.query<AdminSettings, void>({
+      query: () => "/api/admin/settings",
+      transformResponse: (res: { data: AdminSettings }) => res.data,
+      providesTags: ["AdminSettings"],
+    }),
+
+    updateAdminSettings: build.mutation<AdminSettings, UpdateSettingsBody>({
+      query: (body) => ({
+        url: "/api/admin/settings",
+        method: "PATCH",
+        body,
+      }),
+      transformResponse: (res: { data: AdminSettings }) => res.data,
+      invalidatesTags: ["AdminSettings"],
+      // Isi cache langsung dengan hasil simpan, supaya form tidak kembali
+      // ke nilai lama selagi data diambil ulang.
+      async onQueryStarted(_body, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+
+          dispatch(
+            adminApi.util.updateQueryData(
+              "getAdminSettings",
+              undefined,
+              (cached) => {
+                Object.assign(cached, data);
+              },
+            ),
+          );
+        } catch {
+          // Gagal simpan: cache dibiarkan, pesan error diurus pemanggil.
+        }
+      },
+    }),
+
     updateBookingStatus: build.mutation<
       AdminBooking,
       { bookingId: string; status: string }
@@ -361,6 +416,8 @@ export const {
   useGetAdminReportQuery,
   useGetAdminUsersQuery,
   useUpdateUserRoleMutation,
+  useGetAdminSettingsQuery,
+  useUpdateAdminSettingsMutation,
 } = adminApi;
 
 export default adminApi;

@@ -30,12 +30,16 @@ export type BookingAvgAggregateOutputType = {
   durationHour: number | null
   pricePerHour: number | null
   totalPrice: number | null
+  taxPercent: number | null
+  taxAmount: number | null
 }
 
 export type BookingSumAggregateOutputType = {
   durationHour: number | null
   pricePerHour: number | null
   totalPrice: number | null
+  taxPercent: number | null
+  taxAmount: number | null
 }
 
 export type BookingMinAggregateOutputType = {
@@ -49,6 +53,8 @@ export type BookingMinAggregateOutputType = {
   durationHour: number | null
   pricePerHour: number | null
   totalPrice: number | null
+  taxPercent: number | null
+  taxAmount: number | null
   status: string | null
   notes: string | null
   createdAt: Date | null
@@ -66,6 +72,8 @@ export type BookingMaxAggregateOutputType = {
   durationHour: number | null
   pricePerHour: number | null
   totalPrice: number | null
+  taxPercent: number | null
+  taxAmount: number | null
   status: string | null
   notes: string | null
   createdAt: Date | null
@@ -83,6 +91,8 @@ export type BookingCountAggregateOutputType = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent: number
+  taxAmount: number
   status: number
   notes: number
   createdAt: number
@@ -95,12 +105,16 @@ export type BookingAvgAggregateInputType = {
   durationHour?: true
   pricePerHour?: true
   totalPrice?: true
+  taxPercent?: true
+  taxAmount?: true
 }
 
 export type BookingSumAggregateInputType = {
   durationHour?: true
   pricePerHour?: true
   totalPrice?: true
+  taxPercent?: true
+  taxAmount?: true
 }
 
 export type BookingMinAggregateInputType = {
@@ -114,6 +128,8 @@ export type BookingMinAggregateInputType = {
   durationHour?: true
   pricePerHour?: true
   totalPrice?: true
+  taxPercent?: true
+  taxAmount?: true
   status?: true
   notes?: true
   createdAt?: true
@@ -131,6 +147,8 @@ export type BookingMaxAggregateInputType = {
   durationHour?: true
   pricePerHour?: true
   totalPrice?: true
+  taxPercent?: true
+  taxAmount?: true
   status?: true
   notes?: true
   createdAt?: true
@@ -148,6 +166,8 @@ export type BookingCountAggregateInputType = {
   durationHour?: true
   pricePerHour?: true
   totalPrice?: true
+  taxPercent?: true
+  taxAmount?: true
   status?: true
   notes?: true
   createdAt?: true
@@ -252,6 +272,8 @@ export type BookingGroupByOutputType = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent: number
+  taxAmount: number
   status: string
   notes: string | null
   createdAt: Date
@@ -292,6 +314,8 @@ export type BookingWhereInput = {
   durationHour?: Prisma.IntFilter<"Booking"> | number
   pricePerHour?: Prisma.IntFilter<"Booking"> | number
   totalPrice?: Prisma.IntFilter<"Booking"> | number
+  taxPercent?: Prisma.IntFilter<"Booking"> | number
+  taxAmount?: Prisma.IntFilter<"Booking"> | number
   status?: Prisma.StringFilter<"Booking"> | string
   notes?: Prisma.StringNullableFilter<"Booking"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Booking"> | Date | string
@@ -313,6 +337,8 @@ export type BookingOrderByWithRelationInput = {
   durationHour?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
+  taxAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -337,6 +363,8 @@ export type BookingWhereUniqueInput = Prisma.AtLeast<{
   durationHour?: Prisma.IntFilter<"Booking"> | number
   pricePerHour?: Prisma.IntFilter<"Booking"> | number
   totalPrice?: Prisma.IntFilter<"Booking"> | number
+  taxPercent?: Prisma.IntFilter<"Booking"> | number
+  taxAmount?: Prisma.IntFilter<"Booking"> | number
   status?: Prisma.StringFilter<"Booking"> | string
   notes?: Prisma.StringNullableFilter<"Booking"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Booking"> | Date | string
@@ -358,6 +386,8 @@ export type BookingOrderByWithAggregationInput = {
   durationHour?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
+  taxAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -383,6 +413,8 @@ export type BookingScalarWhereWithAggregatesInput = {
   durationHour?: Prisma.IntWithAggregatesFilter<"Booking"> | number
   pricePerHour?: Prisma.IntWithAggregatesFilter<"Booking"> | number
   totalPrice?: Prisma.IntWithAggregatesFilter<"Booking"> | number
+  taxPercent?: Prisma.IntWithAggregatesFilter<"Booking"> | number
+  taxAmount?: Prisma.IntWithAggregatesFilter<"Booking"> | number
   status?: Prisma.StringWithAggregatesFilter<"Booking"> | string
   notes?: Prisma.StringNullableWithAggregatesFilter<"Booking"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Booking"> | Date | string
@@ -398,6 +430,8 @@ export type BookingCreateInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -419,6 +453,8 @@ export type BookingUncheckedCreateInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -436,6 +472,8 @@ export type BookingUpdateInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -457,6 +495,8 @@ export type BookingUncheckedUpdateInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -476,6 +516,8 @@ export type BookingCreateManyInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -491,6 +533,8 @@ export type BookingUpdateManyMutationInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -508,6 +552,8 @@ export type BookingUncheckedUpdateManyInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -540,6 +586,8 @@ export type BookingCountOrderByAggregateInput = {
   durationHour?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
+  taxAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -550,6 +598,8 @@ export type BookingAvgOrderByAggregateInput = {
   durationHour?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
+  taxAmount?: Prisma.SortOrder
 }
 
 export type BookingMaxOrderByAggregateInput = {
@@ -563,6 +613,8 @@ export type BookingMaxOrderByAggregateInput = {
   durationHour?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
+  taxAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -580,6 +632,8 @@ export type BookingMinOrderByAggregateInput = {
   durationHour?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
+  taxAmount?: Prisma.SortOrder
   status?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -590,6 +644,8 @@ export type BookingSumOrderByAggregateInput = {
   durationHour?: Prisma.SortOrder
   pricePerHour?: Prisma.SortOrder
   totalPrice?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
+  taxAmount?: Prisma.SortOrder
 }
 
 export type BookingCreateNestedManyWithoutCourtInput = {
@@ -713,6 +769,8 @@ export type BookingCreateWithoutCourtInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -732,6 +790,8 @@ export type BookingUncheckedCreateWithoutCourtInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -780,6 +840,8 @@ export type BookingScalarWhereInput = {
   durationHour?: Prisma.IntFilter<"Booking"> | number
   pricePerHour?: Prisma.IntFilter<"Booking"> | number
   totalPrice?: Prisma.IntFilter<"Booking"> | number
+  taxPercent?: Prisma.IntFilter<"Booking"> | number
+  taxAmount?: Prisma.IntFilter<"Booking"> | number
   status?: Prisma.StringFilter<"Booking"> | string
   notes?: Prisma.StringNullableFilter<"Booking"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Booking"> | Date | string
@@ -795,6 +857,8 @@ export type BookingCreateWithoutUserInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -814,6 +878,8 @@ export type BookingUncheckedCreateWithoutUserInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -857,6 +923,8 @@ export type BookingCreateWithoutEquipmentsInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -877,6 +945,8 @@ export type BookingUncheckedCreateWithoutEquipmentsInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -909,6 +979,8 @@ export type BookingUpdateWithoutEquipmentsInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -929,6 +1001,8 @@ export type BookingUncheckedUpdateWithoutEquipmentsInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -945,6 +1019,8 @@ export type BookingCreateWithoutPaymentInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -965,6 +1041,8 @@ export type BookingUncheckedCreateWithoutPaymentInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -997,6 +1075,8 @@ export type BookingUpdateWithoutPaymentInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1017,6 +1097,8 @@ export type BookingUncheckedUpdateWithoutPaymentInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1034,6 +1116,8 @@ export type BookingCreateManyCourtInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -1049,6 +1133,8 @@ export type BookingUpdateWithoutCourtInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1068,6 +1154,8 @@ export type BookingUncheckedUpdateWithoutCourtInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1086,6 +1174,8 @@ export type BookingUncheckedUpdateManyWithoutCourtInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1102,6 +1192,8 @@ export type BookingCreateManyUserInput = {
   durationHour: number
   pricePerHour: number
   totalPrice: number
+  taxPercent?: number
+  taxAmount?: number
   status?: string
   notes?: string | null
   createdAt?: Date | string
@@ -1117,6 +1209,8 @@ export type BookingUpdateWithoutUserInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1136,6 +1230,8 @@ export type BookingUncheckedUpdateWithoutUserInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1154,6 +1250,8 @@ export type BookingUncheckedUpdateManyWithoutUserInput = {
   durationHour?: Prisma.IntFieldUpdateOperationsInput | number
   pricePerHour?: Prisma.IntFieldUpdateOperationsInput | number
   totalPrice?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
+  taxAmount?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.StringFieldUpdateOperationsInput | string
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1202,6 +1300,8 @@ export type BookingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   durationHour?: boolean
   pricePerHour?: boolean
   totalPrice?: boolean
+  taxPercent?: boolean
+  taxAmount?: boolean
   status?: boolean
   notes?: boolean
   createdAt?: boolean
@@ -1224,6 +1324,8 @@ export type BookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   durationHour?: boolean
   pricePerHour?: boolean
   totalPrice?: boolean
+  taxPercent?: boolean
+  taxAmount?: boolean
   status?: boolean
   notes?: boolean
   createdAt?: boolean
@@ -1243,6 +1345,8 @@ export type BookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   durationHour?: boolean
   pricePerHour?: boolean
   totalPrice?: boolean
+  taxPercent?: boolean
+  taxAmount?: boolean
   status?: boolean
   notes?: boolean
   createdAt?: boolean
@@ -1262,13 +1366,15 @@ export type BookingSelectScalar = {
   durationHour?: boolean
   pricePerHour?: boolean
   totalPrice?: boolean
+  taxPercent?: boolean
+  taxAmount?: boolean
   status?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderCode" | "courtId" | "userId" | "playDate" | "startTime" | "endTime" | "durationHour" | "pricePerHour" | "totalPrice" | "status" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
+export type BookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderCode" | "courtId" | "userId" | "playDate" | "startTime" | "endTime" | "durationHour" | "pricePerHour" | "totalPrice" | "taxPercent" | "taxAmount" | "status" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["booking"]>
 export type BookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   payment?: boolean | Prisma.Booking$paymentArgs<ExtArgs>
   equipments?: boolean | Prisma.Booking$equipmentsArgs<ExtArgs>
@@ -1304,6 +1410,8 @@ export type $BookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     durationHour: number
     pricePerHour: number
     totalPrice: number
+    taxPercent: number
+    taxAmount: number
     status: string
     notes: string | null
     createdAt: Date
@@ -1745,6 +1853,8 @@ export interface BookingFieldRefs {
   readonly durationHour: Prisma.FieldRef<"Booking", 'Int'>
   readonly pricePerHour: Prisma.FieldRef<"Booking", 'Int'>
   readonly totalPrice: Prisma.FieldRef<"Booking", 'Int'>
+  readonly taxPercent: Prisma.FieldRef<"Booking", 'Int'>
+  readonly taxAmount: Prisma.FieldRef<"Booking", 'Int'>
   readonly status: Prisma.FieldRef<"Booking", 'String'>
   readonly notes: Prisma.FieldRef<"Booking", 'String'>
   readonly createdAt: Prisma.FieldRef<"Booking", 'DateTime'>

@@ -20,24 +20,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DEFAULT_PAYMENT_SETTINGS,
-  PAYMENT_WINDOW_OPTIONS,
-} from "@/lib/settings";
+import type { AdminSettings } from "@/lib/redux/admin-api";
+import { PAYMENT_WINDOW_OPTIONS } from "@/lib/settings";
 
-const paymentWindowOptions = PAYMENT_WINDOW_OPTIONS.map((option) => ({
-  value: option.value,
-  label: option.label,
-}));
+// Field pembayaran yang dipakai form ini.
+type PaymentValues = Pick<
+  AdminSettings,
+  "paymentWindowMinutes" | "taxPercent"
+>;
 
-export function PaymentSection() {
-  const payment = DEFAULT_PAYMENT_SETTINGS;
+type PaymentSectionProps = {
+  values: PaymentValues;
+  onChange: (patch: Partial<PaymentValues>) => void;
+};
 
+// Mengubah isi input menjadi angka.
+// Kalau input kosong, pakai nilai cadangan.
+function toNumber(value: string, fallback: number) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
+
+export function PaymentSection({ values, onChange }: PaymentSectionProps) {
   return (
     <SettingsSection
       icon={CreditCard}
       title="Pembayaran"
-      description="Batas waktu dan biaya tambahan pada pembayaran."
+      description="Batas waktu dan pajak pada pembayaran."
     >
       <FieldGroup>
         <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-xs text-sky-900">
@@ -53,83 +62,72 @@ export function PaymentSection() {
           >
             Batas waktu pembayaran
           </FieldLabel>
+
+          {/* Nilai disimpan sebagai angka, tapi Select memakai teks. */}
           <Select
-            items={paymentWindowOptions}
-            defaultValue={payment.paymentWindow}
+            items={PAYMENT_WINDOW_OPTIONS}
+            value={String(values.paymentWindowMinutes)}
+            onValueChange={(value) => {
+              if (!value) return;
+              onChange({ paymentWindowMinutes: Number(value) });
+            }}
           >
             <SelectTrigger id="payment-window" className="h-9 w-full bg-white">
               <SelectValue />
             </SelectTrigger>
+
             <SelectContent>
-              {paymentWindowOptions.map((option) => (
+              {PAYMENT_WINDOW_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+
           <FieldDescription className="text-xs text-slate-500">
-            Booking yang belum dibayar setelah batas ini tidak bisa dilanjutkan.
+            Booking yang belum dibayar setelah batas ini otomatis dibatalkan dan
+            slotnya dilepas.
           </FieldDescription>
         </Field>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field>
-            <FieldLabel
-              htmlFor="tax"
-              className="text-xs font-semibold text-slate-700"
-            >
-              Pajak / PPN
-            </FieldLabel>
-            <InputGroup className="h-9 bg-white">
-              <InputGroupInput
-                id="tax"
-                type="number"
-                min={0}
-                max={100}
-                defaultValue={payment.taxPercent}
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupText className="text-xs font-semibold text-slate-400">
-                  %
-                </InputGroupText>
-              </InputGroupAddon>
-            </InputGroup>
-            <FieldDescription className="text-xs text-slate-500">
-              Ditambahkan ke total pembayaran.
-            </FieldDescription>
-          </Field>
+        <Field>
+          <FieldLabel
+            htmlFor="tax"
+            className="text-xs font-semibold text-slate-700"
+          >
+            Pajak / PPN
+          </FieldLabel>
 
-          <Field>
-            <FieldLabel
-              htmlFor="down-payment"
-              className="text-xs font-semibold text-slate-700"
-            >
-              Uang muka
-            </FieldLabel>
-            <InputGroup className="h-9 bg-white">
-              <InputGroupInput
-                id="down-payment"
-                type="number"
-                min={0}
-                max={100}
-                defaultValue={payment.downPaymentPercent}
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupText className="text-xs font-semibold text-slate-400">
-                  %
-                </InputGroupText>
-              </InputGroupAddon>
-            </InputGroup>
-            <FieldDescription className="text-xs text-slate-500">
-              Persentase dari total booking.
-            </FieldDescription>
-          </Field>
-        </div>
+          <InputGroup className="h-9 bg-white">
+            <InputGroupInput
+              id="tax"
+              type="number"
+              min={0}
+              max={100}
+              value={String(values.taxPercent ?? 0)}
+              onChange={(event) =>
+                onChange({
+                  taxPercent: toNumber(event.target.value, values.taxPercent ?? 0),
+                })
+              }
+            />
+
+            <InputGroupAddon align="inline-end">
+              <InputGroupText className="text-xs font-semibold text-slate-400">
+                %
+              </InputGroupText>
+            </InputGroupAddon>
+          </InputGroup>
+
+          <FieldDescription className="text-xs text-slate-500">
+            Ditambahkan ke total booking saat pelanggan memesan. Contoh: total
+            Rp200.000 dengan pajak 11% menjadi Rp222.000.
+          </FieldDescription>
+        </Field>
 
         <FieldDescription className="text-xs text-amber-700">
-          Pajak dan uang muka belum dihitung ke total booking. Isian ini
-          disiapkan untuk tahap berikutnya.
+          Uang muka belum dipakai. Pembayaran saat ini selalu penuh.
         </FieldDescription>
       </FieldGroup>
     </SettingsSection>

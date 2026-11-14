@@ -1,9 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
 
-// Batas waktu user menyelesaikan pembayaran sebelum slot dilepas kembali.
-export const BOOKING_HOLD_MS = 10 * 60 * 1000;
-
 // Objek reusable untuk menentukan kolom apa saja yang diambil dari tabel Booking
 const bookingSelect = {
   id: true,
@@ -15,6 +12,8 @@ const bookingSelect = {
   durationHour: true,
   pricePerHour: true,
   totalPrice: true,
+  taxPercent: true,
+  taxAmount: true,
   status: true,
   notes: true,
   createdAt: true,
@@ -136,6 +135,8 @@ export function insertBooking(
     durationHour: number;
     pricePerHour: number;
     totalPrice: number;
+    taxPercent: number;
+    taxAmount: number;
     notes?: string | null;
     equipments: {
       equipmentId: string;
@@ -166,10 +167,11 @@ export function insertBooking(
 // Booking dengan pembayaran PENDING sengaja dibiarkan agar tidak
 // menabrak pembayaran yang masih diproses.
 export function cancelExpiredBookings(
+  holdMs:number,
   tx: Prisma.TransactionClient | typeof prisma = prisma,
   now = new Date(),
 ) {
-  const holdCutoff = new Date(now.getTime() - BOOKING_HOLD_MS);
+  const holdCutoff = new Date(now.getTime() - holdMs);
 
   return tx.booking.updateMany({
     where: {

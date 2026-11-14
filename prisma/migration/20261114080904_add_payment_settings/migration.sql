@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Booking" ADD COLUMN     "taxAmount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "taxPercent" INTEGER NOT NULL DEFAULT 0;

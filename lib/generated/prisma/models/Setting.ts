@@ -29,12 +29,16 @@ export type AggregateSetting = {
 export type SettingAvgAggregateOutputType = {
   minSessionHours: number | null
   maxSessionHours: number | null
+  paymentWindowMinutes: number | null
+  taxPercent: number | null
   maxAdvanceDays: number | null
 }
 
 export type SettingSumAggregateOutputType = {
   minSessionHours: number | null
   maxSessionHours: number | null
+  paymentWindowMinutes: number | null
+  taxPercent: number | null
   maxAdvanceDays: number | null
 }
 
@@ -44,6 +48,8 @@ export type SettingMinAggregateOutputType = {
   maxSessionHours: number | null
   openTime: string | null
   closeTime: string | null
+  paymentWindowMinutes: number | null
+  taxPercent: number | null
   allowSameDayBooking: boolean | null
   maxAdvanceDays: number | null
   cancellationPolicy: string | null
@@ -57,6 +63,8 @@ export type SettingMaxAggregateOutputType = {
   maxSessionHours: number | null
   openTime: string | null
   closeTime: string | null
+  paymentWindowMinutes: number | null
+  taxPercent: number | null
   allowSameDayBooking: boolean | null
   maxAdvanceDays: number | null
   cancellationPolicy: string | null
@@ -70,6 +78,8 @@ export type SettingCountAggregateOutputType = {
   maxSessionHours: number
   openTime: number
   closeTime: number
+  paymentWindowMinutes: number
+  taxPercent: number
   allowSameDayBooking: number
   maxAdvanceDays: number
   cancellationPolicy: number
@@ -82,12 +92,16 @@ export type SettingCountAggregateOutputType = {
 export type SettingAvgAggregateInputType = {
   minSessionHours?: true
   maxSessionHours?: true
+  paymentWindowMinutes?: true
+  taxPercent?: true
   maxAdvanceDays?: true
 }
 
 export type SettingSumAggregateInputType = {
   minSessionHours?: true
   maxSessionHours?: true
+  paymentWindowMinutes?: true
+  taxPercent?: true
   maxAdvanceDays?: true
 }
 
@@ -97,6 +111,8 @@ export type SettingMinAggregateInputType = {
   maxSessionHours?: true
   openTime?: true
   closeTime?: true
+  paymentWindowMinutes?: true
+  taxPercent?: true
   allowSameDayBooking?: true
   maxAdvanceDays?: true
   cancellationPolicy?: true
@@ -110,6 +126,8 @@ export type SettingMaxAggregateInputType = {
   maxSessionHours?: true
   openTime?: true
   closeTime?: true
+  paymentWindowMinutes?: true
+  taxPercent?: true
   allowSameDayBooking?: true
   maxAdvanceDays?: true
   cancellationPolicy?: true
@@ -123,6 +141,8 @@ export type SettingCountAggregateInputType = {
   maxSessionHours?: true
   openTime?: true
   closeTime?: true
+  paymentWindowMinutes?: true
+  taxPercent?: true
   allowSameDayBooking?: true
   maxAdvanceDays?: true
   cancellationPolicy?: true
@@ -223,6 +243,8 @@ export type SettingGroupByOutputType = {
   maxSessionHours: number
   openTime: string
   closeTime: string
+  paymentWindowMinutes: number
+  taxPercent: number
   allowSameDayBooking: boolean
   maxAdvanceDays: number
   cancellationPolicy: string
@@ -259,6 +281,8 @@ export type SettingWhereInput = {
   maxSessionHours?: Prisma.IntFilter<"Setting"> | number
   openTime?: Prisma.StringFilter<"Setting"> | string
   closeTime?: Prisma.StringFilter<"Setting"> | string
+  paymentWindowMinutes?: Prisma.IntFilter<"Setting"> | number
+  taxPercent?: Prisma.IntFilter<"Setting"> | number
   allowSameDayBooking?: Prisma.BoolFilter<"Setting"> | boolean
   maxAdvanceDays?: Prisma.IntFilter<"Setting"> | number
   cancellationPolicy?: Prisma.StringFilter<"Setting"> | string
@@ -272,6 +296,8 @@ export type SettingOrderByWithRelationInput = {
   maxSessionHours?: Prisma.SortOrder
   openTime?: Prisma.SortOrder
   closeTime?: Prisma.SortOrder
+  paymentWindowMinutes?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
   allowSameDayBooking?: Prisma.SortOrder
   maxAdvanceDays?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrder
@@ -288,6 +314,8 @@ export type SettingWhereUniqueInput = Prisma.AtLeast<{
   maxSessionHours?: Prisma.IntFilter<"Setting"> | number
   openTime?: Prisma.StringFilter<"Setting"> | string
   closeTime?: Prisma.StringFilter<"Setting"> | string
+  paymentWindowMinutes?: Prisma.IntFilter<"Setting"> | number
+  taxPercent?: Prisma.IntFilter<"Setting"> | number
   allowSameDayBooking?: Prisma.BoolFilter<"Setting"> | boolean
   maxAdvanceDays?: Prisma.IntFilter<"Setting"> | number
   cancellationPolicy?: Prisma.StringFilter<"Setting"> | string
@@ -301,6 +329,8 @@ export type SettingOrderByWithAggregationInput = {
   maxSessionHours?: Prisma.SortOrder
   openTime?: Prisma.SortOrder
   closeTime?: Prisma.SortOrder
+  paymentWindowMinutes?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
   allowSameDayBooking?: Prisma.SortOrder
   maxAdvanceDays?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrder
@@ -322,6 +352,8 @@ export type SettingScalarWhereWithAggregatesInput = {
   maxSessionHours?: Prisma.IntWithAggregatesFilter<"Setting"> | number
   openTime?: Prisma.StringWithAggregatesFilter<"Setting"> | string
   closeTime?: Prisma.StringWithAggregatesFilter<"Setting"> | string
+  paymentWindowMinutes?: Prisma.IntWithAggregatesFilter<"Setting"> | number
+  taxPercent?: Prisma.IntWithAggregatesFilter<"Setting"> | number
   allowSameDayBooking?: Prisma.BoolWithAggregatesFilter<"Setting"> | boolean
   maxAdvanceDays?: Prisma.IntWithAggregatesFilter<"Setting"> | number
   cancellationPolicy?: Prisma.StringWithAggregatesFilter<"Setting"> | string
@@ -335,6 +367,8 @@ export type SettingCreateInput = {
   maxSessionHours?: number
   openTime?: string
   closeTime?: string
+  paymentWindowMinutes?: number
+  taxPercent?: number
   allowSameDayBooking?: boolean
   maxAdvanceDays?: number
   cancellationPolicy?: string
@@ -348,6 +382,8 @@ export type SettingUncheckedCreateInput = {
   maxSessionHours?: number
   openTime?: string
   closeTime?: string
+  paymentWindowMinutes?: number
+  taxPercent?: number
   allowSameDayBooking?: boolean
   maxAdvanceDays?: number
   cancellationPolicy?: string
@@ -361,6 +397,8 @@ export type SettingUpdateInput = {
   maxSessionHours?: Prisma.IntFieldUpdateOperationsInput | number
   openTime?: Prisma.StringFieldUpdateOperationsInput | string
   closeTime?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentWindowMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
   allowSameDayBooking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   maxAdvanceDays?: Prisma.IntFieldUpdateOperationsInput | number
   cancellationPolicy?: Prisma.StringFieldUpdateOperationsInput | string
@@ -374,6 +412,8 @@ export type SettingUncheckedUpdateInput = {
   maxSessionHours?: Prisma.IntFieldUpdateOperationsInput | number
   openTime?: Prisma.StringFieldUpdateOperationsInput | string
   closeTime?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentWindowMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
   allowSameDayBooking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   maxAdvanceDays?: Prisma.IntFieldUpdateOperationsInput | number
   cancellationPolicy?: Prisma.StringFieldUpdateOperationsInput | string
@@ -387,6 +427,8 @@ export type SettingCreateManyInput = {
   maxSessionHours?: number
   openTime?: string
   closeTime?: string
+  paymentWindowMinutes?: number
+  taxPercent?: number
   allowSameDayBooking?: boolean
   maxAdvanceDays?: number
   cancellationPolicy?: string
@@ -400,6 +442,8 @@ export type SettingUpdateManyMutationInput = {
   maxSessionHours?: Prisma.IntFieldUpdateOperationsInput | number
   openTime?: Prisma.StringFieldUpdateOperationsInput | string
   closeTime?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentWindowMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
   allowSameDayBooking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   maxAdvanceDays?: Prisma.IntFieldUpdateOperationsInput | number
   cancellationPolicy?: Prisma.StringFieldUpdateOperationsInput | string
@@ -413,6 +457,8 @@ export type SettingUncheckedUpdateManyInput = {
   maxSessionHours?: Prisma.IntFieldUpdateOperationsInput | number
   openTime?: Prisma.StringFieldUpdateOperationsInput | string
   closeTime?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentWindowMinutes?: Prisma.IntFieldUpdateOperationsInput | number
+  taxPercent?: Prisma.IntFieldUpdateOperationsInput | number
   allowSameDayBooking?: Prisma.BoolFieldUpdateOperationsInput | boolean
   maxAdvanceDays?: Prisma.IntFieldUpdateOperationsInput | number
   cancellationPolicy?: Prisma.StringFieldUpdateOperationsInput | string
@@ -426,6 +472,8 @@ export type SettingCountOrderByAggregateInput = {
   maxSessionHours?: Prisma.SortOrder
   openTime?: Prisma.SortOrder
   closeTime?: Prisma.SortOrder
+  paymentWindowMinutes?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
   allowSameDayBooking?: Prisma.SortOrder
   maxAdvanceDays?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrder
@@ -436,6 +484,8 @@ export type SettingCountOrderByAggregateInput = {
 export type SettingAvgOrderByAggregateInput = {
   minSessionHours?: Prisma.SortOrder
   maxSessionHours?: Prisma.SortOrder
+  paymentWindowMinutes?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
   maxAdvanceDays?: Prisma.SortOrder
 }
 
@@ -445,6 +495,8 @@ export type SettingMaxOrderByAggregateInput = {
   maxSessionHours?: Prisma.SortOrder
   openTime?: Prisma.SortOrder
   closeTime?: Prisma.SortOrder
+  paymentWindowMinutes?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
   allowSameDayBooking?: Prisma.SortOrder
   maxAdvanceDays?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrder
@@ -458,6 +510,8 @@ export type SettingMinOrderByAggregateInput = {
   maxSessionHours?: Prisma.SortOrder
   openTime?: Prisma.SortOrder
   closeTime?: Prisma.SortOrder
+  paymentWindowMinutes?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
   allowSameDayBooking?: Prisma.SortOrder
   maxAdvanceDays?: Prisma.SortOrder
   cancellationPolicy?: Prisma.SortOrder
@@ -468,6 +522,8 @@ export type SettingMinOrderByAggregateInput = {
 export type SettingSumOrderByAggregateInput = {
   minSessionHours?: Prisma.SortOrder
   maxSessionHours?: Prisma.SortOrder
+  paymentWindowMinutes?: Prisma.SortOrder
+  taxPercent?: Prisma.SortOrder
   maxAdvanceDays?: Prisma.SortOrder
 }
 
@@ -479,6 +535,8 @@ export type SettingSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   maxSessionHours?: boolean
   openTime?: boolean
   closeTime?: boolean
+  paymentWindowMinutes?: boolean
+  taxPercent?: boolean
   allowSameDayBooking?: boolean
   maxAdvanceDays?: boolean
   cancellationPolicy?: boolean
@@ -492,6 +550,8 @@ export type SettingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   maxSessionHours?: boolean
   openTime?: boolean
   closeTime?: boolean
+  paymentWindowMinutes?: boolean
+  taxPercent?: boolean
   allowSameDayBooking?: boolean
   maxAdvanceDays?: boolean
   cancellationPolicy?: boolean
@@ -505,6 +565,8 @@ export type SettingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   maxSessionHours?: boolean
   openTime?: boolean
   closeTime?: boolean
+  paymentWindowMinutes?: boolean
+  taxPercent?: boolean
   allowSameDayBooking?: boolean
   maxAdvanceDays?: boolean
   cancellationPolicy?: boolean
@@ -518,6 +580,8 @@ export type SettingSelectScalar = {
   maxSessionHours?: boolean
   openTime?: boolean
   closeTime?: boolean
+  paymentWindowMinutes?: boolean
+  taxPercent?: boolean
   allowSameDayBooking?: boolean
   maxAdvanceDays?: boolean
   cancellationPolicy?: boolean
@@ -525,7 +589,7 @@ export type SettingSelectScalar = {
   updatedAt?: boolean
 }
 
-export type SettingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "minSessionHours" | "maxSessionHours" | "openTime" | "closeTime" | "allowSameDayBooking" | "maxAdvanceDays" | "cancellationPolicy" | "createdAt" | "updatedAt", ExtArgs["result"]["setting"]>
+export type SettingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "minSessionHours" | "maxSessionHours" | "openTime" | "closeTime" | "paymentWindowMinutes" | "taxPercent" | "allowSameDayBooking" | "maxAdvanceDays" | "cancellationPolicy" | "createdAt" | "updatedAt", ExtArgs["result"]["setting"]>
 
 export type $SettingPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Setting"
@@ -536,6 +600,8 @@ export type $SettingPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     maxSessionHours: number
     openTime: string
     closeTime: string
+    paymentWindowMinutes: number
+    taxPercent: number
     allowSameDayBooking: boolean
     maxAdvanceDays: number
     cancellationPolicy: string
@@ -969,6 +1035,8 @@ export interface SettingFieldRefs {
   readonly maxSessionHours: Prisma.FieldRef<"Setting", 'Int'>
   readonly openTime: Prisma.FieldRef<"Setting", 'String'>
   readonly closeTime: Prisma.FieldRef<"Setting", 'String'>
+  readonly paymentWindowMinutes: Prisma.FieldRef<"Setting", 'Int'>
+  readonly taxPercent: Prisma.FieldRef<"Setting", 'Int'>
   readonly allowSameDayBooking: Prisma.FieldRef<"Setting", 'Boolean'>
   readonly maxAdvanceDays: Prisma.FieldRef<"Setting", 'Int'>
   readonly cancellationPolicy: Prisma.FieldRef<"Setting", 'String'>

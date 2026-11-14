@@ -155,7 +155,9 @@ export function VenueBookingWidget({
         <p className="text-xs font-semibold">Court Selection</p>
         <Select value={courtId} onValueChange={(v) => setCourtId(v ?? "")}>
           <SelectTrigger className="h-10 w-full bg-slate-50 text-sm">
-            <SelectValue />
+            <SelectValue placeholder="Pilih lapangan">
+              {activeCourt?.label}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {activeSport.courts.map((c) => (
@@ -207,7 +209,9 @@ export function VenueBookingWidget({
         <p className="text-xs font-semibold">Session Duration</p>
         <Select value={duration} onValueChange={(v) => setDuration(v ?? "")}>
           <SelectTrigger className="h-10 w-full bg-slate-50 text-sm">
-            <SelectValue />
+            <SelectValue placeholder="Pilih durasi">
+              {duration}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {sessionDurations.map((d) => (

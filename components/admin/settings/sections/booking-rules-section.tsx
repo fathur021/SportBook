@@ -1,7 +1,6 @@
 import { CalendarClock } from "lucide-react";
 
 import { SettingsSection } from "@/components/admin/settings/settings-section";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
   FieldDescription,
@@ -23,14 +22,37 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import {
-  CANCELLATION_POLICY_OPTIONS,
-  DEFAULT_BOOKING_RULES,
-  SESSION_DURATION_OPTIONS,
-} from "@/lib/settings";
+import type { AdminSettings } from "@/lib/redux/admin-api";
+import { CANCELLATION_POLICY_OPTIONS } from "@/lib/settings";
 
-export function BookingRulesSection() {
-  const rules = DEFAULT_BOOKING_RULES;
+// Field aturan booking yang dipakai form ini.
+type BookingRulesValues = Pick<
+  AdminSettings,
+  | "minSessionHours"
+  | "maxSessionHours"
+  | "allowSameDayBooking"
+  | "maxAdvanceDays"
+  | "cancellationPolicy"
+>;
+
+type BookingRulesSectionProps = {
+  values: BookingRulesValues;
+  onChange: (patch: Partial<BookingRulesValues>) => void;
+};
+
+// Mengubah isi input menjadi angka.
+// Kalau input kosong, pakai nilai cadangan.
+function toNumber(value: string, fallback: number) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
+
+export function BookingRulesSection({
+  values,
+  onChange,
+}: BookingRulesSectionProps) {
+  // Peringatan kalau batas durasi saling bertentangan.
+  const isDurationInvalid = values.maxSessionHours < values.minSessionHours;
 
   return (
     <SettingsSection
@@ -41,26 +63,77 @@ export function BookingRulesSection() {
       <FieldGroup>
         <Field>
           <FieldLabel className="text-xs font-semibold text-slate-700">
-            Durasi sesi yang tersedia
+            Durasi sesi
           </FieldLabel>
-          <div className="flex flex-wrap gap-2">
-            {SESSION_DURATION_OPTIONS.map((duration) => (
-              <Label
-                key={duration.id}
-                htmlFor={duration.id}
-                className="cursor-pointer gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-normal text-slate-700 transition-colors hover:border-emerald-300"
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel
+                htmlFor="min-session-hours"
+                className="text-xs font-medium text-slate-600"
               >
-                <Checkbox
-                  id={duration.id}
-                  defaultChecked={duration.enabled}
-                  className="data-checked:border-emerald-600 data-checked:bg-emerald-600"
+                Minimal
+              </FieldLabel>
+              <InputGroup className="h-9 bg-white">
+                <InputGroupInput
+                  id="min-session-hours"
+                  type="number"
+                  min={1}
+                  max={12}
+                  value={values.minSessionHours}
+                  onChange={(event) =>
+                    onChange({
+                      minSessionHours: toNumber(
+                        event.target.value,
+                        values.minSessionHours,
+                      ),
+                    })
+                  }
                 />
-                {duration.label}
-              </Label>
-            ))}
+                <InputGroupAddon align="inline-end">
+                  <InputGroupText className="text-xs font-semibold text-slate-400">
+                    jam
+                  </InputGroupText>
+                </InputGroupAddon>
+              </InputGroup>
+            </Field>
+
+            <Field>
+              <FieldLabel
+                htmlFor="max-session-hours"
+                className="text-xs font-medium text-slate-600"
+              >
+                Maksimal
+              </FieldLabel>
+              <InputGroup className="h-9 bg-white">
+                <InputGroupInput
+                  id="max-session-hours"
+                  type="number"
+                  min={1}
+                  max={12}
+                  value={values.maxSessionHours}
+                  onChange={(event) =>
+                    onChange({
+                      maxSessionHours: toNumber(
+                        event.target.value,
+                        values.maxSessionHours,
+                      ),
+                    })
+                  }
+                />
+                <InputGroupAddon align="inline-end">
+                  <InputGroupText className="text-xs font-semibold text-slate-400">
+                    jam
+                  </InputGroupText>
+                </InputGroupAddon>
+              </InputGroup>
+            </Field>
           </div>
+
           <FieldDescription className="text-xs text-slate-500">
-            Pilih lebih dari satu jika pelanggan boleh memilih durasi.
+            {isDurationInvalid
+              ? "Durasi maksimal tidak boleh lebih kecil dari durasi minimal."
+              : `Pelanggan bisa memilih durasi ${values.minSessionHours} sampai ${values.maxSessionHours} jam.`}
           </FieldDescription>
         </Field>
 
@@ -78,7 +151,15 @@ export function BookingRulesSection() {
                 type="number"
                 min={1}
                 max={365}
-                defaultValue={rules.maxAdvanceDays}
+                value={values.maxAdvanceDays}
+                onChange={(event) =>
+                  onChange({
+                    maxAdvanceDays: toNumber(
+                      event.target.value,
+                      values.maxAdvanceDays,
+                    ),
+                  })
+                }
               />
               <InputGroupAddon align="inline-end">
                 <InputGroupText className="text-xs font-semibold text-slate-400">
@@ -100,7 +181,10 @@ export function BookingRulesSection() {
             </FieldLabel>
             <Select
               items={CANCELLATION_POLICY_OPTIONS}
-              defaultValue={rules.cancellationPolicy}
+              value={values.cancellationPolicy}
+              onValueChange={(value) =>
+                onChange({ cancellationPolicy: value ?? "" })
+              }
             >
               <SelectTrigger
                 id="cancellation-policy"
@@ -136,7 +220,10 @@ export function BookingRulesSection() {
           </span>
           <Switch
             id="same-day-booking"
-            defaultChecked={rules.allowSameDayBooking}
+            checked={values.allowSameDayBooking}
+            onCheckedChange={(checked) =>
+              onChange({ allowSameDayBooking: checked })
+            }
             className="data-checked:bg-emerald-600"
           />
         </Label>

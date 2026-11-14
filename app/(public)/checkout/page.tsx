@@ -86,10 +86,7 @@ export default async function CheckoutPage({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Kolom Kiri: Reservation Timer & Form Identitas/Pembayaran */}
           <div className="lg:col-span-7 flex flex-col gap-6">
-            <ReservationTimer
-              expiresAt={expiresAt}
-              totalMs={HOLD_MS}
-            />
+            <ReservationTimer expiresAt={expiresAt} totalMs={HOLD_MS} />
 
             <ContactDetailsCard user={contactUser} />
 
@@ -119,6 +116,8 @@ export default async function CheckoutPage({
               pricePerHour={booking.pricePerHour}
               equipmentList={equipmentList}
               totalPrice={booking.totalPrice}
+              taxPercent={booking.taxPercent}
+              taxAmount={booking.taxAmount}
             />
           </div>
         </div>

@@ -12,6 +12,7 @@ import {
   findAllBookings,
   findBookingByOrderCode,
   findBookingByPaymentId,
+  cancelExpiredBookings,
 } from "./booking.repository"; // import fungsi query dari repository
 import type { CreateBookingInput } from "./booking.schema"; // mengimport
 import { getSettingsService } from "../settings/settings.service";
@@ -201,6 +202,12 @@ export async function getAvailabilityService(
   // Ambil pengaturan global.
   const settings = await getSettingsService();
 
+  // Ubah batas waktu pembayaran dari menit ke milidetik.
+  // Contoh: 10 menit x 60 x 1000 = 600.000 milidetik.
+  const holdMs = settings.paymentWindowMinutes * 60 * 1000;
+  // Lepas slot dari booking yang hold-nya sudah habis.
+  await cancelExpiredBookings(holdMs);
+
   // Jam buka dalam menit.
   const openingMinutes = toMinutes(settings.openTime);
 
@@ -349,6 +356,11 @@ export async function createBookingService(
       throw new CourtNotFoundError();
     }
 
+    // Lepas slot yang hold-nya sudah habis sebelum cek bentrok.
+    // tx dipakai supaya ikut transaksi yang sama.
+    const holdMs = settings.paymentWindowMinutes * 60 * 1000;
+    await cancelExpiredBookings(holdMs, tx);
+
     // Ambil semua booking aktif pada lapangan dan tanggal yang sama.
     const conflicts = await findBookingConflictList(
       tx,
@@ -465,8 +477,16 @@ export async function createBookingService(
       0,
     );
 
-    // Total bayar = harga lapangan per jam x durasi + total equipment.
-    const totalPrice = court.pricePerHour * input.durationHour + equipmentTotal;
+    // Subtotal = sewa lapangan + equipment.
+    const courtTotal = court.pricePerHour * input.durationHour;
+    const subtotal = courtTotal + equipmentTotal;
+
+    // Pajak dihitung dari subtotal, lalu dibulatkan ke rupiah terdekat.
+    // Contoh: 200.000 x 11 / 100 = 22.000.
+    const taxAmount = Math.round((subtotal * settings.taxPercent) / 100);
+
+    // Total yang ditagih sudah termasuk pajak.
+    const totalPrice = subtotal + taxAmount;
 
     // Simpan booking ke database.
     // insertBooking mengembalikan data booking yang baru dibuat.
@@ -487,7 +507,10 @@ export async function createBookingService(
       durationHour: input.durationHour,
       // Harga per jam saat booking dibuat.
       pricePerHour: court.pricePerHour,
-      // Total yang harus dibayar.
+      // Simpan tarif dan nominal pajak saat booking dibuat.
+      taxPercent: settings.taxPercent,
+      taxAmount,
+      // Total yang harus dibayar, sudah termasuk pajak.
       totalPrice,
       // Catatan, kalau kosong simpan null.
       notes: input.notes ?? null,

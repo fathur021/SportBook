@@ -28,8 +28,10 @@ export async function updateSettingsService(input: UpdateSettingsInput) {
   const minSessionHours = input.minSessionHours ?? current.minSessionHours;
   const maxSessionHours = input.maxSessionHours ?? current.maxSessionHours;
 
-  const openTime = input.openTime ?? current.openTime;
-  const closeTIme = input.closeTime ?? current.closeTime;
+  // Gunakan nilai dari input jika ada dan bukan string kosong,否则 pakai nilai lama.
+  // || menangkap undefined, null, dan string kosong ("").
+  const openTime = input.openTime || current.openTime;
+  const closeTIme = input.closeTime || current.closeTime;
 
   // Maksimal tidak boleh lebih kecil dari minimal.
   if (maxSessionHours < minSessionHours) {

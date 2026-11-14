@@ -38,6 +38,8 @@ export type CheckoutSummaryProps = {
   pricePerHour: number;
   equipmentList?: SelectedEquipment[];
   totalPrice: number;
+  taxPercent?: number;
+  taxAmount?: number;
 };
 
 // Helper: Format tanggal "2023-10-24" -> "Tuesday, 24 Oct 2023"
@@ -81,6 +83,8 @@ export function CheckoutSummary({
   pricePerHour,
   equipmentList = [],
   totalPrice,
+  taxPercent = 0,
+  taxAmount = 0,
 }: CheckoutSummaryProps) {
   // 1. Kalkulasi biaya
   const courtRentalTotal = pricePerHour * durationHours;
@@ -95,9 +99,14 @@ export function CheckoutSummary({
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
               Booking Summary
             </span>
-            <h2 className="text-xl font-bold text-slate-900 mt-0.5">{venueName}</h2>
+            <h2 className="text-xl font-bold text-slate-900 mt-0.5">
+              {venueName}
+            </h2>
           </div>
-          <Badge variant="secondary" className="bg-sky-50 text-sky-700 font-semibold border-sky-200">
+          <Badge
+            variant="secondary"
+            className="bg-sky-50 text-sky-700 font-semibold border-sky-200"
+          >
             {sportLabel} {durationHours}h
           </Badge>
         </div>
@@ -146,7 +155,9 @@ export function CheckoutSummary({
         <div className="mt-4 rounded-xl bg-slate-50/80 p-3.5 space-y-2 border border-slate-100 text-xs text-slate-700">
           <div className="flex items-center gap-2.5">
             <Calendar className="h-4 w-4 text-emerald-600 shrink-0" />
-            <span className="font-medium text-slate-900">{formatFullDate(date)}</span>
+            <span className="font-medium text-slate-900">
+              {formatFullDate(date)}
+            </span>
           </div>
           <div className="flex items-center gap-2.5">
             <Clock className="h-4 w-4 text-emerald-600 shrink-0" />
@@ -172,17 +183,30 @@ export function CheckoutSummary({
             <span>
               Court Rental ({durationHours} hrs × {formatRupiah(pricePerHour)})
             </span>
-            <span className="font-medium text-slate-900">{formatRupiah(courtRentalTotal)}</span>
+            <span className="font-medium text-slate-900">
+              {formatRupiah(courtRentalTotal)}
+            </span>
           </div>
 
           {equipmentList.map((eq, idx) => (
             <div key={idx} className="flex justify-between text-slate-600">
-              <span>{eq.qty}× {eq.name}</span>
+              <span>
+                {eq.qty}× {eq.name}
+              </span>
               <span className="font-medium text-slate-900">
                 {formatRupiah(eq.qty * eq.pricePerUnit)}
               </span>
             </div>
           ))}
+
+          {taxPercent > 0 && (
+            <div className="flex justify-between text-slate-600">
+              <span>Pajak PPN ({taxPercent}%)</span>
+              <span className="font-medium text-slate-900">
+                {formatRupiah(taxAmount)}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Total Akhir */}
@@ -191,7 +215,13 @@ export function CheckoutSummary({
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
               Total Amount
             </p>
-            <p className="text-[11px] text-slate-400">All statutory taxes included</p>
+           {taxPercent > 0 ? (
+              <p className="text-[11px] text-slate-400">
+                Termasuk pajak PPN {taxPercent}%
+              </p>
+            ) : (
+              <p className="text-[11px] text-slate-400">Tidak termasuk pajak</p>
+            )}
           </div>
           <span className="text-2xl font-bold text-emerald-800">
             {formatRupiah(totalPrice)}
@@ -203,9 +233,13 @@ export function CheckoutSummary({
           <ShieldCheck className="h-4 w-4 shrink-0 text-sky-600 mt-0.5" />
           <div>
             <p className="font-medium leading-tight">
-              Free cancellation until <span className="font-bold">Today at 07:00 AM</span> (12 hours before start).
+              Free cancellation until{" "}
+              <span className="font-bold">Today at 07:00 AM</span> (12 hours
+              before start).
             </p>
-            <p className="text-[11px] text-sky-700 mt-0.5">100% wallet credit or bank refund.</p>
+            <p className="text-[11px] text-sky-700 mt-0.5">
+              100% wallet credit or bank refund.
+            </p>
           </div>
         </div>
       </Card>
@@ -217,8 +251,12 @@ export function CheckoutSummary({
             <Headphones className="h-4 w-4" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-900">Need help with this booking?</p>
-            <p className="text-[11px] text-slate-500">SportBook Concierge is live 24/7</p>
+            <p className="text-xs font-semibold text-slate-900">
+              Need help with this booking?
+            </p>
+            <p className="text-[11px] text-slate-500">
+              SportBook Concierge is live 24/7
+            </p>
           </div>
         </div>
         <div className="flex items-center justify-between border-t pt-2 text-xs text-slate-600">

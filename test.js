@@ -1,4 +1,291 @@
 // ============================================================================
+// PANDUAN: MENAMBAHKAN RINCIAN PAJAK DI HALAMAN CHECKOUT
+// ============================================================================
+//
+// PENJELASAN:
+// Saat ini di halaman checkout, user hanya melihat:
+// - Court Rental (durasi × harga per jam)
+// - Equipment (jika ada)
+// - Total Amount (sudah termasuk pajak)
+//
+// Namun, rincian pajak (berapa persen dan berapa nominal) TIDAK ditampilkan.
+// User tidak tahu berapa pajak yang mereka bayar.
+//
+// Tujuan: Tambahkan baris "Pajak PPN (X%)" sebelum "Total Amount" agar
+// user bisa melihat rincian harga secara transparan.
+//
+// Data yang dibutuhkan:
+// - taxPercent: sudah ada di database (default 11%)
+// - taxAmount: sudah dihitung dan disimpan saat booking dibuat
+// - Kedua field sudah ada di bookingSelect repository ✅
+//
+// File yang perlu diubah:
+// 1. components/checkout/checkout-summary.tsx — tambah prop & tampilkan baris pajak
+// 2. app/(public)/checkout/page.tsx — kirim taxPercent & taxAmount ke komponen
+//
+// ============================================================================
+// KUNCI PENANDA
+// ============================================================================
+// [+] = Kode yang ditambahkan (baru)
+// [~] = Kode yang diedit (diubah)
+// [-] = Kode yang dihapus
+// ←   = Penjelasan singkat di sebelah kode
+
+// ============================================================================
+// BAGIAN 1: KOMPONEN CHECKOUT SUMMARY — Tambah rincian pajak
+// ============================================================================
+// File: components/checkout/checkout-summary.tsx
+//
+// PENJELASAN:
+// Tambahkan 2 prop baru (taxPercent dan taxAmount) di tipe dan dekonstruksi,
+// lalu tampilkan baris pajak sebelum "Total Amount".
+
+// [~] EDIT — Tambah 2 prop baru di CheckoutSummaryProps (sekitar baris 26-41)
+
+export type CheckoutSummaryProps = {
+  venueName: string;
+  venueAddress: string;
+  sportLabel: string;
+  courtName: string;
+  courtImage?: string;
+  courtSpecs?: string[];
+  maxPlayers?: number;
+  date: string | null;
+  time: string | null;
+  endTime: string | null;
+  durationHours: number;
+  pricePerHour: number;
+  equipmentList?: SelectedEquipment[];
+  totalPrice: number;
+  // [+] TAMBAHKAN 2 prop baru untuk rincian pajak
+  taxPercent?: number;   // ← persentase pajak (misal: 11 untuk 11%)
+  taxAmount?: number;    // ← nominal pajak dalam rupiah
+};
+
+
+// [~] EDIT — Tambah 2 prop baru di dekonstruksi fungsi (sekitar baris 69-84)
+
+export function CheckoutSummary({
+  venueName,
+  venueAddress,
+  sportLabel,
+  courtName,
+  courtImage = "/hero.webp",
+  courtSpecs = ["Turf Surface", "Outdoor Covered"],
+  maxPlayers = 4,
+  date,
+  time,
+  endTime,
+  durationHours = 1,
+  pricePerHour,
+  equipmentList = [],
+  totalPrice,
+  // [+] TAMBAHKAN 2 prop baru dengan default 0
+  taxPercent = 0,
+  taxAmount = 0,
+}: CheckoutSummaryProps) {
+
+
+// [~] EDIT — Tambah baris pajak sebelum "Total Amount" (sekitar baris 186-199)
+// Ganti bagian ini:
+
+        {/* Rincian Harga (Cost Breakdown) */}
+        <div className="mt-5 space-y-2 text-xs border-t pt-4">
+          <div className="flex justify-between text-slate-600">
+            <span>
+              Court Rental ({durationHours} hrs × {formatRupiah(pricePerHour)})
+            </span>
+            <span className="font-medium text-slate-900">{formatRupiah(courtRentalTotal)}</span>
+          </div>
+
+          {equipmentList.map((eq, idx) => (
+            <div key={idx} className="flex justify-between text-slate-600">
+              <span>{eq.qty}× {eq.name}</span>
+              <span className="font-medium text-slate-900">
+                {formatRupiah(eq.qty * eq.pricePerUnit)}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Total Akhir */}
+        <div className="mt-5 flex items-end justify-between border-t pt-4">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Total Amount
+            </p>
+            <p className="text-[11px] text-slate-400">All statutory taxes included</p>
+          </div>
+          <span className="text-2xl font-bold text-emerald-800">
+            {formatRupiah(totalPrice)}
+          </span>
+        </div>
+
+// Menjadi:
+
+        {/* Rincian Harga (Cost Breakdown) */}
+        <div className="mt-5 space-y-2 text-xs border-t pt-4">
+          <div className="flex justify-between text-slate-600">
+            <span>
+              Court Rental ({durationHours} hrs × {formatRupiah(pricePerHour)})
+            </span>
+            <span className="font-medium text-slate-900">{formatRupiah(courtRentalTotal)}</span>
+          </div>
+
+          {equipmentList.map((eq, idx) => (
+            <div key={idx} className="flex justify-between text-slate-600">
+              <span>{eq.qty}× {eq.name}</span>
+              <span className="font-medium text-slate-900">
+                {formatRupiah(eq.qty * eq.pricePerUnit)}
+              </span>
+            </div>
+          ))}
+
+          {/* [+] BARIS BARU: Tampilkan rincian pajak jika ada */}
+          {taxPercent > 0 && (
+            <div className="flex justify-between text-slate-600">
+              <span>Pajak PPN ({taxPercent}%)</span>
+              <span className="font-medium text-slate-900">
+                {formatRupiah(taxAmount)}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Total Akhir */}
+        <div className="mt-5 flex items-end justify-between border-t pt-4">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Total Amount
+            </p>
+            {/* [-] HAPUS baris ini: "All statutory taxes included" */}
+            {/* [+] GANTI dengan informasi pajak yang lebih spesifik */}
+            {taxPercent > 0 ? (
+              <p className="text-[11px] text-slate-400">
+                Termasuk pajak PPN {taxPercent}%
+              </p>
+            ) : (
+              <p className="text-[11px] text-slate-400">Tidak termasuk pajak</p>
+            )}
+          </div>
+          <span className="text-2xl font-bold text-emerald-800">
+            {formatRupiah(totalPrice)}
+          </span>
+        </div>
+
+
+// ============================================================================
+// BAGIAN 2: HALAMAN CHECKOUT — Kirim data pajak ke komponen
+// ============================================================================
+// File: app/(public)/checkout/page.tsx
+//
+// PENJELASAN:
+// Booking object sudah memiliki taxPercent dan taxAmount dari database.
+// Cukup tambahkan 2 props baru saat memanggil <CheckoutSummary />.
+
+// [~] EDIT — Tambah 2 props di <CheckoutSummary /> (sekitar baris 105-122)
+// Ganti bagian ini:
+
+            <CheckoutSummary
+              venueName={venue.name}
+              venueAddress={venue.address}
+              sportLabel={booking.court.sport}
+              courtName={booking.court.name}
+              courtImage={
+                booking.court.image ?? venue.coverImage ?? "/hero.webp"
+              }
+              courtSpecs={courtSpecs.length > 0 ? courtSpecs : undefined}
+              maxPlayers={booking.court.maxPlayers ?? undefined}
+              date={booking.playDate}
+              time={booking.startTime}
+              endTime={booking.endTime}
+              durationHours={booking.durationHour}
+              pricePerHour={booking.pricePerHour}
+              equipmentList={equipmentList}
+              totalPrice={booking.totalPrice}
+            />
+
+// Menjadi:
+
+            <CheckoutSummary
+              venueName={venue.name}
+              venueAddress={venue.address}
+              sportLabel={booking.court.sport}
+              courtName={booking.court.name}
+              courtImage={
+                booking.court.image ?? venue.coverImage ?? "/hero.webp"
+              }
+              courtSpecs={courtSpecs.length > 0 ? courtSpecs : undefined}
+              maxPlayers={booking.court.maxPlayers ?? undefined}
+              date={booking.playDate}
+              time={booking.startTime}
+              endTime={booking.endTime}
+              durationHours={booking.durationHour}
+              pricePerHour={booking.pricePerHour}
+              equipmentList={equipmentList}
+              totalPrice={booking.totalPrice}
+              // [+] TAMBAHKAN 2 props baru untuk rincian pajak
+              taxPercent={booking.taxPercent}
+              taxAmount={booking.taxAmount}
+            />
+
+
+// ============================================================================
+// HASIL AKHIR YANG DITAMPILKAN DI CHECKOUT
+// ============================================================================
+//
+// Sebelum (tanpa rincian pajak):
+// ─────────────────────────────
+// Court Rental (2 hrs × Rp100.000)     Rp200.000
+// Total Amount                          Rp222.000
+// All statutory taxes included
+//
+// Sesudah (dengan rincian pajak):
+// ─────────────────────────────
+// Court Rental (2 hrs × Rp100.000)     Rp200.000
+// Pajak PPN (11%)                       Rp22.000   ← BARU!
+// Total Amount                          Rp222.000
+// Termasuk pajak PPN 11%               ← BARU!
+// ─────────────────────────────
+
+
+// ============================================================================
+// RINGKASAN LANGKAH
+// ============================================================================
+//
+// 1. Edit checkout-summary.tsx — tambah taxPercent & taxAmount di props type
+// 2. Edit checkout-summary.tsx — tambah taxPercent & taxAmount di dekonstruksi
+// 3. Edit checkout-summary.tsx — tambah baris "Pajak PPN (X%)" di rincian harga
+// 4. Edit checkout-summary.tsx — ganti teks "All statutory taxes included"
+// 5. Edit checkout/page.tsx — kirim taxPercent & taxAmount ke CheckoutSummary
+
+
+// ============================================================================
+// CATATAN PENTING
+// ============================================================================
+//
+// 1. Data pajak sudah ada di database
+//    - taxPercent disimpan di model Setting (default 11%)
+//    - taxAmount dihitung saat booking dibuat dan disimpan di model Booking
+//    - bookingSelect di repository sudah include kedua field ini ✅
+//
+// 2. Pajak dihitung di backend
+//    - Di booking.service.ts: taxAmount = Math.round((subtotal * taxPercent) / 100)
+//    - totalPrice = subtotal + taxAmount
+//    - Frontend hanya menampilkan, tidak menghitung ulang
+//
+// 3. Fallback yang aman
+//    - taxPercent dan taxAmount punya default 0 di komponen
+//    - Baris pajak hanya muncul jika taxPercent > 0
+//    - Jika pajak 0%, tidak ada baris pajak yang ditampilkan
+//
+// 4. Konsistensi dengan admin
+//    - Admin bisa mengubah taxPercent di halaman pengaturan
+//    - Perubahan hanya berlaku untuk booking baru, bukan yang sudah ada
+//    - Setiap booking menyimpan taxPercent-nya sendiri saat dibuat
+
+
+// ============================================================================
 // PANDUAN: FITUR EDIT, TOGGLE, DAN DELETE UNTUK VENUE
 // ============================================================================
 //

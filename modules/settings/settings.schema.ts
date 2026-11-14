@@ -53,6 +53,32 @@ export const updateSettingsSchema = z
       // Boleh tidak dikirim.
       .optional(),
 
+    // Batas waktu pembayaran dalam menit.
+    paymentWindowMinutes: z
+      // Harus angka.
+      .number({ error: "Batas waktu harus berupa angka" })
+      // Harus bilangan bulat.
+      .int("Batas waktu harus bilangan bulat")
+      // Paling cepat 1 menit.
+      .min(1, "Batas waktu minimal 1 menit")
+      // Paling lama 24 jam.
+      .max(1440, "Batas waktu maksimal 1440 menit")
+      // Boleh tidak dikirim.
+      .optional(),
+
+    // Pajak dalam persen.
+    taxPercent: z
+      // Harus angka.
+      .number({ error: "Pajak harus berupa angka" })
+      // Harus bilangan bulat.
+      .int("Pajak harus bilangan bulat")
+      // Tidak boleh negatif.
+      .min(0, "Pajak tidak boleh negatif")
+      // Paling besar 100 persen.
+      .max(100, "Pajak maksimal 100 persen")
+      // Boleh tidak dikirim.
+      .optional(),
+
     // Batas booking ke depan.
     maxAdvanceDays: z
       // Harus angka.

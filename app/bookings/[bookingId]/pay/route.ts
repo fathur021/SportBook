@@ -1,5 +1,6 @@
 import { requireUser } from "@/modules/auth/auth.guard";
 import { prisma } from "@/lib/prisma";
+import { getSettingsService } from "@/modules/settings/settings.service";
 
 export async function POST(
   request: Request,
@@ -23,9 +24,15 @@ export async function POST(
         { status: 404 },
       );
     }
-    const HOLD_MS = 10 * 60 * 1000;
+    // Ambil pengaturan untuk batas waktu pembayaran.
+    const settings = await getSettingsService();
+
+    // Ubah menit menjadi milidetik.
+    const holdMs = settings.paymentWindowMinutes * 60 * 1000;
+
+    // Hitung apakah hold sudah lewat.
     const holdExpired =
-      Date.now() - new Date(booking.createdAt).getTime() > HOLD_MS;
+      Date.now() - new Date(booking.createdAt).getTime() > holdMs;
     const owner = booking && booking.userId === auth.user.id;
 
     if (!owner || booking.status !== "PENDING" || holdExpired) {
