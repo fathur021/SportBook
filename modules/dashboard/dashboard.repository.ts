@@ -23,6 +23,21 @@ export function sumPaidRevenueBetween(start: Date, end: Date) {
   });
 }
 
+// Menjumlahkan seluruh pembayaran lunas, tanpa batas tanggal.
+// Dipakai untuk kartu "Total Pendapatan".
+export function sumAllPaidRevenue() {
+  return prisma.payment.aggregate({
+    where: {
+      // Semua pembayaran yang berstatus lunas ikut dihitung.
+      status: "PAID",
+    },
+    _sum: {
+      // Jumlahkan nominalnya.
+      amount: true,
+    },
+  });
+}
+
 // Menghitung berapa booking yang lunas pada rentang waktu tertentu.
 export function countPaidBookingsBetween(start: Date, end: Date) {
   //count hanya mengembalikan angka jumlah baris

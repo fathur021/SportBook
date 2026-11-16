@@ -1,47 +1,5 @@
-// Data contoh untuk tampilan dashboard admin.
-// Nanti tinggal diganti dengan data dari API dashboard.
-
-export type DashboardStat = {
-  key: "revenue" | "paid" | "pending" | "today";
-  label: string;
-  value: number;
-  note: string;
-  trend?: {
-    label: string;
-    direction: "up" | "down";
-  };
-};
-
-export const dashboardStats: DashboardStat[] = [
-  {
-    key: "revenue",
-    label: "Pendapatan 30 Hari",
-    value: 48_250_000,
-    note: "Dari 214 transaksi lunas",
-    trend: { label: "12,4% dari bulan lalu", direction: "up" },
-  },
-  {
-    key: "paid",
-    label: "Booking Lunas",
-    value: 214,
-    note: "Periode 30 hari terakhir",
-    trend: { label: "8,1% dari bulan lalu", direction: "up" },
-  },
-  {
-    key: "pending",
-    label: "Menunggu Pembayaran",
-    value: 7,
-    note: "3 booking hampir kedaluwarsa",
-    trend: { label: "Perlu ditindaklanjuti", direction: "down" },
-  },
-  {
-    key: "today",
-    label: "Booking Hari Ini",
-    value: 18,
-    note: "Dari 24 slot lapangan",
-    trend: { label: "6 sesi sedang berjalan", direction: "up" },
-  },
-];
+// Data contoh untuk bagian dashboard yang belum memakai data asli:
+// grafik, daftar perlu tindakan, jadwal, booking terbaru, dan sorotan operasional.
 
 export type RevenuePoint = {
   date: string;

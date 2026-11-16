@@ -167,6 +167,15 @@ export interface AdminUser {
   lastActiveAt: string | null;
 }
 
+export interface AdminDashboardSummary {
+  date: string;
+  totalRevenue: number;
+  revenueToday: number;
+  paidBookingsToday: number;
+  waitingPayments: number;
+  bookingsToday: number;
+}
+
 const adminApi = createApi({
   reducerPath: "adminApi",
   baseQuery: fetchBaseQuery({ baseUrl: "/", credentials: "include" }),
@@ -177,6 +186,7 @@ const adminApi = createApi({
     "AdminReport",
     "AdminUser",
     "AdminSettings",
+    "AdminDashboard",
   ],
   endpoints: (build) => ({
     getAdminVenues: build.query<AdminVenue[], void>({
@@ -319,6 +329,11 @@ const adminApi = createApi({
       providesTags: ["AdminReport"],
     }),
 
+    getAdminDashboard: build.query<AdminDashboardSummary, void>({
+      query: () => "/api/admin/dashboard",
+      transformResponse: (res: { data: AdminDashboardSummary }) => res.data,
+      providesTags: ["AdminDashboard"],
+    }),
     getAdminUsers: build.query<
       AdminUser[],
       { search?: string; role?: AdminUserRole } | void
@@ -394,7 +409,7 @@ const adminApi = createApi({
       transformResponse: (res: { data: AdminBooking }) => res.data,
       // Laporan juga ikut diperbarui karena perubahan status
       // memengaruhi jumlah booking yang dibatalkan.
-      invalidatesTags: ["AdminBooking", "AdminReport"],
+      invalidatesTags: ["AdminBooking", "AdminReport","AdminDashboard"],
     }),
   }),
 });
@@ -414,6 +429,7 @@ export const {
   useGetAdminBookingsQuery,
   useUpdateBookingStatusMutation,
   useGetAdminReportQuery,
+  useGetAdminDashboardQuery,
   useGetAdminUsersQuery,
   useUpdateUserRoleMutation,
   useGetAdminSettingsQuery,
