@@ -167,6 +167,38 @@ export interface AdminUser {
   lastActiveAt: string | null;
 }
 
+// Satu titik pada grafik tren pendapatan harian.
+export interface RevenueTrendPoint {
+  // Tanggal WIB dalam format "YYYY-MM-DD".
+  date: string;
+  // Total pembayaran lunas pada tanggal itu.
+  revenue: number;
+}
+
+// Satu batang pada grafik pendapatan per venue.
+export interface VenueRevenuePoint {
+  // Nama venue yang tampil di sumbu Y.
+  venue: string;
+  // Total pembayaran lunas di venue itu.
+  revenue: number;
+  // Banyak pembayaran lunas di venue itu.
+  transactions: number;
+}
+
+// Satu baris pada kartu Jadwal Hari Ini.
+export interface TodaySchedule {
+  // Id lapangan dari database, dipakai sebagai key React.
+  id: string;
+  // Nama lapangan.
+  court: string;
+  // Nama venue tempat lapangan itu berada.
+  venue: string;
+  // Slot yang sudah terisi hari ini.
+  bookedSlots: number;
+  // Total slot menurut jam buka dan jam tutup.
+  totalSlots: number;
+}
+
 export interface AdminDashboardSummary {
   date: string;
   totalRevenue: number;
@@ -174,6 +206,11 @@ export interface AdminDashboardSummary {
   paidBookingsToday: number;
   waitingPayments: number;
   bookingsToday: number;
+  // Data untuk kedua grafik.
+  revenueTrend: RevenueTrendPoint[];
+  venueRevenue: VenueRevenuePoint[];
+  // Data jadwal hari ini.
+  todaySchedules: TodaySchedule[];
 }
 
 const adminApi = createApi({

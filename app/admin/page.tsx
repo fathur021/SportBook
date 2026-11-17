@@ -1,4 +1,3 @@
-import { ActionNeededCard } from "@/components/admin/dashboard/action-needed-card";
 import { DashboardStats } from "@/components/admin/dashboard/dashboard-stats";
 import { OperationalHighlightsCard } from "@/components/admin/dashboard/operational-highlights-card";
 import { RecentBookingsTable } from "@/components/admin/dashboard/recent-bookings-table";
@@ -67,12 +66,7 @@ export default function AdminDashboardPage() {
         </section>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          <ActionNeededCard />
-        </div>
-        <TodayScheduleCard />
-      </div>
+      <TodayScheduleCard />
 
       <div className="grid gap-4 xl:grid-cols-3">
         <div className="xl:col-span-2">

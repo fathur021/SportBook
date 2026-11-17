@@ -73,3 +73,75 @@ export function countBookingsByPlayDate(playDate: string) {
     },
   });
 }
+export function findPaidPaymentsSince(start: Date) {
+  return prisma.payment.findMany({
+    where: {
+      // Hanya pembayaran yang benar-benar lunas.
+      status: "PAID",
+      // Ambil yang waktu lunasnya setelah awal periode.
+      paidAt: {
+        gte: start,
+      },
+    },
+    select: {
+      // Nominal yang nanti dijumlahkan.
+      amount: true,
+      // Waktu lunas, dipakai untuk menentukan masuk tanggal berapa.
+      paidAt: true,
+      // Relasi berantai sampai ke venue.
+      booking: {
+        select: {
+          court: {
+            select: {
+              venue: {
+                select: {
+                  // Nama untuk label grafik.
+                  name: true,
+                  // Slug untuk kunci saat mengelompokkan.
+                  slug: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+export function findCourtsWithTodayBookings(playDate: string) {
+  return prisma.court.findMany({
+    where: {
+      //hanya lapangan yang masih akrif
+      isActive: true,
+      //venue Induknya juga harus aktif
+      venue: {
+        isActive: true,
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      venue: {
+        select: {
+          name: true,
+        },
+      },
+      // Ambil booking hari ini saja pada lapangan ini.
+      bookings: {
+        where: {
+          // playDate berupa teks "YYYY-MM-DD" sesuai tanggal WIB hari ini.
+          playDate,
+          // Booking yang dibatalkan tidak mengisi slot.
+          status: { not: "CANCELLED" },
+        },
+        select: {
+          durationHour: true,
+        },
+      },
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
+}

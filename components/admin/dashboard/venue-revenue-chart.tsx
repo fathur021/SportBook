@@ -1,3 +1,4 @@
+// "use client" wajib karena memakai hook dan grafik di browser.
 "use client";
 
 import { Bar, BarChart, LabelList, XAxis, YAxis } from "recharts";
@@ -9,7 +10,8 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { formatRupiah } from "@/lib/format-rupiah";
-import { venueRevenue } from "@/lib/mock-dashboard";
+// Hook yang sama, jadi tidak ada request tambahan.
+import { useGetAdminDashboardQuery } from "@/lib/redux/admin-api";
 
 const chartConfig = {
   revenue: {
@@ -21,16 +23,43 @@ const chartConfig = {
 // Label di ujung batang: 21.450.000 -> "21,5 jt".
 function formatCompactLabel(value: number) {
   const millions = value / 1_000_000;
+
   return `${millions.toLocaleString("id-ID", {
     maximumFractionDigits: 1,
   })} jt`;
 }
 
 export function VenueRevenueChart() {
+  // Ambil data asli dari endpoint dashboard.
+  const { data, isLoading, isError } = useGetAdminDashboardQuery();
+
+  // Selama memuat, tampilkan kotak abu-abu berdenyut.
+  if (isLoading) {
+    return <div className="h-72 animate-pulse rounded-lg bg-slate-100" />;
+  }
+
+  if (isError || !data) {
+    return (
+      <div className="flex h-72 items-center justify-center text-sm text-rose-600">
+        Gagal memuat pendapatan per venue.
+      </div>
+    );
+  }
+
+  // Kalau belum ada pembayaran, tampilkan pesan, bukan grafik kosong.
+  if (data.venueRevenue.length === 0) {
+    return (
+      <div className="flex h-72 items-center justify-center text-sm text-slate-500">
+        Belum ada pembayaran lunas dalam 30 hari terakhir.
+      </div>
+    );
+  }
+
   return (
     <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
       <BarChart
-        data={venueRevenue}
+        // Sumber data sekarang dari API.
+        data={data.venueRevenue}
         layout="vertical"
         margin={{ left: 0, right: 52, top: 4, bottom: 4 }}
       >
