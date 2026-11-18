@@ -39,3 +39,26 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# AI agent & tool metadata
+/.claude/
+/.codex/
+/.continue/
+/.cursor/
+/.gemini/
+/.junie/
+/.opencode/
+/.windsurf/
+/AGENTS.md
+/CLAUDE.md
+/settings.json
+/skills-lock.json
+
+# catatan/dump percobaan
+/test.js
+
+# postman
+/.postman/
+/postman/
+*.postman_collection.json
+*.postman_environment.json

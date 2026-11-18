@@ -1,6 +1,0 @@
-$kind: http-request
-url: http://localhost:3000/api/admin/venues/venue-uji-admin-20261027
-method: DELETE
-headers:
-  Origin: http://localhost:3000
-order: 8000

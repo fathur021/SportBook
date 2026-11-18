@@ -12,12 +12,13 @@ import {
   BarChart3,
   Users,
   Settings,
+  KeyRound,
   ArrowLeft,
   LogOut,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +39,11 @@ const MENU_GROUPS = [
       { label: "Laporan Keuangan", href: "/admin/reports", icon: BarChart3 },
       { label: "Kelola User", href: "/admin/users", icon: Users },
       { label: "Pengaturan", href: "/admin/settings", icon: Settings },
+      {
+        label: "Ganti Password",
+        href: "/admin/change-password",
+        icon: KeyRound,
+      },
     ],
   },
 ];
