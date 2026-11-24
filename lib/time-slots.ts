@@ -1,16 +1,13 @@
-export type TimeSlotOption = { time: string; booked?: boolean };
+import { minutesToTime, timeToMinutes } from "@/lib/datetime";
 
+export type TimeSlotOption = {time:string, booked?:boolean}
 // Menambah jam pada string "HH:MM". Contoh: ("09:00", 2) => "11:00".
 // Dipakai untuk menghitung jam selesai sesuai durasi sesi.
 export function addHoursToTime(time: string, hours: number) {
-  const [h, m] = time.split(":").map(Number);
-  if (Number.isNaN(h) || Number.isNaN(m)) return time;
+  const minutes = timeToMinutes(time)
+  if(Number.isNaN(minutes)) return time;
 
-  const totalMinutes = h * 60 + m + Math.round(hours * 60);
-  const endHour = Math.floor(totalMinutes / 60) % 24;
-  const endMinute = totalMinutes % 60;
-
-  return `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
+  return minutesToTime(minutes + Math.round(hours * 60))
 }
 
 

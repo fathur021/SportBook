@@ -32,6 +32,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  formatDateKey,
+  getBusinessDateKey,
+  parseDateKey,
+  toDateKey,
+} from "@/lib/datetime";
 import { formatRupiah } from "@/lib/format-rupiah";
 import {
   useGetAdminVenuesQuery,
@@ -50,42 +56,10 @@ const OPERATING_HOURS = Array.from({ length: 16 }, (_, i) => {
   return { startHour, endHour, startStr, endStr, label };
 });
 
-const DAYS_SHORT = ["MIN", "SEN", "SEL", "RAB", "KAM", "JUM", "SAB"];
-const MONTHS_SHORT = [
-  "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
-  "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
-];
-const FULL_DAYS = [
-  "Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"
-];
-const FULL_MONTHS = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-];
-
-function formatDateToIso(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function parseIsoToDate(isoStr: string): Date {
-  const [y, m, d] = isoStr.split("-").map(Number);
-  return new Date(y, m - 1, d);
-}
-
-function formatIndonesianDate(isoStr: string): string {
-  const d = parseIsoToDate(isoStr);
-  const dayName = FULL_DAYS[d.getDay()];
-  const dayNum = d.getDate();
-  const monthName = FULL_MONTHS[d.getMonth()];
-  const year = d.getFullYear();
-  return `${dayName}, ${dayNum} ${monthName} ${year}`;
-}
+// Nama hari, nama bulan, dan format tanggal memakai helper `@/lib/datetime`.
 
 export default function AdminSchedulePage() {
-  const todayStr = useMemo(() => formatDateToIso(new Date()), []);
+  const todayStr = useMemo(() => getBusinessDateKey(), []);
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [weekOffset, setWeekOffset] = useState<number>(0);
   const [selectedVenueSlug, setSelectedVenueSlug] = useState<string>("");
@@ -120,17 +94,21 @@ export default function AdminSchedulePage() {
 
   // Hitung deretan 7 hari untuk bar tanggal
   const calendarDays = useMemo(() => {
-    const base = new Date();
-    base.setDate(base.getDate() + weekOffset);
+    const start = parseDateKey(todayStr);
+    if (!start) return [];
+
+    const base = new Date(start.getTime());
+    base.setUTCDate(base.getUTCDate() + weekOffset);
+
     return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(base);
-      d.setDate(base.getDate() + i);
-      const iso = formatDateToIso(d);
+      const d = new Date(base.getTime());
+      d.setUTCDate(base.getUTCDate() + i);
+      const iso = toDateKey(d);
       return {
         iso,
-        dayName: DAYS_SHORT[d.getDay()],
-        dayNumber: String(d.getDate()).padStart(2, "0"),
-        monthName: MONTHS_SHORT[d.getMonth()],
+        dayName: formatDateKey(iso, "weekdayShort").toUpperCase(),
+        dayNumber: iso.slice(8),
+        monthName: formatDateKey(iso, "monthShort"),
         isToday: iso === todayStr,
         isSelected: iso === selectedDate,
       };
@@ -395,7 +373,7 @@ export default function AdminSchedulePage() {
         <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 px-5 py-3 sm:px-6">
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold text-slate-700">
-              {formatIndonesianDate(selectedDate)}
+              {formatDateKey(selectedDate, "weekdayLongFullMonth")}
             </p>
             {isBookingsFetching && (
               <span className="inline-flex items-center gap-1 text-xs text-slate-400">

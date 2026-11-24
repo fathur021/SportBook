@@ -3,6 +3,8 @@ import {
   deactivateVenueBySlug,
   findPublicVenueBySlug,
   findPublicVenues,
+  findPopularVenue,
+  findFallbackPopularityVenues,
   updateVenueBySlug,
   findAdminVenues,
 } from "./venue.repository";
@@ -15,6 +17,13 @@ export function listPublicVenues() {
 export function getPublicVenueBySlug(slug: string) {
   return findPublicVenueBySlug(slug);
 }
+
+export async function listPopularVenues(){
+  const flagged = await findPopularVenue()
+
+  return flagged.length > 0 ? flagged : findFallbackPopularityVenues()
+}
+
 
 export function listAdminVenues(){
   return findAdminVenues();

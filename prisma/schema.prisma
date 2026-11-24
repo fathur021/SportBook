@@ -21,6 +21,8 @@ model Venue {
   facilities  String[] @default([])
   isVerified  Boolean  @default(false)
   isActive    Boolean  @default(true)
+  isPopular   Boolean  @default(false)
+  popularityRank Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

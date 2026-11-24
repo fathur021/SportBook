@@ -1,6 +1,6 @@
 // Mengubah data booking dari database menjadi bentuk yang dipakai
 // halaman MyBooking (kartu dan tabel).
-
+import { toBookingEpoch } from "./datetime";
 export type BookingStatus = "upcoming" | "completed" | "cancelled";
 
 export type MyBookingItem = {
@@ -62,9 +62,11 @@ function formatDateKey(key: string) {
 
 // Cek apakah jam selesai booking sudah lewat.
 function isPastEndTime(row: BookingRow) {
-  const [y, m, d] = row.playDate.split("-").map(Number);
-  const [h, min] = row.endTime.split(":").map(Number);
-  return new Date(y, m - 1, d, h, min).getTime() <= Date.now();
+  const endEpoch = toBookingEpoch(row.playDate, row.endTime);
+
+  if (Number.isNaN(endEpoch)) return false;
+
+  return endEpoch <= Date.now();
 }
 
 function toTabStatus(row: BookingRow): BookingStatus {

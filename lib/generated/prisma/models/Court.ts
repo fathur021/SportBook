@@ -589,14 +589,6 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type CourtCreateNestedOneWithoutBookingsInput = {
   create?: Prisma.XOR<Prisma.CourtCreateWithoutBookingsInput, Prisma.CourtUncheckedCreateWithoutBookingsInput>
   connectOrCreate?: Prisma.CourtCreateOrConnectWithoutBookingsInput

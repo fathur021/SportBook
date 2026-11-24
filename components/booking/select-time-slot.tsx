@@ -1,12 +1,9 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
+import { minutesToTime, timeToMinutes } from "@/lib/datetime";
 import { formatRupiah } from "@/lib/format-rupiah";
-import {
-  addHoursToTime,
-  getTimeSlotBands,
-  type TimeSlotOption,
-} from "@/lib/time-slots";
+import { getTimeSlotBands, type TimeSlotOption } from "@/lib/time-slots";
 import { cn } from "@/lib/utils";
 
 type SelectTimeSlotProps = {
@@ -27,15 +24,18 @@ function isRangeAvailable(
   durationHours: number,
   slots: TimeSlotOption[],
 ) {
-  const startHour = Number(slotTime.slice(0, 2));
-  if (Number.isNaN(startHour)) return false;
+  const startTime = slotTime.split(" - ")[0] ?? "";
+  const startMinutes = timeToMinutes(startTime);
+  if (Number.isNaN(startMinutes)) return false;
 
   for (let i = 0; i < durationHours; i++) {
-    const hour = `${String(startHour + i).padStart(2, "0")}:00`;
-    const nextSlot = slots.find((slot) => slot.time.startsWith(hour));
+    const neededTime = minutesToTime(startMinutes + i * 60);
+    const nextSlot = slots.find(
+      (slot) => (slot.time.split(" - ")[0] ?? "") === neededTime,
+    );
+
     if (!nextSlot || nextSlot.booked) return false;
   }
-
   return true;
 }
 
@@ -92,10 +92,15 @@ export function SelectTimeSlot({
                     slot.booked ||
                     !isRangeAvailable(slot.time, safeDuration, slots);
 
-                  // [TAMBAH] Label slot mengikuti durasi sesi.
-                  // Contoh durasi 2 jam: "09:00 - 11:00".
+                  
                   const startTime = slot.time.split(" - ")[0] ?? "";
-                  const slotLabel = `${startTime} - ${addHoursToTime(startTime, safeDuration)}`;
+                  const startMinutes = timeToMinutes(startTime);
+                  const endTime = Number.isNaN(startMinutes)
+                    ? ""
+                    : minutesToTime(startMinutes + safeDuration * 60);
+                  const slotLabel = endTime
+                    ? `${startTime} - ${endTime}`
+                    : startTime;
 
                   return (
                     <button
@@ -140,7 +145,11 @@ export function SelectTimeSlot({
                               : "bg-emerald-100 text-emerald-700",
                         )}
                       >
-                        {slot.booked ? "Booked" : unavailable ? "Unavailable" : "Available"}
+                        {slot.booked
+                          ? "Booked"
+                          : unavailable
+                            ? "Unavailable"
+                            : "Available"}
                       </span>
                     </button>
                   );

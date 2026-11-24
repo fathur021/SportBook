@@ -1,3 +1,4 @@
+import { getBusinessDateKey } from "@/lib/datetime";
 import {
   countCancelledBookings,
   findPaidBookingsForReport,
@@ -8,13 +9,6 @@ import type { ReportQuery } from "./report.schema";
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-function toDateKey(date: Date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
 export async function getReportService(query: ReportQuery) {
   // Pendapatan memakai tanggal pembayaran (paidAt),
   // sedangkan booking batal memakai tanggal main (playDate).
@@ -23,7 +17,7 @@ export async function getReportService(query: ReportQuery) {
       ? null
       : new Date(Date.now() - Number(query.period) * DAY_IN_MS);
 
-  const playDateFrom = paidAtFrom ? toDateKey(paidAtFrom) : null;
+  const playDateFrom = paidAtFrom ? getBusinessDateKey(paidAtFrom) : null;
 
   const [paidBookings, recentPaidBookings, cancelledBookingCount] =
     await Promise.all([

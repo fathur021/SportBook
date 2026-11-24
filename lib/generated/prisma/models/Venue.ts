@@ -20,8 +20,18 @@ export type VenueModel = runtime.Types.Result.DefaultSelection<Prisma.$VenuePayl
 
 export type AggregateVenue = {
   _count: VenueCountAggregateOutputType | null
+  _avg: VenueAvgAggregateOutputType | null
+  _sum: VenueSumAggregateOutputType | null
   _min: VenueMinAggregateOutputType | null
   _max: VenueMaxAggregateOutputType | null
+}
+
+export type VenueAvgAggregateOutputType = {
+  popularityRank: number | null
+}
+
+export type VenueSumAggregateOutputType = {
+  popularityRank: number | null
 }
 
 export type VenueMinAggregateOutputType = {
@@ -37,6 +47,8 @@ export type VenueMinAggregateOutputType = {
   coverImage: string | null
   isVerified: boolean | null
   isActive: boolean | null
+  isPopular: boolean | null
+  popularityRank: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -54,6 +66,8 @@ export type VenueMaxAggregateOutputType = {
   coverImage: string | null
   isVerified: boolean | null
   isActive: boolean | null
+  isPopular: boolean | null
+  popularityRank: number | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -72,11 +86,21 @@ export type VenueCountAggregateOutputType = {
   facilities: number
   isVerified: number
   isActive: number
+  isPopular: number
+  popularityRank: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
+
+export type VenueAvgAggregateInputType = {
+  popularityRank?: true
+}
+
+export type VenueSumAggregateInputType = {
+  popularityRank?: true
+}
 
 export type VenueMinAggregateInputType = {
   id?: true
@@ -91,6 +115,8 @@ export type VenueMinAggregateInputType = {
   coverImage?: true
   isVerified?: true
   isActive?: true
+  isPopular?: true
+  popularityRank?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -108,6 +134,8 @@ export type VenueMaxAggregateInputType = {
   coverImage?: true
   isVerified?: true
   isActive?: true
+  isPopular?: true
+  popularityRank?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -126,6 +154,8 @@ export type VenueCountAggregateInputType = {
   facilities?: true
   isVerified?: true
   isActive?: true
+  isPopular?: true
+  popularityRank?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -169,6 +199,18 @@ export type VenueAggregateArgs<ExtArgs extends runtime.Types.Extensions.Internal
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: VenueAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: VenueSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: VenueMinAggregateInputType
@@ -199,6 +241,8 @@ export type VenueGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   _count?: VenueCountAggregateInputType | true
+  _avg?: VenueAvgAggregateInputType
+  _sum?: VenueSumAggregateInputType
   _min?: VenueMinAggregateInputType
   _max?: VenueMaxAggregateInputType
 }
@@ -217,9 +261,13 @@ export type VenueGroupByOutputType = {
   facilities: string[]
   isVerified: boolean
   isActive: boolean
+  isPopular: boolean
+  popularityRank: number | null
   createdAt: Date
   updatedAt: Date
   _count: VenueCountAggregateOutputType | null
+  _avg: VenueAvgAggregateOutputType | null
+  _sum: VenueSumAggregateOutputType | null
   _min: VenueMinAggregateOutputType | null
   _max: VenueMaxAggregateOutputType | null
 }
@@ -256,6 +304,8 @@ export type VenueWhereInput = {
   facilities?: Prisma.StringNullableListFilter<"Venue">
   isVerified?: Prisma.BoolFilter<"Venue"> | boolean
   isActive?: Prisma.BoolFilter<"Venue"> | boolean
+  isPopular?: Prisma.BoolFilter<"Venue"> | boolean
+  popularityRank?: Prisma.IntNullableFilter<"Venue"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Venue"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Venue"> | Date | string
   courts?: Prisma.CourtListRelationFilter
@@ -276,6 +326,8 @@ export type VenueOrderByWithRelationInput = {
   facilities?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  isPopular?: Prisma.SortOrder
+  popularityRank?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   courts?: Prisma.CourtOrderByRelationAggregateInput
@@ -299,6 +351,8 @@ export type VenueWhereUniqueInput = Prisma.AtLeast<{
   facilities?: Prisma.StringNullableListFilter<"Venue">
   isVerified?: Prisma.BoolFilter<"Venue"> | boolean
   isActive?: Prisma.BoolFilter<"Venue"> | boolean
+  isPopular?: Prisma.BoolFilter<"Venue"> | boolean
+  popularityRank?: Prisma.IntNullableFilter<"Venue"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Venue"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Venue"> | Date | string
   courts?: Prisma.CourtListRelationFilter
@@ -319,11 +373,15 @@ export type VenueOrderByWithAggregationInput = {
   facilities?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  isPopular?: Prisma.SortOrder
+  popularityRank?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.VenueCountOrderByAggregateInput
+  _avg?: Prisma.VenueAvgOrderByAggregateInput
   _max?: Prisma.VenueMaxOrderByAggregateInput
   _min?: Prisma.VenueMinOrderByAggregateInput
+  _sum?: Prisma.VenueSumOrderByAggregateInput
 }
 
 export type VenueScalarWhereWithAggregatesInput = {
@@ -343,6 +401,8 @@ export type VenueScalarWhereWithAggregatesInput = {
   facilities?: Prisma.StringNullableListFilter<"Venue">
   isVerified?: Prisma.BoolWithAggregatesFilter<"Venue"> | boolean
   isActive?: Prisma.BoolWithAggregatesFilter<"Venue"> | boolean
+  isPopular?: Prisma.BoolWithAggregatesFilter<"Venue"> | boolean
+  popularityRank?: Prisma.IntNullableWithAggregatesFilter<"Venue"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Venue"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Venue"> | Date | string
 }
@@ -361,6 +421,8 @@ export type VenueCreateInput = {
   facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
+  isPopular?: boolean
+  popularityRank?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   courts?: Prisma.CourtCreateNestedManyWithoutVenueInput
@@ -381,6 +443,8 @@ export type VenueUncheckedCreateInput = {
   facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
+  isPopular?: boolean
+  popularityRank?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   courts?: Prisma.CourtUncheckedCreateNestedManyWithoutVenueInput
@@ -401,6 +465,8 @@ export type VenueUpdateInput = {
   facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isPopular?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  popularityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   courts?: Prisma.CourtUpdateManyWithoutVenueNestedInput
@@ -421,6 +487,8 @@ export type VenueUncheckedUpdateInput = {
   facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isPopular?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  popularityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   courts?: Prisma.CourtUncheckedUpdateManyWithoutVenueNestedInput
@@ -441,6 +509,8 @@ export type VenueCreateManyInput = {
   facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
+  isPopular?: boolean
+  popularityRank?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -459,6 +529,8 @@ export type VenueUpdateManyMutationInput = {
   facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isPopular?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  popularityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -477,6 +549,8 @@ export type VenueUncheckedUpdateManyInput = {
   facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isPopular?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  popularityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -503,8 +577,14 @@ export type VenueCountOrderByAggregateInput = {
   facilities?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  isPopular?: Prisma.SortOrder
+  popularityRank?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type VenueAvgOrderByAggregateInput = {
+  popularityRank?: Prisma.SortOrder
 }
 
 export type VenueMaxOrderByAggregateInput = {
@@ -520,6 +600,8 @@ export type VenueMaxOrderByAggregateInput = {
   coverImage?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  isPopular?: Prisma.SortOrder
+  popularityRank?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -537,8 +619,14 @@ export type VenueMinOrderByAggregateInput = {
   coverImage?: Prisma.SortOrder
   isVerified?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  isPopular?: Prisma.SortOrder
+  popularityRank?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type VenueSumOrderByAggregateInput = {
+  popularityRank?: Prisma.SortOrder
 }
 
 export type VenueScalarRelationFilter = {
@@ -565,6 +653,14 @@ export type VenueUpdatefacilitiesInput = {
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -613,6 +709,8 @@ export type VenueCreateWithoutCourtsInput = {
   facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
+  isPopular?: boolean
+  popularityRank?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   equipment?: Prisma.EquipmentCreateNestedManyWithoutVenueInput
@@ -632,6 +730,8 @@ export type VenueUncheckedCreateWithoutCourtsInput = {
   facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
+  isPopular?: boolean
+  popularityRank?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   equipment?: Prisma.EquipmentUncheckedCreateNestedManyWithoutVenueInput
@@ -667,6 +767,8 @@ export type VenueUpdateWithoutCourtsInput = {
   facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isPopular?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  popularityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   equipment?: Prisma.EquipmentUpdateManyWithoutVenueNestedInput
@@ -686,6 +788,8 @@ export type VenueUncheckedUpdateWithoutCourtsInput = {
   facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isPopular?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  popularityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   equipment?: Prisma.EquipmentUncheckedUpdateManyWithoutVenueNestedInput
@@ -705,6 +809,8 @@ export type VenueCreateWithoutEquipmentInput = {
   facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
+  isPopular?: boolean
+  popularityRank?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   courts?: Prisma.CourtCreateNestedManyWithoutVenueInput
@@ -724,6 +830,8 @@ export type VenueUncheckedCreateWithoutEquipmentInput = {
   facilities?: Prisma.VenueCreatefacilitiesInput | string[]
   isVerified?: boolean
   isActive?: boolean
+  isPopular?: boolean
+  popularityRank?: number | null
   createdAt?: Date | string
   updatedAt?: Date | string
   courts?: Prisma.CourtUncheckedCreateNestedManyWithoutVenueInput
@@ -759,6 +867,8 @@ export type VenueUpdateWithoutEquipmentInput = {
   facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isPopular?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  popularityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   courts?: Prisma.CourtUpdateManyWithoutVenueNestedInput
@@ -778,6 +888,8 @@ export type VenueUncheckedUpdateWithoutEquipmentInput = {
   facilities?: Prisma.VenueUpdatefacilitiesInput | string[]
   isVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isPopular?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  popularityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   courts?: Prisma.CourtUncheckedUpdateManyWithoutVenueNestedInput
@@ -837,6 +949,8 @@ export type VenueSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   facilities?: boolean
   isVerified?: boolean
   isActive?: boolean
+  isPopular?: boolean
+  popularityRank?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   courts?: boolean | Prisma.Venue$courtsArgs<ExtArgs>
@@ -858,6 +972,8 @@ export type VenueSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   facilities?: boolean
   isVerified?: boolean
   isActive?: boolean
+  isPopular?: boolean
+  popularityRank?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["venue"]>
@@ -876,6 +992,8 @@ export type VenueSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   facilities?: boolean
   isVerified?: boolean
   isActive?: boolean
+  isPopular?: boolean
+  popularityRank?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["venue"]>
@@ -894,11 +1012,13 @@ export type VenueSelectScalar = {
   facilities?: boolean
   isVerified?: boolean
   isActive?: boolean
+  isPopular?: boolean
+  popularityRank?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type VenueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "address" | "city" | "phone" | "email" | "timeZone" | "coverImage" | "facilities" | "isVerified" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["venue"]>
+export type VenueOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "name" | "description" | "address" | "city" | "phone" | "email" | "timeZone" | "coverImage" | "facilities" | "isVerified" | "isActive" | "isPopular" | "popularityRank" | "createdAt" | "updatedAt", ExtArgs["result"]["venue"]>
 export type VenueInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   courts?: boolean | Prisma.Venue$courtsArgs<ExtArgs>
   equipment?: boolean | Prisma.Venue$equipmentArgs<ExtArgs>
@@ -927,6 +1047,8 @@ export type $VenuePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     facilities: string[]
     isVerified: boolean
     isActive: boolean
+    isPopular: boolean
+    popularityRank: number | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["venue"]>
@@ -1367,6 +1489,8 @@ export interface VenueFieldRefs {
   readonly facilities: Prisma.FieldRef<"Venue", 'String[]'>
   readonly isVerified: Prisma.FieldRef<"Venue", 'Boolean'>
   readonly isActive: Prisma.FieldRef<"Venue", 'Boolean'>
+  readonly isPopular: Prisma.FieldRef<"Venue", 'Boolean'>
+  readonly popularityRank: Prisma.FieldRef<"Venue", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Venue", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Venue", 'DateTime'>
 }

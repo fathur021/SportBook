@@ -43,6 +43,8 @@ const createdVenueSelect = {
   facilities: true,
   isVerified: true,
   isActive: true,
+  isPopular:true,
+  popularityRank:true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.VenueSelect;
@@ -83,6 +85,26 @@ export function deactivateVenueBySlug(slug: string) {
     data: { isActive: false },
     select: createdVenueSelect,
   });
+}
+export function findPopularVenue(){
+  return prisma.venue.findMany({
+    where: {
+      isActive:true,
+      isPopular:true,
+    },
+    orderBy: [{popularityRank: "asc"},{name:"asc"}],
+    take:4,
+    select:publicVenueSelect,
+  })
+}
+
+export function findFallbackPopularityVenues(){
+  return prisma.venue.findMany({
+    where: {isActive:true},
+    orderBy: {createdAt:"desc"},
+    take:4,
+    select:publicVenueSelect
+  })
 }
 
 export function findAdminVenues() {

@@ -94,6 +94,8 @@ export const VenueScalarFieldEnum = {
   facilities: 'facilities',
   isVerified: 'isVerified',
   isActive: 'isActive',
+  isPopular: 'isPopular',
+  popularityRank: 'popularityRank',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

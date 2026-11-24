@@ -1,4 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import {
+  getBusinessDateKey,
+  isTimeOverlap,
+  minutesToTime,
+  parseDateKey,
+  timeToMinutes,
+  toDateKey,
+} from "@/lib/datetime";
 import { CourtNotFoundError } from "../courts/court.service"; // import error dari court
 import {
   findBookingById,
@@ -21,7 +29,7 @@ import { getSettingsService } from "../settings/settings.service";
 
 // Daftar status yang masih "menahan" slot (booking yang memblokir jadwal)
 const ACTIVE_STATUSES = ["PENDING", "CONFIRMED"];
-
+const DAY_MS = 24 * 60 * 60 * 1000;
 // == costom error ==
 
 // Error HTTP 409: slot yang diminta sudah dipesan orang lain
@@ -109,60 +117,6 @@ export class BookingAlreadyFinalizedError extends Error {
 }
 
 // === Helper ===
-function toMinutes(time: string) {
-  const [hour, minute] = time.split(":").map(Number);
-  return hour * 60 + minute;
-}
-
-// Mengubah menit menjadi jam.
-function toTime(totalMinutes: number) {
-  // Math.floor membulatkan ke bawah.
-  // 450 / 60 = 7.
-  const hour = Math.floor(totalMinutes / 60);
-
-  // Sisa bagi menghasilkan menit.
-  // 450 % 60 = 30.
-  const minute = totalMinutes % 60;
-
-  // padStart menambah nol di depan supaya selalu dua digit.
-  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-}
-
-// Menghitung tanggal beberapa hari setelah hari ini.
-function dateAfterDays(days: number) {
-  // Ambil waktu sekarang.
-  const now = new Date();
-
-  // Buat tanggal baru dengan hari ditambah.
-  // Ini otomatis pindah bulan kalau perlu.
-  const date = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() + days,
-  );
-
-  // Ambil tahun.
-  const year = date.getFullYear();
-
-  // Ambil bulan, tambah 1 karena bulan dimulai dari 0.
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-
-  // Ambil tanggal.
-  const day = String(date.getDate()).padStart(2, "0");
-
-  // Gabungkan menjadi "YYYY-MM-DD".
-  return `${year}-${month}-${day}`;
-}
-
-//Mengambil tanggal hari ini dalam format "YYYY-MM-DD" sesuai waktu lokal server
-function todayDateString() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const date = String(now.getDate()).padStart(2, "0");
-  // Rangkai semua menjadi "2026-10-30"
-  return `${year}-${month}-${date}`;
-}
 
 //membuat kode pesan unik, contoh: "SPB-17613423423-K3FA"
 function generateOrderCode() {
@@ -170,17 +124,6 @@ function generateOrderCode() {
   const random = Math.random().toString(36).slice(2, 6).toUpperCase();
 
   return `SPB-${timestamp}-${random}`;
-}
-
-//mencegah apakah 2 rentang waktu saling tumpang tindih (bentrok)
-// Rentang baru bentrok jika: mulai-baru SEBELUM selesai-lama DAN selesai-baru SETELAH mulai-lama
-function isTimeOverlap(
-  newStart: string,
-  newEnd: string,
-  existingStart: string,
-  existingEnd: string,
-) {
-  return newStart < existingEnd && newEnd > existingStart;
 }
 
 // === service ===
@@ -209,10 +152,10 @@ export async function getAvailabilityService(
   await cancelExpiredBookings(holdMs);
 
   // Jam buka dalam menit.
-  const openingMinutes = toMinutes(settings.openTime);
+  const openingMinutes = timeToMinutes(settings.openTime);
 
   // Jam tutup dalam menit.
-  const closingMinutes = toMinutes(settings.closeTime);
+  const closingMinutes = timeToMinutes(settings.closeTime);
 
   // Ambil semua booking yang masih aktif pada tanggal itu.
   const existingBookings = await findBookingConflictList(
@@ -233,10 +176,10 @@ export async function getAvailabilityService(
     startMinutes += 60
   ) {
     // Jam mulai slot.
-    const startTime = toTime(startMinutes);
+    const startTime = minutesToTime(startMinutes);
 
     // Jam selesai slot.
-    const endTime = toTime(startMinutes + 60);
+    const endTime = minutesToTime(startMinutes + 60);
 
     // Cek apakah slot ini bentrok dengan booking lain.
     const isBooked = existingBookings.some((existing) =>
@@ -287,7 +230,7 @@ export async function createBookingService(
 
   // Ubah jam mulai menjadi menit.
   // Contoh: "08:00" menjadi 480.
-  const startMinutes = toMinutes(input.startTime);
+  const startMinutes = timeToMinutes(input.startTime);
 
   // Hitung jam selesai dalam menit.
   // durationHour x 60 mengubah jam menjadi menit.
@@ -295,10 +238,10 @@ export async function createBookingService(
   const endMinutes = startMinutes + input.durationHour * 60;
 
   // Jam buka dalam menit.
-  const openingMinutes = toMinutes(settings.openTime);
+  const openingMinutes = timeToMinutes(settings.openTime);
 
   // Jam tutup dalam menit.
-  const closingMinutes = toMinutes(settings.closeTime);
+  const closingMinutes = timeToMinutes(settings.closeTime);
 
   // Mulai sebelum jam buka berarti ditolak.
   // Selesai setelah jam tutup juga ditolak.
@@ -310,10 +253,10 @@ export async function createBookingService(
   // Ubah jam selesai kembali ke teks "HH:MM".
   // Contoh: 600 menjadi "10:00".
   // Nilai ini yang nanti disimpan ke database.
-  const endTime = toTime(endMinutes);
+  const endTime = minutesToTime(endMinutes);
 
   // Ambil tanggal hari ini dari server, format "YYYY-MM-DD".
-  const today = todayDateString();
+  const today = getBusinessDateKey();
 
   // Tanggal yang sudah lewat selalu ditolak.
   // Perbandingan teks tanggal berformat YYYY-MM-DD sama hasilnya
@@ -332,7 +275,9 @@ export async function createBookingService(
 
   // Hitung tanggal paling jauh yang boleh dipesan.
   // Contoh: hari ini + 30 hari.
-  const lastAllowedDate = dateAfterDays(settings.maxAdvanceDays);
+  const lastAllowedDate = getBusinessDateKey(
+    new Date(Date.now() + settings.maxAdvanceDays * DAY_MS),
+  );
 
   // Tolak kalau tanggal yang dipilih melewati batas itu.
   if (input.playDate > lastAllowedDate) {
@@ -582,13 +527,6 @@ export async function updateBookingStatusService(
 }
 
 //7. Slot tersedia per tanggal dalam rentang (untuk calendar view)
-function toDateKeyLocal(d: Date) {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const date = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${date}`;
-}
-
 export async function getCourtAvailabilityRangeService(
   courtId: string,
   startDate: string,
@@ -602,10 +540,17 @@ export async function getCourtAvailabilityRangeService(
 
   // Generate semua tanggal dalam rentang
   const dates: string[] = [];
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    dates.push(toDateKeyLocal(d));
+  const start = parseDateKey(startDate);
+  const end = parseDateKey(endDate);
+
+  if (!start || !end) return [];
+
+  for (
+    let d = new Date(start.getTime());
+    d.getTime() <= end.getTime();
+    d.setUTCDate(d.getUTCDate() + 1)
+  ) {
+    dates.push(toDateKey(d));
   }
 
   // Untuk setiap tanggal, hitung slot tersedia
