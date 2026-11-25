@@ -1,5 +1,5 @@
 import {
-  deactivateVenueController,
+  deleteVenueController,
   updateVenueController,
 } from "@/modules/venues/venue.controller";
 
@@ -16,5 +16,5 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> },
 ): Promise<Response> {
   const { slug } = await params;
-  return deactivateVenueController(request, slug);
+  return deleteVenueController(request, slug);
 }

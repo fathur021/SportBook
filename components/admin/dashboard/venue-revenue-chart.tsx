@@ -46,8 +46,11 @@ export function VenueRevenueChart() {
     );
   }
 
+  // Batasi supaya grafik tetap terbaca di kolom sempit.
+  const topVenues = data.venueRevenue.slice(0, 6);
+
   // Kalau belum ada pembayaran, tampilkan pesan, bukan grafik kosong.
-  if (data.venueRevenue.length === 0) {
+  if (topVenues.length === 0) {
     return (
       <div className="flex h-72 items-center justify-center text-sm text-slate-500">
         Belum ada pembayaran lunas dalam 30 hari terakhir.
@@ -59,7 +62,7 @@ export function VenueRevenueChart() {
     <ChartContainer config={chartConfig} className="aspect-auto h-72 w-full">
       <BarChart
         // Sumber data sekarang dari API.
-        data={data.venueRevenue}
+        data={topVenues}
         layout="vertical"
         margin={{ left: 0, right: 52, top: 4, bottom: 4 }}
       >
@@ -69,8 +72,13 @@ export function VenueRevenueChart() {
           type="category"
           tickLine={false}
           axisLine={false}
-          width={128}
+          width={104}
           tick={{ fontSize: 12 }}
+          tickFormatter={(value) =>
+            String(value).length > 18
+              ? `${String(value).slice(0, 17)}…`
+              : String(value)
+          }
         />
         <ChartTooltip
           cursor={false}

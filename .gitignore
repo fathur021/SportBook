@@ -62,3 +62,7 @@ next-env.d.ts
 /postman/
 *.postman_collection.json
 *.postman_environment.json
+
+# gambar hasil upload admin tidak ikut masuk git
+/public/uploads/*
+!/public/uploads/.gitkeep

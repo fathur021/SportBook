@@ -35,13 +35,3 @@ export function paginate<T>(
     hasNext: currentPage < totalPages,
   };
 }
-
-// page=1 sengaja dibuang agar URL canonical tetap "/explore".
-// extra dipakai supaya parameter lain (sort/filter) ikut dibawa tanpa
-// kehilangan nomor halaman.
-export function buildPageHref(page: number, extra?: Record<string, string>) {
-  const params = new URLSearchParams(extra);
-  if (page > 1) params.set("page", String(page));
-  const qs = params.toString();
-  return qs ? `/explore?${qs}` : "/explore";
-}

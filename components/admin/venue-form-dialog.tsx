@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useId } from "react";
 import { useCreateVenueMutation } from "@/lib/redux/admin-api";
-
+import { ImageUploadField } from "./image-upload-field";
 type VenueFormDialogProps = {
   trigger: ReactElement;
 };
@@ -136,10 +136,7 @@ export function VenueFormDialog({ trigger }: VenueFormDialogProps) {
                 placeholder="081234567890"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="venue-image">URL foto cover</Label>
-              <Input id="venue-image" name="image" placeholder="/hero.webp" />
-            </div>
+            <ImageUploadField id="venue-image" name="image" label="Foto cover" />
           </div>
 
           <div className="space-y-1.5">

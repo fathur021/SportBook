@@ -1,10 +1,10 @@
 "use client";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button"; 
-import { Pencil, Trash2 } from "lucide-react"; 
+import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
 import {
-  Dialog, 
+  Dialog,
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -13,14 +13,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input"; 
-import { Label } from "@/components/ui/label"; 
-import { Switch } from "@/components/ui/switch"; 
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
-  useUpdateCourtMutation, 
-  useToggleCourtMutation, 
-  useDeleteCourtMutation, 
+  useUpdateCourtMutation,
+  useToggleCourtMutation,
+  useDeleteCourtMutation,
 } from "@/lib/redux/admin-api";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 
 type CourtItem = {
   id: string;
@@ -41,6 +42,32 @@ type CourtRowActionsProps = {
 export function CourtRowActions({ item, slug }: CourtRowActionsProps) {
   const [open, setOpen] = useState(false);
   const [updateCourt, { isLoading: isLoadingEdit }] = useUpdateCourtMutation();
+
+  // State form dikendalikan supaya tidak memakai defaultValue yang bisa berubah
+  const [name, setName] = useState(item.name);
+  const [sport, setSport] = useState(item.sport);
+  const [surface, setSurface] = useState(item.surface ?? "");
+  const [maxPlayers, setMaxPlayers] = useState(
+    item.maxPlayers?.toString() ?? "",
+  );
+  const [pricePerHour, setPricePerHour] = useState(String(item.pricePerHour));
+
+  // Segarkan state saat dialog dibuka dengan data terbaru dari tabel
+  useEffect(() => {
+    if (!open) return;
+    setName(item.name);
+    setSport(item.sport);
+    setSurface(item.surface ?? "");
+    setMaxPlayers(item.maxPlayers?.toString() ?? "");
+    setPricePerHour(String(item.pricePerHour));
+  }, [
+    open,
+    item.name,
+    item.sport,
+    item.surface,
+    item.maxPlayers,
+    item.pricePerHour,
+  ]);
 
   const [active, setActive] = useState(item.isActive);
   const [toggleCourt, { isLoading: isLoadingToggle }] =
@@ -77,32 +104,38 @@ export function CourtRowActions({ item, slug }: CourtRowActionsProps) {
     }
   }
 
-  async function handleToggle(){
+  async function handleToggle() {
     const newStatus = !active;
-    setActive(newStatus)
+    setActive(newStatus);
     try {
-        await toggleCourt({
-            slug,
-            courtId:item.id,
-            isActive: newStatus,
-        }).unwrap()
-    } catch (error:any) {
-        const serverMsg = error?.data?.error || "Gagal mengubah status court";
+      await toggleCourt({
+        slug,
+        courtId: item.id,
+        isActive: newStatus,
+      }).unwrap();
+    } catch (error: any) {
+      const serverMsg = error?.data?.error || "Gagal mengubah status court";
       alert(serverMsg);
       setActive(!newStatus);
     }
   }
   async function handleDelete() {
     // Konfirmasi pertama — pastikan user ingin menghapus
-    if (!confirm(`Yakin ingin menghapus "${item.name}" secara permanen?`)) return;
+    if (!confirm(`Yakin ingin menghapus "${item.name}" secara permanen?`))
+      return;
     // Konfirmasi kedua — peringatan bahwa tindakan tidak bisa dibatalkan
-    if (!confirm(`PERINGATAN: Tindakan ini tidak bisa dibatalkan! Semua booking terkait juga akan dihapus.`)) return;
+    if (
+      !confirm(
+        `PERINGATAN: Tindakan ini tidak bisa dibatalkan! Semua booking terkait juga akan dihapus.`,
+      )
+    )
+      return;
 
     try {
       // Kirim DELETE request ke API via Redux mutation untuk hard delete
       await deleteCourt({
-        slug,           
-        courtId: item.id, 
+        slug,
+        courtId: item.id,
       }).unwrap();
     } catch (err: any) {
       // Jika API error, tampilkan pesan
@@ -134,7 +167,8 @@ export function CourtRowActions({ item, slug }: CourtRowActionsProps) {
                 id="edit-court-name"
                 name="name"
                 placeholder="Court 1 - Panoramic Glass"
-                defaultValue={item.name}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
                 required
               />
             </div>
@@ -147,7 +181,8 @@ export function CourtRowActions({ item, slug }: CourtRowActionsProps) {
                   id="edit-court-sport"
                   name="sport"
                   placeholder="Padel"
-                  defaultValue={item.sport}
+                  value={sport}
+                  onChange={(event) => setSport(event.target.value)}
                   required
                 />
               </div>
@@ -159,7 +194,8 @@ export function CourtRowActions({ item, slug }: CourtRowActionsProps) {
                   type="number"
                   min={1}
                   placeholder="4"
-                  defaultValue={item.maxPlayers ?? ""}
+                  value={maxPlayers}
+                  onChange={(event) => setMaxPlayers(event.target.value)}
                 />
               </div>
             </div>
@@ -171,21 +207,20 @@ export function CourtRowActions({ item, slug }: CourtRowActionsProps) {
                 id="edit-court-surface"
                 name="surface"
                 placeholder="Vinyl"
-                defaultValue={item.surface ?? ""}
+                value={surface}
+                onChange={(event) => setSurface(event.target.value)}
               />
             </div>
 
             {/* Field: URL Gambar */}
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-court-image">URL Gambar</Label>
-              <Input
-                id="edit-court-image"
-                name="image"
-                type="url"
-                placeholder="https://images.unsplash.com/..."
-                defaultValue={item.image ?? ""}
-              />
-            </div>
+
+            <ImageUploadField
+              key={open ? `${item.id}-image-open` : `${item.id}-image-closed`}
+              id="edit-court-image"
+              name="image"
+              label="Gambar Court"
+              initialUrl={item.image ?? ""}
+            />
 
             {/* Field: Harga per Jam */}
             <div className="space-y-1.5">
@@ -197,7 +232,8 @@ export function CourtRowActions({ item, slug }: CourtRowActionsProps) {
                 min={10000}
                 step={1}
                 placeholder="260000"
-                defaultValue={item.pricePerHour}
+                value={pricePerHour}
+                onChange={(event) => setPricePerHour(event.target.value)}
                 required
               />
             </div>
@@ -209,7 +245,7 @@ export function CourtRowActions({ item, slug }: CourtRowActionsProps) {
               </DialogClose>
               <Button
                 type="submit"
-                disabled={isLoadingEdit} 
+                disabled={isLoadingEdit}
                 className="bg-emerald-600 text-white hover:bg-emerald-700"
               >
                 {isLoadingEdit ? "Menyimpan..." : "Perbarui Court"}
@@ -219,21 +255,21 @@ export function CourtRowActions({ item, slug }: CourtRowActionsProps) {
         </DialogContent>
       </Dialog>
       <Switch
-      checked={active}
-      onCheckedChange={handleToggle}
-      size="sm"
-      disabled={isLoadingToggle}
+        checked={active}
+        onCheckedChange={handleToggle}
+        size="sm"
+        disabled={isLoadingToggle}
       />
       <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isLoadingDelete} 
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            >
-              <Trash2 data-icon="inline-start" size={14} />
-              Hapus
-            </Button>
+        variant="ghost"
+        size="sm"
+        onClick={handleDelete}
+        disabled={isLoadingDelete}
+        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+      >
+        <Trash2 data-icon="inline-start" size={14} />
+        Hapus
+      </Button>
     </div>
   );
 }

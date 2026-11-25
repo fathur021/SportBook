@@ -20,9 +20,9 @@ import { Switch } from "@/components/ui/switch";
 import {
   useUpdateVenueMutation,
   useToggleVenueMutation,
-  useDeactivateVenueMutation,
+  useDeleteVenueMutation,
 } from "@/lib/redux/admin-api";
-
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 // Tipe data venue yang diterima dari tabel
 type VenueItem = {
   id: string;
@@ -36,6 +36,9 @@ type VenueItem = {
   description?: string | null;
   facilities?: string[];
   isActive?: boolean;
+  isPopular?: boolean;
+  // Dibuat opsional supaya cocok dengan AdminVenue dari tabel admin
+  popularityRank?: number | null;
 };
 
 type VenueRowActionsProps = {
@@ -51,9 +54,11 @@ export function VenueRowActions({ item }: VenueRowActionsProps) {
   const [toggleVenue, { isLoading: isLoadingToggle }] =
     useToggleVenueMutation();
 
-  // Mutation untuk soft delete venue
-  const [deactivateVenue, { isLoading: isLoadingDelete }] =
-    useDeactivateVenueMutation();
+  const [popular, setPopular] = useState(item.isPopular ?? false);
+
+  // Mutation untuk hapus permanen venue beserta data terkait
+  const [deleteVenue, { isLoading: isLoadingDelete }] =
+    useDeleteVenueMutation();
 
   // Submit form edit venue
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -61,6 +66,14 @@ export function VenueRowActions({ item }: VenueRowActionsProps) {
 
     const form = event.currentTarget;
     const formData = new FormData(form);
+
+    const rankRaw = String(formData.get("popularityRank") ?? "");
+    const parsedRank = Number(rankRaw);
+    // Urutan disimpan hanya kalau venue ditandai popular dan angkanya valid
+    const popularityRank =
+      popular && Number.isInteger(parsedRank) && parsedRank > 0
+        ? parsedRank
+        : null;
 
     // Kumpulkan data dari form
     const data = {
@@ -71,6 +84,8 @@ export function VenueRowActions({ item }: VenueRowActionsProps) {
       email: String(formData.get("email") ?? "").trim() || null,
       description: String(formData.get("description") ?? "").trim() || null,
       coverImage: String(formData.get("coverImage") ?? "").trim() || null,
+      isPopular: popular,
+      popularityRank,
     };
 
     try {
@@ -108,17 +123,20 @@ export function VenueRowActions({ item }: VenueRowActionsProps) {
     }
   }
 
-  // Soft delete venue (nonaktifkan, bukan hapus permanen)
+  // Hard delete venue beserta court, booking, dan payment terkait
   async function handleDelete() {
-    // Konfirmasi sebelum menonaktifkan
-    if (!confirm(`Yakin ingin menonaktifkan "${item.name}"? Venue ini tidak akan terlihat oleh pengguna.`)) return;
+    if (!confirm(`Yakin ingin menghapus permanen "${item.name}"?`)) return;
+    if (
+      !confirm(
+        `PERINGATAN: Tindakan ini tidak bisa dibatalkan! Semua court, booking, dan pembayaran terkait juga akan dihapus.`,
+      )
+    )
+      return;
 
     try {
-      // Kirim DELETE request ke API via Redux mutation untuk soft delete
-      await deactivateVenue(item.slug).unwrap();
+      await deleteVenue(item.slug).unwrap();
     } catch (err: any) {
-      // Jika API error, tampilkan pesan
-      const serverMsg = err?.data?.error || "Gagal menonaktifkan venue";
+      const serverMsg = err?.data?.error || "Gagal menghapus venue";
       alert(serverMsg);
     }
   }
@@ -133,100 +151,141 @@ export function VenueRowActions({ item }: VenueRowActionsProps) {
           Edit
         </DialogTrigger>
 
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
+        {/* Tinggi dialog dibatasi supaya tidak melewati layar */}
+        <DialogContent className="flex max-h-[calc(100vh-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
+          {/* Header dikunci di atas */}
+          <DialogHeader className="shrink-0 gap-1.5 border-b px-4 py-4">
             <DialogTitle>Edit Venue</DialogTitle>
             <DialogDescription>
               Perbarui detail venue yang tersedia.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Field: Nama venue */}
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-venue-name">Nama venue *</Label>
-              <Input
-                id="edit-venue-name"
-                name="name"
-                placeholder="SportHub Arena Jakarta"
-                defaultValue={item.name}
-                required
-              />
-            </div>
-
-            {/* Field: Alamat dan Kota (2 kolom) */}
-            <div className="grid gap-4 sm:grid-cols-2">
+          {/* Form dibagi dua: isi yang bisa digulir + footer yang tetap */}
+          <form
+            onSubmit={handleSubmit}
+            className="flex min-h-0 flex-1 flex-col"
+          >
+            {/* Hanya bagian field yang digulir */}
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
+              {/* Field: Nama venue */}
               <div className="space-y-1.5">
-                <Label htmlFor="edit-venue-city">Kota *</Label>
+                <Label htmlFor="edit-venue-name">Nama venue *</Label>
                 <Input
-                  id="edit-venue-city"
-                  name="city"
-                  placeholder="Jakarta"
-                  defaultValue={item.city}
+                  id="edit-venue-name"
+                  name="name"
+                  placeholder="SportHub Arena Jakarta"
+                  defaultValue={item.name}
                   required
                 />
               </div>
+
+              {/* Field: Kota dan Telepon (2 kolom) */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-venue-city">Kota *</Label>
+                  <Input
+                    id="edit-venue-city"
+                    name="city"
+                    placeholder="Jakarta"
+                    defaultValue={item.city}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-venue-phone">Telepon</Label>
+                  <Input
+                    id="edit-venue-phone"
+                    name="phone"
+                    placeholder="+62 812-xxxx-xxxx"
+                    defaultValue={item.phone ?? ""}
+                  />
+                </div>
+              </div>
+
+              {/* Field: Alamat lengkap */}
               <div className="space-y-1.5">
-                <Label htmlFor="edit-venue-phone">Telepon</Label>
+                <Label htmlFor="edit-venue-address">Alamat *</Label>
                 <Input
-                  id="edit-venue-phone"
-                  name="phone"
-                  placeholder="+62 812-xxxx-xxxx"
-                  defaultValue={item.phone ?? ""}
+                  id="edit-venue-address"
+                  name="address"
+                  placeholder="Jl. Sudirman No. 123, Jakarta Selatan"
+                  defaultValue={item.address}
+                  required
                 />
               </div>
-            </div>
 
-            {/* Field: Alamat lengkap */}
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-venue-address">Alamat *</Label>
-              <Input
-                id="edit-venue-address"
-                name="address"
-                placeholder="Jl. Sudirman No. 123, Jakarta Selatan"
-                defaultValue={item.address}
-                required
-              />
-            </div>
+              {/* Field: Email */}
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-venue-email">Email</Label>
+                <Input
+                  id="edit-venue-email"
+                  name="email"
+                  type="email"
+                  placeholder="info@sportbook.com"
+                  defaultValue={item.email ?? ""}
+                />
+              </div>
 
-            {/* Field: Email */}
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-venue-email">Email</Label>
-              <Input
-                id="edit-venue-email"
-                name="email"
-                type="email"
-                placeholder="info@sportbook.com"
-                defaultValue={item.email ?? ""}
-              />
-            </div>
-
-            {/* Field: URL Gambar Cover */}
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-venue-coverImage">URL Gambar Cover</Label>
-              <Input
+              {/* Field: URL Gambar Cover */}
+              <ImageUploadField
                 id="edit-venue-coverImage"
                 name="coverImage"
-                type="url"
-                placeholder="https://images.unsplash.com/..."
-                defaultValue={item.coverImage ?? ""}
+                label="Gambar Cover"
+                initialUrl={item.coverImage ?? ""}
               />
+
+              {/* Field: Deskripsi */}
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-venue-description">Deskripsi</Label>
+                <Textarea
+                  id="edit-venue-description"
+                  name="description"
+                  placeholder="Deskripsi singkat tentang venue..."
+                  defaultValue={item.description ?? ""}
+                  rows={3}
+                />
+              </div>
+
+              {/* Switch popular: admin menandai venue untuk homepage */}
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="edit-venue-popular">
+                    Tampilkan di Popular Venues
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Venue ini akan muncul di homepage.
+                  </p>
+                </div>
+                <Switch
+                  id="edit-venue-popular"
+                  checked={popular}
+                  onCheckedChange={setPopular}
+                  size="sm"
+                />
+              </div>
+
+              {/* Input urutan hanya muncul kalau popular aktif */}
+              {popular && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-venue-rank">Urutan popular</Label>
+                  <Input
+                    id="edit-venue-rank"
+                    name="popularityRank"
+                    type="number"
+                    min={1}
+                    placeholder="1"
+                    defaultValue={item.popularityRank ?? ""}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Angka terkecil tampil paling depan.
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Field: Deskripsi */}
-            <div className="space-y-1.5">
-              <Label htmlFor="edit-venue-description">Deskripsi</Label>
-              <Textarea
-                id="edit-venue-description"
-                name="description"
-                placeholder="Deskripsi singkat tentang venue..."
-                defaultValue={item.description ?? ""}
-                rows={3}
-              />
-            </div>
-
-            {/* Tombol di bawah dialog */}
-            <DialogFooter>
+            {/* Footer tidak ikut digulir, jadi tombol tetap terlihat */}
+            <DialogFooter className="mx-0 mb-0 shrink-0 gap-2 rounded-none border-t bg-muted/80 px-4 py-3 sm:flex-row sm:justify-end">
               {/* Tombol Batal — styling disalin manual karena @base-ui/react tidak support asChild */}
               <DialogClose className="group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-input bg-background hover:bg-accent hover:text-accent-foreground text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 gap-1.5 px-4 py-2">
                 Batal

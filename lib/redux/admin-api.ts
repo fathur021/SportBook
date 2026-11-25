@@ -63,6 +63,8 @@ export interface AdminVenue {
   coverImage?: string | null;
   facilities: string[];
   isActive?: boolean;
+  isPopular?: boolean;
+  popularityRank?: number | null;
   courts: AdminCourt[];
 }
 
@@ -75,6 +77,8 @@ export interface CreateVenueBody {
   phone?: string;
   email?: string;
   coverImage?: string;
+  isPopular?: boolean;
+  popularityRank?: number | null;
   facilities?: string[];
 }
 
@@ -98,6 +102,8 @@ export interface UpdateVenueBody {
   coverImage?: string | null;
   facilities?: string[];
   isActive?: boolean;
+  isPopular?: boolean;
+  popularityRank?: number | null;
 }
 
 export type ReportPeriod = "all" | "30" | "90";
@@ -261,7 +267,7 @@ const adminApi = createApi({
       invalidatesTags: ["AdminVenue"],
     }),
 
-    deactivateVenue: build.mutation<void, string>({
+    deleteVenue: build.mutation<void, string>({
       query: (slug) => ({
         url: `/api/admin/venues/${slug}`,
         method: "DELETE",
@@ -456,7 +462,7 @@ export const {
   useGetPublicVenueDetailQuery,
   useCreateVenueMutation,
   useUpdateVenueMutation,
-  useDeactivateVenueMutation,
+  useDeleteVenueMutation,
   useToggleVenueMutation,
   useGetVenueCourtsQuery,
   useCreateCourtMutation,

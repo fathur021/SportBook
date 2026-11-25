@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useCreateCourtMutation } from "@/lib/redux/admin-api";
-
+import { ImageUploadField } from "./image-upload-field";
 type CourtFormDialogProps = {
   trigger: ReactElement;
   slug: string;
@@ -128,15 +128,7 @@ export default function CourtFormDialog({
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor={`${id}-image`}>URL Gambar</Label>
-            <Input
-              id={`${id}-image`}
-              name="image"
-              type="url"
-              placeholder="https://images.unsplash.com/..."
-            />
-          </div>
+          <ImageUploadField id={`${id}-image`} name="image" label="Gambar court" />
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">

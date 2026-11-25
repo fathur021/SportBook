@@ -27,9 +27,14 @@ export default async function AdminLayout({
           className="sticky top-0 z-30 flex h-16 items-center justify-between
         border-b border-slate-200 bg-white px-6"
         >
-          <h2 className="text-sm font-semibold text-slate-700">
-            Dashboard Panel
-          </h2>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+              SportBook
+            </p>
+            <h2 className="text-sm font-semibold text-slate-700">
+              Panel Admin
+            </h2>
+          </div>
           <div className="flex items-center gap-3">
             <span className="text-xs font-medium text-slate-500">
               Halo {session.user.name}{" "}

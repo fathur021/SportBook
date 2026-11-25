@@ -79,10 +79,9 @@ export function updateVenueBySlug(slug: string, data: UpdateVenueInput) {
   });
 }
 
-export function deactivateVenueBySlug(slug: string) {
-  return prisma.venue.update({
+export function deleteVenueBySlug(slug: string) {
+  return prisma.venue.delete({
     where: { slug },
-    data: { isActive: false },
     select: createdVenueSelect,
   });
 }

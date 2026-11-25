@@ -1,8 +1,11 @@
 import { VenueCard } from "./venue-card";
 import { Container } from "@/components/layout/container";
-import { popularVenues } from "@/lib/listings";
+import type { Venue } from "@/lib/listings";
+type PopularVenuesProps = {
+  venues: Venue[];
+};
 
-export function PopularVenues() {
+export function PopularVenues({ venues }: PopularVenuesProps) {
   return (
     <section className="py-10">
       <Container>
@@ -21,11 +24,17 @@ export function PopularVenues() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {popularVenues.map((venue) => (
-            <VenueCard key={venue.slug} venue={venue} />
-          ))}
-        </div>
+        {venues.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            Belum ada venue untuk ditampilkan.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {venues.map((venue) => (
+              <VenueCard key={venue.slug} venue={venue} />
+            ))}
+          </div>
+        )}
       </Container>
     </section>
   );

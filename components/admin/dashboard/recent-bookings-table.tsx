@@ -106,7 +106,7 @@ export function RecentBookingsTable() {
           Belum ada booking masuk.
         </p>
       ) : (
-        <Table>
+        <Table className="min-w-[720px]">
           <TableHeader>
             <TableRow>
               <TableHead className="pl-5">Kode Order</TableHead>

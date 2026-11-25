@@ -1,6 +1,8 @@
 // "use client" wajib karena komponen ini memakai hook Redux.
 "use client";
 
+import { Building2, Grid2X2, UserPlus } from "lucide-react";
+
 import {
   useGetAdminUsersQuery,
   useGetAdminVenuesQuery,
@@ -15,6 +17,12 @@ const toneStyles = {
   emerald: "bg-emerald-50 text-emerald-700",
   amber: "bg-amber-50 text-amber-700",
   slate: "bg-slate-100 text-slate-600",
+} as const;
+
+const iconStyles = {
+  emerald: "bg-emerald-50 text-emerald-600",
+  amber: "bg-amber-50 text-amber-600",
+  slate: "bg-slate-100 text-slate-500",
 } as const;
 
 // Rentang tujuh hari terakhir dan tujuh hari sebelumnya menurut WIB.
@@ -105,6 +113,7 @@ export function OperationalHighlightsCard() {
           ? `${inactiveVenues} venue sedang tidak aktif`
           : "Semua venue aktif",
       tone: "emerald",
+      icon: Building2,
     },
     {
       key: "courts",
@@ -115,16 +124,20 @@ export function OperationalHighlightsCard() {
           ? `${inactiveCourts} lapangan dalam perawatan`
           : "Semua lapangan aktif",
       tone: "emerald",
+      icon: Grid2X2,
     },
     {
       key: "users",
       label: "User Baru Minggu Ini",
       value: `${newUsers} orang`,
       note:
-        userChange >= 0
+        userChange > 0
           ? `Naik ${userChange} orang dari minggu lalu`
-          : `Turun ${Math.abs(userChange)} orang dari minggu lalu`,
+          : userChange < 0
+            ? `Turun ${Math.abs(userChange)} orang dari minggu lalu`
+            : "Sama dengan minggu lalu",
       tone: "slate",
+      icon: UserPlus,
     },
   ] as const;
 
@@ -138,25 +151,41 @@ export function OperationalHighlightsCard() {
       </header>
 
       <ul className="flex-1 divide-y divide-slate-100">
-        {highlights.map((item) => (
-          <li
-            key={item.key}
-            className="flex items-center justify-between gap-3 px-5 py-3.5"
-          >
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-slate-900">{item.label}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{item.note}</p>
-            </div>
-            <span
-              className={cn(
-                "shrink-0 rounded-md px-2 py-1 text-xs font-semibold",
-                toneStyles[item.tone],
-              )}
+        {highlights.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <li
+              key={item.key}
+              className="flex items-center justify-between gap-3 px-5 py-3.5"
             >
-              {item.value}
-            </span>
-          </li>
-        ))}
+              <div className="flex min-w-0 items-center gap-3">
+                <span
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-lg",
+                    iconStyles[item.tone],
+                  )}
+                >
+                  <Icon className="size-4" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-900">
+                    {item.label}
+                  </p>
+                  <p className="mt-0.5 text-xs text-slate-500">{item.note}</p>
+                </div>
+              </div>
+              <span
+                className={cn(
+                  "shrink-0 rounded-md px-2 py-1 text-xs font-semibold",
+                  toneStyles[item.tone],
+                )}
+              >
+                {item.value}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

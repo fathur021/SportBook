@@ -47,16 +47,20 @@ export function VenueCard({ venue }: { venue: Venue }) {
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
           className="object-cover"
         />
+
         <span className="absolute left-2 top-2 rounded bg-white/90 px-2 py-0.5 text-[10px] font-semibold shadow-sm backdrop-blur-sm">
           {venue.tag}
         </span>
-        <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded bg-white/90 px-2 py-0.5 text-[10px] font-semibold shadow-sm backdrop-blur-sm">
-          <Star className="size-3 fill-amber-400 text-amber-400" />
-          {venue.rating.toFixed(1)}
-          <span className="font-normal text-muted-foreground">
-            ({venue.reviewCount})
+
+        {venue.rating > 0 && (
+          <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded bg-white/90 px-2 py-0.5 text-[10px] font-semibold shadow-sm backdrop-blur-sm">
+            <Star className="size-3 fill-amber-400 text-amber-400" />
+            {venue.rating.toFixed(1)}
+            <span className="font-normal text-muted-foreground">
+              ({venue.reviewCount})
+            </span>
           </span>
-        </span>
+        )}
       </div>
 
       <CardContent className="flex flex-1 flex-col gap-4 p-4">

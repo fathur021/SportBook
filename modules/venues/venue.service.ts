@@ -1,6 +1,6 @@
 import {
   createVenue,
-  deactivateVenueBySlug,
+  deleteVenueBySlug,
   findPublicVenueBySlug,
   findPublicVenues,
   findPopularVenue,
@@ -74,9 +74,9 @@ export async function updateVenueService(
   }
 }
 
-export async function deactivateVenueService(slug: string) {
+export async function deleteVenueService(slug: string) {
   try {
-    return await deactivateVenueBySlug(slug);
+    return await deleteVenueBySlug(slug);
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

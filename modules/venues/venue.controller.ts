@@ -5,7 +5,7 @@ import {
   VenueSlugConflictError,
   updateVenueService,
   VenueNotFoundError,
-  deactivateVenueService,
+  deleteVenueService,
   listAdminVenues,
 } from "./venue.service";
 import {
@@ -167,7 +167,7 @@ export async function updateVenueController(
   }
 }
 
-export async function deactivateVenueController(
+export async function deleteVenueController(
   request: Request,
   rawSlug: string,
 ): Promise<Response> {
@@ -188,7 +188,7 @@ export async function deactivateVenueController(
       );
     }
 
-    const venue = await deactivateVenueService(slugResult.data);
+    const venue = await deleteVenueService(slugResult.data);
 
     return Response.json({ data: venue });
   } catch (error) {
@@ -196,10 +196,10 @@ export async function deactivateVenueController(
       return Response.json({ error: error.message }, { status: 404 });
     }
 
-    console.error("Gagal menonaktifkan venue:", error);
+    console.error("Gagal menghapus venue:", error);
 
     return Response.json(
-      { error: "Gagal menonaktifkan venue" },
+      { error: "Gagal menghapus venue" },
       { status: 500 },
     );
   }
