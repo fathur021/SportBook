@@ -53,6 +53,16 @@ type ActiveChip = {
 function buildChips(params: URLSearchParams): ActiveChip[] {
   const chips: ActiveChip[] = []; // Array penampung seluruh badge filter aktif
 
+  // 0. Kata kunci pencarian dari ?q=
+  const keyword = params.get("q");
+  if (keyword) {
+    chips.push({
+      key: "q",
+      label: `Cari: "${keyword}"`,
+      paramKey: "q",
+    });
+  }
+
   // 1. Filter Instant Book
   if (params.get("instant") === "1") { // Cek jika URL memiliki "?instant=1"
     chips.push({
@@ -214,7 +224,7 @@ export function CourtsHeader() {
         </div>
 
         {/* Judul + Sort */}
-        <div className="mt-4 flex items-start justify-between gap-4">
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
 
           {/* Judul dan deskripsi */}
           <div>

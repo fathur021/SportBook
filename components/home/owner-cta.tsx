@@ -14,7 +14,7 @@ export function OwnerCta() {
   return (
     <section className="py-10">
       <Container>
-        <div className="flex flex-col gap-8 rounded-3xl bg-gradient-to-r from-slate-800 to-slate-900 p-8 text-white shadow-lg md:flex-row md:items-center md:justify-between md:p-10">
+        <div className="flex flex-col gap-8 rounded-3xl bg-gradient-to-r from-slate-800 to-slate-900 p-6 text-white shadow-lg sm:p-8 md:flex-row md:items-center md:justify-between md:p-10">
           {/* Kiri: teks */}
           <div className="flex max-w-2xl flex-col items-start gap-4">
             <span className="inline-flex items-center gap-1.5 rounded bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-300">
@@ -23,7 +23,7 @@ export function OwnerCta() {
             </span>
 
             <div className="space-y-2">
-              <h2 className="text-3xl font-bold tracking-tight">
+              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 Are you a sports venue owner?
               </h2>
               <p className="text-sm text-slate-300">
@@ -44,7 +44,7 @@ export function OwnerCta() {
           </div>
 
           {/* Kanan: tombol */}
-          <div className="flex shrink-0 gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             <Button
               nativeButton={false}
               render={
@@ -53,13 +53,13 @@ export function OwnerCta() {
                   <ArrowRight className="size-4" />
                 </Link>
               }
-              className="bg-emerald-700 hover:bg-emerald-600"
+              className="w-full bg-emerald-700 hover:bg-emerald-600 sm:w-auto"
             />
             <Button
               nativeButton={false}
               variant="ghost"
               render={<Link href="/owner/demo">Schedule Demo</Link>}
-              className="bg-white/10 text-white hover:bg-white/20 hover:text-white"
+              className="w-full bg-white/10 text-white hover:bg-white/20 hover:text-white sm:w-auto"
             />
           </div>
         </div>

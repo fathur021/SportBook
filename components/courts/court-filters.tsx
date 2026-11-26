@@ -5,7 +5,7 @@
 
 import { useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Calendar, Zap } from "lucide-react";
+import { Calendar, ChevronDown, SlidersHorizontal, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
@@ -50,6 +50,7 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
   const [amenities, setAmenities] = useState<string[]>(
     parseList(params.get("amenity")),
   );
+  const [showFilters, setShowFilters] = useState(false);
 
   const handlePriceChange = (value: number | readonly number[]) => {
     if (typeof value === "number") {
@@ -74,22 +75,57 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
   const isCustomDate = date !== "today" && date !== "tomorrow";
 
   const applyFilters = () => {
-    const q = new URLSearchParams();
+    const query = new URLSearchParams();
 
-    if (instant) q.set("instant", "1");
-    if (sports.length) q.set("sport", sports.join(","));
-    q.set("date", date);
-    if (times.length) q.set("time", times.join(","));
-    q.set("min", String(price[0]));
-    q.set("max", String(price[1]));
-    if (floors.length) q.set("floor", floors.join(","));
-    if (amenities.length) q.set("amenity", amenities.join(","));
+    // Pertahankan kata kunci pencarian agar tidak hilang saat filter lain diterapkan.
+    const keyword = params.get("q");
+    if (keyword) query.set("q", keyword);
 
-    router.push(`${pathname}?${q.toString()}`);
+    if (instant) query.set("instant", "1");
+    if (sports.length) query.set("sport", sports.join(","));
+    query.set("date", date);
+    if (times.length) query.set("time", times.join(","));
+    query.set("min", String(price[0]));
+    query.set("max", String(price[1]));
+    if (floors.length) query.set("floor", floors.join(","));
+    if (amenities.length) query.set("amenity", amenities.join(","));
+
+    router.push(`${pathname}?${query.toString()}`);
+    setShowFilters(false);
   };
 
   return (
-    <aside className="flex w-full flex-col gap-6 rounded-2xl border bg-white p-5 lg:sticky lg:top-20">
+    <aside className="w-full rounded-2xl border bg-white p-4 sm:p-5 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
+      <button
+        type="button"
+        onClick={() => setShowFilters((value) => !value)}
+        aria-expanded={showFilters}
+        className="flex w-full items-center justify-between rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-semibold lg:hidden"
+      >
+        <span className="flex items-center gap-2">
+          <SlidersHorizontal className="size-4 text-emerald-700" />
+          Filter &amp; Sort
+          {resultCount !== undefined && (
+            <span className="font-normal text-muted-foreground">
+              ({resultCount})
+            </span>
+          )}
+        </span>
+        <ChevronDown
+          className={cn(
+            "size-4 text-muted-foreground transition-transform",
+            showFilters && "rotate-180",
+          )}
+        />
+      </button>
+
+      <div
+        className={cn(
+          "flex-col gap-6",
+          showFilters ? "mt-4 flex" : "hidden",
+          "lg:mt-0 lg:flex",
+        )}
+      >
       <div className="flex items-center justify-between rounded-xl bg-emerald-50 p-3">
         <div className="flex items-start gap-2">
           <Zap className="mt-0.5 size-4 text-emerald-700" />
@@ -293,6 +329,7 @@ export function CourtFilter({ resultCount }: CourtFilterProps) {
       >
         Apply Filters{resultCount !== undefined && ` (${resultCount})`}
       </Button>
+      </div>
     </aside>
   );
 }

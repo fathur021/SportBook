@@ -42,14 +42,16 @@ export function ReservationDatePicker({
   const canGoNext = addDays(weekStart, 7) <= maxDate;
 
   return (
-    <Card className="p-6 shadow-sm">
+    <Card className="p-4 shadow-sm sm:p-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
             Step 1
           </p>
-          <h2 className="text-2xl font-bold tracking-tight">Select Reservation Date</h2>
+          <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
+            Select Reservation Date
+          </h2>
         </div>
 
         <div className="flex gap-2">
@@ -77,7 +79,7 @@ export function ReservationDatePicker({
       </div>
 
       {/* Daftar hari */}
-      <div className="mt-6 grid grid-cols-7 gap-2 sm:gap-3">
+      <div className="mt-6 grid grid-cols-4 gap-2 sm:grid-cols-7 sm:gap-3">
         {days.map((date) => {
           const key = toDateKey(date);
           const info = availability[key];
@@ -105,7 +107,7 @@ export function ReservationDatePicker({
               aria-pressed={selected}
               onClick={() => onValueChange(key)}
               className={cn(
-                "relative flex flex-col items-center gap-1 rounded-xl px-2 py-4 text-center transition",
+                "relative flex flex-col items-center gap-1 rounded-xl px-1 py-3 text-center transition sm:px-2 sm:py-4",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600",
                 selected
                   ? "bg-emerald-800 text-white shadow-lg"

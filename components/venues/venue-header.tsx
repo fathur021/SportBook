@@ -49,7 +49,7 @@ export function VenueHeader({ venue }: { venue: VenueDetail }) {
           </div>
         </div>
 
-        <div className="flex shrink-0 gap-2">
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:shrink-0">
           <Button variant="outline" className="gap-1.5 bg-slate-50">
             <Share className="size-4" />
             Share

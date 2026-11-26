@@ -94,6 +94,17 @@ const searchableVenueText = (venue: VenueListing) =>
     venue.facilities.join(" "),
   ].join(" ");
 
+// Teks untuk pencarian bebas: nama, alamat, slug, cabang, specs, dan fasilitas.
+const searchableKeywordText = (venue: VenueListing) =>
+  [
+    venue.name,
+    venue.address,
+    venue.slug,
+    venue.sportTag,
+    venue.specs.join(" "),
+    venue.facilities.join(" "),
+  ].join(" ");
+
 // Menentukan slot waktu (morning / afternoon / evening) berdasarkan jam ketersediaan terdekat
 // Contoh: "Today, 18:00" -> jam 18 -> "evening"
 const timeSlotFromNextAvailable = (venue: VenueListing) => {
@@ -118,10 +129,16 @@ export function filterVenues(venues: VenueListing[], sp: SearchParams) {
   const min = Number(one(sp.min) ?? 0);
   const max = Number(one(sp.max) ?? Infinity);
   const instant = one(sp.instant) === "1";
+  const keyword = normalize(one(sp.q) ?? "");
 
   // 2. Evaluasi setiap venue dalam array
   return venues.filter((v) => {
     const venueText = searchableVenueText(v);
+
+    // Kriteria 0: Kata kunci bebas dari search bar (?q=...)
+    if (keyword && !normalize(searchableKeywordText(v)).includes(keyword)) {
+      return false;
+    }
 
     // Kriteria 1: Instant Book
     // Jika filter instant aktif, venue harus memiliki slot 'nextAvailable' yang terdaftar

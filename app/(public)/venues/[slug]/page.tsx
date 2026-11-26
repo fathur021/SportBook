@@ -42,9 +42,9 @@ const page = async (props: PageProps<"/venues/[slug]">) => {
       />
 
       {/* 3. Layout Grid 2 Kolom: Kolom kiri konten utama (1fr), Kolom kanan sidebar booking widget (20rem) */}
-      <div className="grid items-start gap-6 lg:grid-cols-[1fr_20rem]">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[1fr_20rem]">
         {/* Kolom Kiri: Dibungkus dengan flex-col gap-6 agar About dan Amenities tersusun vertikal ke bawah */}
-        <div className="flex flex-col gap-6">
+        <div className="flex min-w-0 flex-col gap-6">
           {/* Section Facility Standards & Informasi Tentang Venue */}
           <VenueAbout
             name={venue.name}
@@ -69,16 +69,18 @@ const page = async (props: PageProps<"/venues/[slug]">) => {
             Disembunyikan kalau venue belum punya lapangan, karena widget
             membutuhkan minimal satu discipline/court. */}
         {venue.disciplines.length > 0 && (
-          <VenueBookingWidget
-            rating={venue.rating}
-            reviewCount={venue.reviewCount}
-            basePricePerHour={venue.pricePerHour}
-            disciplines={venue.disciplines}
-            venueSlug={venue.slug}
-            sessionDurations={venue.sessionDurations}
-            facilityFeeNote={venue.facilityFeeNote}
-            conciergeName={venue.conciergeName}
-          />
+          <div className="min-w-0">
+            <VenueBookingWidget
+              rating={venue.rating}
+              reviewCount={venue.reviewCount}
+              basePricePerHour={venue.pricePerHour}
+              disciplines={venue.disciplines}
+              venueSlug={venue.slug}
+              sessionDurations={venue.sessionDurations}
+              facilityFeeNote={venue.facilityFeeNote}
+              conciergeName={venue.conciergeName}
+            />
+          </div>
         )}
       </div>
     </Container>

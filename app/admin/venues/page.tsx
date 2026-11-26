@@ -7,25 +7,29 @@ import { Button } from "@/components/ui/button";
 export default function AdminVenuePage() {
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Kelola Lapangan
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            Operasional
+          </p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            Data Lapangan
           </h1>
-          <p className="text-sm text-slate-500">
-            Daftar Seluruh Venue Olah Raga Yang Aktif
+          <p className="mt-1.5 text-sm text-slate-500">
+            Kelola venue, lapangan, dan status ketersediaannya dalam satu
+            tempat.
           </p>
         </div>
 
         <VenueFormDialog
           trigger={
-            <Button className="bg-emerald-600 text-white shadow-sm hover:bg-emerald-700">
-              <Plus className="mr-2 h-4 w-4" />
+            <Button variant="brand" size="sm" className="shadow-sm">
+              <Plus data-icon="inline-start" />
               Tambah Venue Baru
             </Button>
           }
         />
-      </div>
+      </header>
 
       <VenueTable />
     </div>

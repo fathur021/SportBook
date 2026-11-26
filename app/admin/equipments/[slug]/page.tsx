@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, MapPin, Plus } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,41 +26,46 @@ export default async function AdminVenueEquipmentsPage(
 
   return (
     <div className="space-y-6">
-      <div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="-ml-2 mb-2"
-          nativeButton={false}
-          render={<Link href="/admin/equipments" />}
-        >
-          <ArrowLeft data-icon="inline-start" />
-          Kembali
-        </Button>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            {venue.name}
-          </h1>
-          <Badge variant="secondary">
-            {sports.length > 0 ? sports.join(", ") : "-"}
-          </Badge>
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-2 mb-3"
+            nativeButton={false}
+            render={<Link href="/admin/equipments" />}
+          >
+            <ArrowLeft data-icon="inline-start" />
+            Kembali
+          </Button>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            Sewa Peralatan
+          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              {venue.name}
+            </h1>
+            <Badge className="border-emerald-200 bg-emerald-50 font-medium text-emerald-700">
+              {sports.length > 0 ? sports.join(", ") : "-"}
+            </Badge>
+          </div>
+          <p className="mt-2 flex items-center gap-1.5 text-sm text-slate-500">
+            <MapPin className="size-4 text-slate-400" />
+            {venue.address}
+          </p>
         </div>
-        <p className="text-sm text-slate-500">{venue.address}</p>
-      </div>
 
-      <EquipmentItemList
-        equipment={equipment}
-        action={
-          <EquipmentFormDialog
-            trigger={
-              <Button variant="brand" size="sm">
-                <Plus data-icon="inline-start" />
-                Tambah Item
-              </Button>
-            }
-          />
-        }
-      />
+        <EquipmentFormDialog
+          trigger={
+            <Button variant="brand" size="sm" className="shadow-sm">
+              <Plus data-icon="inline-start" />
+              Tambah Item
+            </Button>
+          }
+        />
+      </header>
+
+      <EquipmentItemList equipment={equipment} />
     </div>
   );
 }

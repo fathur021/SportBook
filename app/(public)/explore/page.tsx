@@ -2,6 +2,7 @@ import { Suspense } from "react";
 
 import { CourtFilter } from "@/components/courts/court-filters";
 import { CourtsHeader } from "@/components/courts/courts-header";
+import { ExploreSearch } from "@/components/courts/explore-search";
 import { Container } from "@/components/layout/container";
 import { VenueListings } from "@/components/venues/venue-listings";
 import { VenuePagination } from "@/components/venues/venue-pagination";
@@ -52,10 +53,16 @@ const page = async function Page(props: PageProps<"/explore">) {
           </Suspense>
 
           <div>
-            <p className="mb-4 text-xs text-muted-foreground">
-              <span className="font-semibold text-foreground">{total}</span>{" "}
-              venues match your filters
-            </p>
+            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <Suspense>
+                <ExploreSearch />
+              </Suspense>
+
+              <p className="text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">{total}</span>{" "}
+                venues match your filters
+              </p>
+            </div>
 
             <VenueListings venues={items} />
 

@@ -16,14 +16,17 @@ export default async function AdminEquipmentsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+      <header>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+          Operasional
+        </p>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           Sewa Peralatan
         </h1>
-        <p className="text-sm text-slate-500">
-          Pilih venue untuk mengelola daftar peralatan yang bisa disewa.
+        <p className="mt-1.5 text-sm text-slate-500">
+          Pilih venue untuk mengelola peralatan yang bisa disewa pelanggan.
         </p>
-      </div>
+      </header>
 
       <EquipmentVenueList venues={venues} equipmentCounts={counts} />
     </div>

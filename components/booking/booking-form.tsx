@@ -102,8 +102,8 @@ export function BookingForm({
   };
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[1fr_20rem]">
-      <div className="flex flex-col gap-6">
+    <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[1fr_20rem]">
+      <div className="flex min-w-0 flex-col gap-6">
         <ReservationDatePicker
           availability={availability}
           value={selectedDate}
@@ -130,7 +130,7 @@ export function BookingForm({
         />
       </div>
 
-      <div className="lg:sticky lg:top-6">
+      <div className="min-w-0 lg:sticky lg:top-6">
         <BookingSummary
           venueName={venueName}
           courtId={courtId}

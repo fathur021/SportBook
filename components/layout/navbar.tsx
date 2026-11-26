@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BellIcon } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { NavbarAuth } from "@/components/layout/navbar-auth";
 import { Container } from "@/components/layout/container";
 import { cn } from "@/lib/utils";
@@ -18,10 +19,14 @@ const rightLinks = [{ title: "List Your Venue", href: "/list-your-venue" }];
 export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-      <Container className="flex h-14 items-center gap-2">
+      <Container className="flex h-14 items-center gap-1 sm:gap-2">
+        <div className="lg:hidden">
+          <MobileNav />
+        </div>
+
         <Link
           href="/"
-          className={cn(buttonVariants({ variant: "ghost" }), "h-auto gap-2 px-2")}
+          className={cn(buttonVariants({ variant: "ghost" }), "h-auto gap-2 px-1 sm:px-2")}
         >
           <Image
             src="/logo.png"
@@ -29,9 +34,9 @@ export function Navbar() {
             width={256}
             height={256}
             priority
-            className="h-10 w-auto object-contain lg:h-12"
+            className="h-8 w-auto object-contain sm:h-10 lg:h-12"
           />
-          <span className="bg-linear-to-r from-[#059669] to-[#047857] bg-clip-text text-[22px] font-semibold leading-none text-transparent drop-shadow-[0_1px_2px_rgba(4,120,87,0.35)]">
+          <span className="hidden bg-linear-to-r from-[#059669] to-[#047857] bg-clip-text text-lg font-semibold leading-none text-transparent drop-shadow-[0_1px_2px_rgba(4,120,87,0.35)] sm:inline sm:text-[22px]">
             Sportbook
           </span>
         </Link>
