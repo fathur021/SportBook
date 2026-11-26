@@ -19,6 +19,9 @@ export default function AdminReportsPage() {
   // Periode laporan: all, 30 hari, atau 90 hari
   const [selectedPeriod, setSelectedPeriod] = useState<ReportPeriod>("all");
 
+  // Kata kunci untuk tabel transaksi
+  const [transactionQuery, setTransactionQuery] = useState("");
+
   // Daftar venue untuk pilihan filter
   const { data: venues } = useGetAdminVenuesQuery();
 
@@ -81,7 +84,11 @@ export default function AdminReportsPage() {
 
           <VenueBookingTotals venues={report.venues} />
 
-          <RecentTransactionsTable transactions={report.transactions} />
+          <RecentTransactionsTable
+            transactions={report.transactions}
+            query={transactionQuery}
+            onQueryChange={setTransactionQuery}
+          />
         </>
       )}
     </main>

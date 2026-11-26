@@ -15,6 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { SearchInput } from "@/components/admin/search-input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -65,6 +66,7 @@ export default function AdminSchedulePage() {
   const [selectedVenueSlug, setSelectedVenueSlug] = useState<string>("");
   const [selectedBooking, setSelectedBooking] = useState<AdminBooking | null>(null);
   const [isOpHoursDialogOpen, setIsOpHoursDialogOpen] = useState<boolean>(false);
+  const [courtQuery, setCourtQuery] = useState<string>("");
 
   // Ambil daftar venue admin
   const { data: venues, isLoading: isVenuesLoading, isError: isVenuesError } =
@@ -119,6 +121,20 @@ export default function AdminSchedulePage() {
   const courts = useMemo(() => {
     return activeVenue?.courts ?? [];
   }, [activeVenue]);
+
+  // Cari court berdasarkan nama, cabang, permukaan, atau jenis lapangan
+  const visibleCourts = useMemo(() => {
+    const keyword = courtQuery.trim().toLowerCase();
+    if (!keyword) return courts;
+
+    return courts.filter((court) =>
+      `${court.name} ${court.sport} ${court.surface ?? ""} ${
+        court.isIndoor ? "Indoor" : "Outdoor"
+      }`
+        .toLowerCase()
+        .includes(keyword),
+    );
+  }, [courts, courtQuery]);
 
   // Hitung statistik slot hari ini
   const stats = useMemo(() => {
@@ -280,6 +296,12 @@ export default function AdminSchedulePage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <SearchInput
+              value={courtQuery}
+              onChange={setCourtQuery}
+              placeholder="Cari lapangan..."
+            />
+
             {/* Quick Picker Native */}
             <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-xs">
               <CalendarDays className="size-4 text-emerald-700" />
@@ -401,9 +423,11 @@ export default function AdminSchedulePage() {
         </div>
 
         {/* Split Grid: Kolom Court Tetap di Kiri, HANYA Bagian Jam yang Scrollable */}
-        {courts.length === 0 ? (
+        {visibleCourts.length === 0 ? (
           <div className="p-12 text-center text-sm text-slate-500">
-            Venue ini belum memiliki court. Tambahkan court di menu Kelola Lapangan.
+            {courts.length === 0
+              ? "Venue ini belum memiliki court. Tambahkan court di menu Kelola Lapangan."
+              : "Court tidak ditemukan. Coba kata kunci lain."}
           </div>
         ) : (
           <div className="flex w-full max-w-full overflow-hidden border-t border-slate-200">
@@ -415,7 +439,7 @@ export default function AdminSchedulePage() {
               </div>
               {/* Daftar Lapangan */}
               <div className="divide-y divide-slate-100">
-                {courts.map((court) => (
+                {visibleCourts.map((court) => (
                   <div
                     key={court.id}
                     className="flex h-20 flex-col justify-center px-4 bg-white sm:px-6"
@@ -458,7 +482,7 @@ export default function AdminSchedulePage() {
 
                 {/* Baris Slot Waktu per Court */}
                 <div className="divide-y divide-slate-100">
-                  {courts.map((court) => (
+                  {visibleCourts.map((court) => (
                     <div key={court.id} className="flex h-20 items-center">
                       {OPERATING_HOURS.map(({ startStr, endStr }) => {
                         // Cek apakah ada booking aktif di slot ini

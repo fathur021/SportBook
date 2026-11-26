@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatRupiah } from "@/lib/format-rupiah";
 import type { EquipmentItem } from "@/lib/equipment";
 import { cn } from "@/lib/utils";
+import { SearchInput } from "@/components/admin/search-input";
 
 type EquipmentPickerProps = {
   items: EquipmentItem[];
@@ -19,6 +21,14 @@ export function EquipmentPicker({
   onQuantitiesChange,
 }: EquipmentPickerProps) {
   const qty = (id: string) => quantities[id] ?? 0;
+
+  const [query, setQuery] = useState("");
+
+  const filteredItems = items.filter((item) =>
+    `${item.name} ${item.description ?? ""} ${item.unit ?? ""}`
+      .toLowerCase()
+      .includes(query.trim().toLowerCase()),
+  );
 
   const increment = (id: string) =>
     onQuantitiesChange({ ...quantities, [id]: (quantities[id] ?? 0) + 1 });
@@ -36,13 +46,21 @@ export function EquipmentPicker({
       </p>
       <h2 className="text-2xl font-bold tracking-tight">Add Equipment</h2>
 
-      {items.length === 0 ? (
+      <div className="mt-4">
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="Cari peralatan..."
+        />
+      </div>
+
+      {filteredItems.length === 0 ? (
         <p className="mt-4 rounded-lg bg-blue-50 px-4 py-3 text-sm text-muted-foreground">
           Equipment belum tersedia untuk venue ini, silakan hubungi venue.
         </p>
       ) : (
         <div className="mt-6 flex flex-col gap-3">
-          {items.map((item) => {
+          {filteredItems.map((item) => {
             const count = qty(item.id);
             return (
               <div
@@ -51,7 +69,7 @@ export function EquipmentPicker({
                   "flex items-center justify-between gap-4 rounded-xl border px-4 py-3 transition",
                   count > 0
                     ? "border-emerald-200 bg-emerald-50/60"
-                    : "border-slate-100 bg-white"
+                    : "border-slate-100 bg-white",
                 )}
               >
                 <div className="min-w-0">

@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button"; // ← tombol
 import { Badge } from "@/components/ui/badge"; // ← badge jumlah
 import { BookingTable } from "@/components/admin/booking-table"; // ← tabel booking (bagian 2)
+import { SearchInput } from "@/components/admin/search-input";
 import {
   Select,
   SelectContent,
@@ -28,6 +29,7 @@ export default function AdminBookingsPage() {
   // [+] State untuk filter
   const [playDate, setPlayDate] = useState(""); // ← tanggal main
   const [status, setStatus] = useState<string>(""); // ← status booking, tipe eksplisit
+  const [search, setSearch] = useState(""); // ← kata kunci booking
 
   // [+] Bangun parameter query hanya jika ada filter
   const queryParam =
@@ -38,6 +40,23 @@ export default function AdminBookingsPage() {
   // [+] Ambil data booking dari API via Redux
   const { data: bookings, isLoading, isError } =
     useGetAdminBookingsQuery(queryParam);
+
+  // [+] Cari kode order, pelanggan, venue, court, dan status
+  const filteredBookings = (bookings ?? []).filter((booking) => {
+    const teks = [
+      booking.orderCode,
+      booking.user?.name ?? "",
+      booking.user?.email ?? "",
+      booking.court?.venue?.name ?? "",
+      booking.court?.name ?? "",
+      booking.status,
+      booking.payment?.status ?? "",
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return teks.includes(search.trim().toLowerCase());
+  });
 
   // [+] Hitung jumlah booking per status (untuk badge)
   const pendingCount = bookings?.filter((b) => b.status === "PENDING").length ?? 0;
@@ -153,6 +172,13 @@ export default function AdminBookingsPage() {
           {/* Baris filter: Tanggal + Status */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              {/* Filter: Kata kunci */}
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Cari kode, pelanggan, atau venue..."
+              />
+
               {/* Filter: Tanggal Main */}
               <div className="flex items-center gap-2">
                 <CalendarDays className="h-4 w-4 text-slate-400" />
@@ -181,13 +207,14 @@ export default function AdminBookingsPage() {
             </div>
 
             {/* Tombol reset filter */}
-            {(playDate || status) && (
+            {(playDate || status || search) && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
                   setPlayDate("");
                   setStatus("");
+                  setSearch("");
                 }}
               >
                 Reset Filter
@@ -196,7 +223,7 @@ export default function AdminBookingsPage() {
           </div>
 
           {/* Tabel Booking */}
-          <BookingTable bookings={bookings ?? []} />
+          <BookingTable bookings={filteredBookings} />
         </CardContent>
       </Card>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Eye, Star, LayoutGrid } from "lucide-react";
@@ -16,10 +17,25 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { VenueRowActions } from "@/components/admin/Venue-row-actions";
+import { SearchInput } from "@/components/admin/search-input";
 import { useGetAdminVenuesQuery } from "@/lib/redux/admin-api";
 
 export function VenueTable() {
   const { data: venues, isLoading, isError } = useGetAdminVenuesQuery();
+  const [query, setQuery] = useState("");
+
+  const filteredVenues = (venues ?? []).filter((venue) => {
+    const teks = [
+      venue.name,
+      venue.address,
+      venue.city,
+      ...venue.courts.map((court) => `${court.name} ${court.sport}`),
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return teks.includes(query.trim().toLowerCase());
+  });
 
   if (isLoading) {
     return (
@@ -52,6 +68,13 @@ export function VenueTable() {
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="border-b border-slate-100 p-4">
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="Cari venue, kota, atau lapangan..."
+        />
+      </div>
       <Table>
         <TableHeader className="bg-slate-50">
           <TableRow>
@@ -66,7 +89,8 @@ export function VenueTable() {
         </TableHeader>
 
         <TableBody>
-          {venues.map((venue) => {
+          {filteredVenues.length > 0 ? (
+            filteredVenues.map((venue) => {
             // Ambil court pertama yang aktif untuk menampilkan info
             const activeCourts = venue.courts?.filter((c) => c.isActive) ?? [];
             const primaryCourt = activeCourts[0] ?? null;
@@ -169,7 +193,17 @@ export function VenueTable() {
               </TableCell>
             </TableRow>
             );
-          })}
+            })
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={7}
+                className="h-24 text-center text-muted-foreground"
+              >
+                Venue tidak ditemukan.
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>

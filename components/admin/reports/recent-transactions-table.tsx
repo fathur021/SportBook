@@ -1,4 +1,7 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
+import { SearchInput } from "@/components/admin/search-input";
 import {
   Table,
   TableBody,
@@ -51,16 +54,47 @@ function formatDateTime(iso: string | null): string {
 
 export function RecentTransactionsTable({
   transactions,
+  query = "",
+  onQueryChange,
 }: {
   transactions: AdminReportTransaction[];
+  query?: string;
+  onQueryChange?: (value: string) => void;
 }) {
+  const filteredTransactions = transactions.filter((transaction) => {
+    const teks = [
+      transaction.orderCode,
+      transaction.venueName,
+      transaction.courtName,
+      transaction.method ?? "",
+      transaction.bookingStatus,
+      transaction.playDate,
+      transaction.paidAt ?? "",
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return teks.includes(query.trim().toLowerCase());
+  });
+
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 px-5 py-4">
-        <h2 className="font-semibold text-slate-900">Transaksi Terbaru</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Pembayaran lunas sesuai filter periode dan venue.
-        </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-semibold text-slate-900">Transaksi Terbaru</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Pembayaran lunas sesuai filter periode dan venue.
+            </p>
+          </div>
+          {onQueryChange && (
+            <SearchInput
+              value={query}
+              onChange={onQueryChange}
+              placeholder="Cari kode, venue, atau metode..."
+            />
+          )}
+        </div>
       </div>
 
       <Table>
@@ -76,8 +110,8 @@ export function RecentTransactionsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {transactions.length > 0 ? (
-            transactions.map((transaction) => (
+          {filteredTransactions.length > 0 ? (
+            filteredTransactions.map((transaction) => (
               <TableRow key={transaction.id}>
                 <TableCell className="pl-5 font-mono text-sm font-medium text-slate-900">
                   {transaction.orderCode}
@@ -126,7 +160,9 @@ export function RecentTransactionsTable({
           ) : (
             <TableRow>
               <TableCell colSpan={7} className="h-24 text-center text-slate-500">
-                Tidak ada transaksi lunas untuk filter ini.
+                {transactions.length > 0
+                  ? "Transaksi tidak ditemukan."
+                  : "Tidak ada transaksi lunas untuk filter ini."}
               </TableCell>
             </TableRow>
           )}

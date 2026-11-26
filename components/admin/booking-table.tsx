@@ -141,7 +141,7 @@ export function BookingTable({ bookings }: { bookings: AdminBooking[] }) {
             >
               <span className="inline-flex items-center gap-2">
                 <ClipboardList className="size-4" />
-                Belum ada booking yang terdaftar.
+                Tidak ada booking yang cocok dengan pencarian atau filter.
               </span>
             </TableCell>
           </TableRow>
